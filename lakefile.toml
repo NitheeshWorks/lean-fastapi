@@ -1,0 +1,35 @@
+    name = "LeanFastapi"
+    version = "0.1.0"
+    defaultTargets = ["LeanFastapi", "props", "conformance"]
+
+    # The verified library. Everything under LeanFastapi/ except Transport.lean is a
+    # total function and the proof surface; see CONTRIBUTING.md.
+    [[lean_lib]]
+    name = "LeanFastapi"
+
+    # Property tests for what is tested rather than proved. No dependencies, runs
+    # in well under a second: `lake exe props [seed]`.
+    [[lean_exe]]
+    name = "props"
+    root = "tests.Props"
+
+    # Conformance cases re-expressed from the upstream test suite:
+    # `lake exe conformance`. Each case names the upstream test it mirrors.
+    [[lean_exe]]
+    name = "conformance"
+    root = "tests.Conformance"
+
+[[require]]
+name = "LeanPydantic"
+git = "https://github.com/NitheeshWorks/lean-pydantic"
+rev = "main"
+
+[[require]]
+name = "LeanStarlette"
+git = "https://github.com/NitheeshWorks/lean-starlette"
+rev = "main"
+
+[[require]]
+name = "LeanClick"
+git = "https://github.com/NitheeshWorks/lean-click"
+rev = "main"

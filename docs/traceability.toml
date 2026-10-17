@@ -1,0 +1,26 @@
+# Traceability register: upstream behaviour -> Lean symbol -> theorem -> test.
+#
+# `scripts/traceability-check.py` validates it on every CI run: every
+# `realises`/`theorem` symbol must resolve, every `test` path must exist.
+#
+# status: implemented | partial | tested | excluded | deviation
+#   implemented  realised and proved
+#   partial      realised, proof incomplete or covering a subset
+#   tested       realised, deliberately tested rather than proved (say why)
+#   excluded     out of scope, rejected by name
+#   deviation    behaviour differs from upstream on purpose (say how)
+
+[meta]
+upstream_name = "FastAPI"
+upstream_url = "https://github.com/fastapi/fastapi"
+upstream_commit = "b23d78f2ce4e7b3ea48a59f51ca249690d9fd02c"
+upstream_license = "MIT"
+
+# [[requirement]]
+# id = "..."                  # stable id, e.g. "routing.first-match"
+# upstream = "tests/test_x.py::test_y"   # or a docs section
+# title = "..."
+# status = "implemented"
+# realises = ["LeanFastapi.Foo.bar"]
+# theorem = ["LeanFastapi.Foo.bar_spec"]
+# test = ["tests/Conformance.lean::name"]
