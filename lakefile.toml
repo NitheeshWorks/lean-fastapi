@@ -19,6 +19,13 @@
     name = "conformance"
     root = "tests.Conformance"
 
+# Keel directly, so this repo chooses the theory library's pin over an
+# older one in a dependency's manifest.
+[[require]]
+name = "Keel"
+git = "https://github.com/NitheeshWorks/lean-keel"
+rev = "main"
+
 # lean-json directly: the library builds JSON itself (json%, the OpenAPI
 # document), so its pin is this repo's choice.
 [[require]]
