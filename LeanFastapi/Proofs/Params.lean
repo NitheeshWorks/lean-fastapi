@@ -205,4 +205,30 @@ theorem form_missing {α : Type} [ParamValue α] (p : Param α) (inp : Inputs) (
   simp [Param.validator, Param.loc, Param.isWholeBody, hs, he, Source.value, Keel.Validator.at,
     Param.read, hraw, hd, Except.mapError, Keel.Located.within, RequestError.missing]
 
+/-- **The macro's embed flag is the embed rule.** After `embedBodies`, every
+body parameter is embedded when the rule holds for the route's body
+parameters, and none changes otherwise. -/
+theorem embedBodies_embed (fs : List BodyField) :
+    (shouldEmbedBodyFields fs = true → ∀ f ∈ embedBodies fs, f.embed = true) ∧
+      (shouldEmbedBodyFields fs = false → embedBodies fs = fs) := by
+  refine ⟨fun h f hf => ?_, fun h => by simp [embedBodies, h]⟩
+  simp only [embedBodies, h, if_true, List.mem_map] at hf
+  obtain ⟨g, _, rfl⟩ := hf
+  rfl
+
+/-- **The rule is stable**: it reads the same off the parameters the macro
+leaves, so the route's `ParamInfo`s (what extraction and OpenAPI read)
+carry the decision. -/
+theorem shouldEmbed_embedBodies (fs : List BodyField) :
+    shouldEmbedBodyFields (embedBodies fs) = shouldEmbedBodyFields fs := by
+  unfold embedBodies
+  split
+  · rename_i h
+    cases fs with
+    | nil => simp [shouldEmbedBodyFields] at h
+    | cons f fs =>
+      simp only [shouldEmbedBodyFields] at h
+      simpa [shouldEmbedBodyFields] using h
+  · rfl
+
 end LeanFastapi

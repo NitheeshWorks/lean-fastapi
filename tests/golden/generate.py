@@ -26,7 +26,7 @@ HERE = Path(__file__).resolve().parent
 UPSTREAM = HERE.parents[2] / "upstream-spec" / "fastapi"
 sys.path.insert(0, str(UPSTREAM))
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Security  # noqa: E402
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Security, UploadFile  # noqa: E402
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
@@ -146,6 +146,22 @@ async def header_int(x_n: Annotated[int, Header()]):
 @bench_app.post("/dict")
 async def dict_body(d: dict[str, int]):
     return {"keys": len(d)}
+
+
+@bench_app.post("/bytes/")
+async def upload_bytes(file: Annotated[bytes, File()]):
+    return {"size": len(file)}
+
+
+@bench_app.post("/upload/")
+async def upload_one(file: UploadFile):
+    data = await file.read()
+    return {"filename": file.filename, "size": len(data)}
+
+
+@bench_app.post("/uploads/")
+async def upload_many(files: list[UploadFile]):
+    return {"sizes": [f.size for f in files]}
 
 
 # Exit order of yield dependencies, twin of tests/apps/DependencyYield.lean.
@@ -524,6 +540,26 @@ def reset_calls():
     calls_holder["calls"] = 0
 
 
+# A form model with an aliased field, a list field and defaults: the value
+# _extract_form_body builds (model fields by alias in field order, then the
+# other keys in the order received, a repeated key as a list) is the input of
+# its 422s. Twin: tests/apps/FormModelAliased.lean.
+class AliasedForm(BaseModel):
+    user_name: str = Field(alias="userName")
+    password: str
+    tags: list[str] = []
+    note: str | None = None
+    count: int = 3
+
+
+form_model_aliased_app = FastAPI()
+
+
+@form_model_aliased_app.post("/login/")
+def login_aliased(data: Annotated[AliasedForm, Form()]):
+    return data
+
+
 # tests/test_dependency_cache.py resets its counter in each test; here a
 # request does, outside the schema (twin: the Lean app's /reset).
 dependency_cache = upstream_test("test_dependency_cache")
@@ -593,6 +629,7 @@ FIXTURES = {
     "request_files_003": tutorial("request_files.tutorial003_an_py310"),
     "request_forms_and_files_001": tutorial("request_forms_and_files.tutorial001_an_py310"),
     "request_form_models_001": tutorial("request_form_models.tutorial001_an_py310"),
+    "form_model_aliased": form_model_aliased_app,
     # request_form_models.tutorial002 (`model_config = {"extra": "forbid"}`) waits
     # on lean-pydantic's extra="forbid" (no ConfigDict extra yet).
     "security_api_key_query": upstream_test("test_security_api_key_query"),
@@ -875,6 +912,15 @@ SCENARIOS = [
     ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_form_no_username", "POST", "/login/", F, "password=secret"),
     ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_form_no_data", "POST", "/login/", {}, None),
     ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_json", "POST", "/login/", J, '{"username": "Foo", "password": "secret"}'),
+    ("request_form_models_001", 'fastapi/dependencies/utils.py::_extract_form_body (an extra key)', "POST", "/login/", F, 'x=1&password=pw'),
+    ("request_form_models_001", 'fastapi/dependencies/utils.py::_extract_form_body (a repeated extra key)', "POST", "/login/", F, 'x=1&x=2'),
+    ("request_form_models_001", 'fastapi/dependencies/utils.py::_extract_form_body (fields first, extras in order)', "POST", "/login/", F, 'password=pw&x=1&x=2&user_name=u'),
+    ("request_form_models_001", 'fastapi/dependencies/utils.py::_extract_form_body (a repeated model field: the last)', "POST", "/login/", F, 'username=a&username=b&password=pw'),
+    ("form_model_aliased", 'fastapi/dependencies/utils.py::_extract_form_body (an aliased field, defaults)', "POST", "/login/", F, 'userName=u&password=pw'),
+    ("form_model_aliased", 'fastapi/dependencies/utils.py::_extract_form_body (a repeated aliased field, extras)', "POST", "/login/", F, 'password=pw&z=9&userName=a&userName=b&tags=t1&tags=t2'),
+    ("form_model_aliased", 'fastapi/dependencies/utils.py::_extract_form_body (the field name, not its alias)', "POST", "/login/", F, 'user_name=u&password=pw&user_name=v'),
+    ("form_model_aliased", 'fastapi/dependencies/utils.py::_extract_form_body (an empty value is kept)', "POST", "/login/", F, 'userName=&password=pw&note='),
+    ("form_model_aliased", 'fastapi/dependencies/utils.py::_extract_form_body (a missing field, a bad int)', "POST", "/login/", F, 'count=x&x=1&x=2&x=3'),
     # milestone 3: security
     ("security_004", TS + "test_tutorial004.py::test_login", "POST", "/token", F, "username=johndoe&password=secret"),
     ("security_004", TS + "test_tutorial004.py::test_login_incorrect_password", "POST", "/token", F, "username=johndoe&password=incorrect"),
@@ -996,6 +1042,18 @@ BENCH = [
      "header": ["x-n", "1", 1 << 20], "budget_ms": 100},
     {"fixture": "bench", "name": "dict[str, int] body, 100000 keys", "method": "POST", "prefix": "/dict", "body": "dict:100000",
      "budget_ms": 150},
+] + [
+    # Large uploads (critic, pso2kuyvm4hr), in process. The budget is twice
+    # FastAPI's time for the same upload over TCP under uvicorn 0.54 (curl -F,
+    # Expect disabled, best of 7, server pinned to one core; 10 MiB: bytes 34,
+    # UploadFile read 33, list[UploadFile] 28 ms; 20 MiB: 53, 51, 44 ms). The
+    # transport's share and the memory figures are in CONTRIBUTING.md.
+    {"fixture": "bench", "name": f"{mib} MiB upload, {what}", "method": "POST", "prefix": route,
+     "body": f"upload:{field}:{mib}", "budget_ms": budget}
+    for mib, route, field, what, budget in [
+        (10, "/bytes/", "file", "File bytes", 68), (10, "/upload/", "file", "UploadFile read", 66),
+        (10, "/uploads/", "files", "list[UploadFile]", 56), (20, "/bytes/", "file", "File bytes", 106),
+        (20, "/upload/", "file", "UploadFile read", 102), (20, "/uploads/", "files", "list[UploadFile]", 88)]
 ]
 
 
@@ -1004,9 +1062,19 @@ BENCH = [
 COLLIDE_KEYS = HERE.parents[1] / ".lake" / "packages" / "LeanJson" / "tests" / "fixtures" / "collide-keys.txt"
 
 
+def upload_data(mib):
+    """The uploaded bytes of an `upload:` recipe: byte i is i * 2654435761 % 251."""
+    return bytes((i * 2654435761) % 251 for i in range(mib << 20))
+
+
 def bench_body(recipe):
     if recipe is None:
         return None
+    if recipe.startswith("upload:"):
+        _, field, mib = recipe.split(":")
+        head = (f"--{BOUNDARY}\r\nContent-Disposition: form-data; name=\"{field}\"; filename=\"f\"\r\n"
+                "Content-Type: application/octet-stream\r\n\r\n").encode()
+        return head + upload_data(int(mib)) + f"\r\n--{BOUNDARY}--\r\n".encode()
     if recipe == "collide":
         keys = [k for k in COLLIDE_KEYS.read_text().split("\n") if k]
         return '{"name":"x","price":2,' + ",".join(f'"{k}":0' for k in keys) + '}'
@@ -1023,12 +1091,13 @@ def bench():
     for case in BENCH:
         c = TestClient(FIXTURES[case["fixture"]], follow_redirects=False, raise_server_exceptions=False)
         body = bench_body(case.get("body"))
-        headers = dict(J) if body else {}
+        headers = (dict(MPH) if case.get("body", "").startswith("upload:") else dict(J)) if body else {}
+        body = body.encode() if isinstance(body, str) else body
         if "header" in case:
             name, ch, count = case["header"]
             headers[name] = ch * count
         url = case["prefix"] + case.get("repeat", "") * case.get("count", 0)
-        r = c.request(case["method"], url, content=body.encode() if body else None, headers=headers)
+        r = c.request(case["method"], url, content=body, headers=headers)
         run = case["header"][1] * case["header"][2] if "header" in case else case.get("repeat", "") * case.get("count", 0)
         text = r.content.decode("utf-8")
         # The generated run, where a response echoes it, is written REPEAT_MARK.

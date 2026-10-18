@@ -10355,6 +10355,447 @@
    "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{}},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":{}}]}"
   },
   {
+   "fixture": "request_form_models_001",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (an extra key)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "15"
+    ]
+   ],
+   "body": "x=1&password=pw",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "114"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{\"password\":\"pw\",\"x\":\"1\"}}]}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (a repeated extra key)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "7"
+    ]
+   ],
+   "body": "x=1&x=2",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "196"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{\"x\":[\"1\",\"2\"]}},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":{\"x\":[\"1\",\"2\"]}}]}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (fields first, extras in order)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "31"
+    ]
+   ],
+   "body": "password=pw&x=1&x=2&user_name=u",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "136"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{\"password\":\"pw\",\"x\":[\"1\",\"2\"],\"user_name\":\"u\"}}]}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (a repeated model field: the last)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "33"
+    ]
+   ],
+   "body": "username=a&username=b&password=pw",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"b\",\"password\":\"pw\"}"
+  },
+  {
+   "fixture": "form_model_aliased",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (an aliased field, defaults)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "22"
+    ]
+   ],
+   "body": "userName=u&password=pw",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "64"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"userName\":\"u\",\"password\":\"pw\",\"tags\":[],\"note\":null,\"count\":3}"
+  },
+  {
+   "fixture": "form_model_aliased",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (a repeated aliased field, extras)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "53"
+    ]
+   ],
+   "body": "password=pw&z=9&userName=a&userName=b&tags=t1&tags=t2",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "73"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"userName\":\"b\",\"password\":\"pw\",\"tags\":[\"t1\",\"t2\"],\"note\":null,\"count\":3}"
+  },
+  {
+   "fixture": "form_model_aliased",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (the field name, not its alias)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "35"
+    ]
+   ],
+   "body": "user_name=u&password=pw&user_name=v",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "148"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"userName\"],\"msg\":\"Field required\",\"input\":{\"password\":\"pw\",\"tags\":[],\"count\":3,\"user_name\":[\"u\",\"v\"]}}]}"
+  },
+  {
+   "fixture": "form_model_aliased",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (an empty value is kept)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "27"
+    ]
+   ],
+   "body": "userName=&password=pw&note=",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "61"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"userName\":\"\",\"password\":\"pw\",\"tags\":[],\"note\":\"\",\"count\":3}"
+  },
+  {
+   "fixture": "form_model_aliased",
+   "upstream": "fastapi/dependencies/utils.py::_extract_form_body (a missing field, a bad int)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "19"
+    ]
+   ],
+   "body": "count=x&x=1&x=2&x=3",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "384"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"userName\"],\"msg\":\"Field required\",\"input\":{\"tags\":[],\"count\":\"x\",\"x\":[\"1\",\"2\",\"3\"]}},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":{\"tags\":[],\"count\":\"x\",\"x\":[\"1\",\"2\",\"3\"]}},{\"type\":\"int_parsing\",\"loc\":[\"body\",\"count\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"x\"}]}"
+  },
+  {
    "fixture": "security_004",
    "upstream": "tests/test_tutorial/test_security/test_tutorial004.py::test_login",
    "method": "POST",
@@ -16593,10 +17034,163 @@
         }
        }
       }
+     },
+     "/bytes/": {
+      "post": {
+       "summary": "Upload Bytes",
+       "operationId": "upload_bytes_bytes__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_upload_bytes_bytes__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/upload/": {
+      "post": {
+       "summary": "Upload One",
+       "operationId": "upload_one_upload__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_upload_one_upload__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/uploads/": {
+      "post": {
+       "summary": "Upload Many",
+       "operationId": "upload_many_uploads__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_upload_many_uploads__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
      }
     },
     "components": {
      "schemas": {
+      "Body_upload_bytes_bytes__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file"
+       ],
+       "title": "Body_upload_bytes_bytes__post"
+      },
+      "Body_upload_many_uploads__post": {
+       "properties": {
+        "files": {
+         "items": {
+          "type": "string",
+          "contentMediaType": "application/octet-stream"
+         },
+         "type": "array",
+         "title": "Files"
+        }
+       },
+       "type": "object",
+       "required": [
+        "files"
+       ],
+       "title": "Body_upload_many_uploads__post"
+      },
+      "Body_upload_one_upload__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file"
+       ],
+       "title": "Body_upload_one_upload__post"
+      },
       "HTTPValidationError": {
        "properties": {
         "detail": {
@@ -21432,6 +22026,154 @@
         "password"
        ],
        "title": "FormData"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "form_model_aliased",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/login/": {
+      "post": {
+       "summary": "Login Aliased",
+       "operationId": "login_aliased_login__post",
+       "requestBody": {
+        "content": {
+         "application/x-www-form-urlencoded": {
+          "schema": {
+           "$ref": "#/components/schemas/AliasedForm"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "AliasedForm": {
+       "properties": {
+        "userName": {
+         "type": "string",
+         "title": "Username"
+        },
+        "password": {
+         "type": "string",
+         "title": "Password"
+        },
+        "tags": {
+         "items": {
+          "type": "string"
+         },
+         "type": "array",
+         "title": "Tags",
+         "default": []
+        },
+        "note": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Note"
+        },
+        "count": {
+         "type": "integer",
+         "title": "Count",
+         "default": 3
+        }
+       },
+       "type": "object",
+       "required": [
+        "userName",
+        "password"
+       ],
+       "title": "AliasedForm"
       },
       "HTTPValidationError": {
        "properties": {

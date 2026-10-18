@@ -92,7 +92,30 @@ Listed here with the reason, and in `docs/traceability.toml` with
   lean-starlette over lean-multipart, opened as `UploadFile`s in IO, and
   compared with fastapi on the request-forms, request-files,
   forms-and-files and form-models tutorials; the order and multiplicity of
-  a form's values (`Inputs.formRaw`) are a property test.
+  a form's values (`Inputs.formRaw`) are a property test. A form model reads
+  the value `_extract_form_body` builds (`formBody`: the model's fields by
+  alias, then the other keys, a repeated key as a list), which is also the
+  input its 422s echo.
+* **Large uploads.** `tests/golden/bench.json` times 10 and 20 MiB uploads
+  through `File bytes`, `UploadFile` and `list[UploadFile]` in process, each
+  within twice FastAPI's time over TCP (10 MiB: 15-18 ms against budgets of
+  56-68 ms). Over TCP (`lake exe benchserver` against `bench_app` under
+  uvicorn 0.54, curl -F with Expect disabled, best of 7, each server pinned
+  to one core; peak resident memory of one request on a fresh server, over
+  its baseline), 10 MiB:
+
+  | route | FastAPI | Lean |
+  |---|---|---|
+  | `File bytes` | 34 ms, +11 MB | 62 ms, +62 MB |
+  | `UploadFile`, read | 33 ms, +12 MB | 68 ms, +80 MB |
+  | `list[UploadFile]` | 28 ms, +2 MB | 67 ms, +64 MB |
+
+  The difference is the transport (lean-starlette's `Transport.readBody`):
+  a POST of the same 10 MiB to a 404 takes 70 ms and +64 MB with no form
+  parsing at all, while the form parse and the operation take 15-18 ms and
+  copy nothing in lean-fastapi (`BodyInput.load` shares the part's bytes).
+  FastAPI's `UploadFile` spools a part over 1 MiB to disk, which is why its
+  `list[UploadFile]` stays at +2 MB; the Lean `UploadFile` holds its bytes.
 * **Security schemes and OAuth2PasswordRequestForm**: their 401s, headers
   and OpenAPI objects are compared with fastapi's on the security tutorials
   and tests; what is proved is the parsing underneath (`bearer_parse`,

@@ -157,10 +157,13 @@ def paramExpr (source : Source) (name : String) (w : Wrapper) (args : Array Expr
         | .single => Lean.mkConst ``FileShape.single
         | .optional => Lean.mkConst ``FileShape.optional
         | .list => Lean.mkConst ``FileShape.list]
+  -- a model's fields, which a whole-body form reads (`_extract_form_body`)
+  let formE ← if isModel then mkAppOptM ``LeanFastapi.formModelFieldsOf #[some α, none]
+    else mkAppOptM ``List.nil #[some (Lean.mkConst ``FormModelField)]
   mkAppOptM ``LeanFastapi.mkParam
     #[some α, some (sourceExpr source), some (toExpr name), some dflt, some alias, some conv, some title,
       some descr, some depr, some incl, some embed, some media, some extra, some (toExpr isSeq),
-      some (toExpr isModel), some fileE]
+      some (toExpr isModel), some fileE, some formE]
 
 /-- `(v.2.2. ... .1)`: the `k`-th component of a right-nested product. -/
 def projAt (v : Expr) : Nat → MetaM Expr
@@ -435,7 +438,7 @@ end
 /-- What the embed rule reads off a body parameter (`mkParam`'s name,
 `embed`, `media_type` and `isModel` arguments). -/
 def bodyField? (p : Expr) : Option BodyField :=
-  if p.isAppOfArity ``LeanFastapi.mkParam 16 then
+  if p.isAppOfArity ``LeanFastapi.mkParam 17 then
     let a := p.getAppArgs
     match a[2]!, a[11]! with
     | .lit (.strVal name), .lit (.strVal media) =>
@@ -464,10 +467,11 @@ def Node.bodyFieldsList (ns : List Node) : List BodyField := Node.ownBodies ns +
 mutual
 
 /-- The tree with every body parameter read from a member of the body
-(`embed_body_fields`). -/
+(`embed_body_fields`): `embedBodies` on the tree's body parameters, when the
+rule holds (`embedBodies_embed`). -/
 def Node.embedBodies : Node → Node
   | .param .body b p =>
-    .param .body b (if p.isAppOfArity ``LeanFastapi.mkParam 16 then mkAppN p.getAppFn (p.getAppArgs.set! 10 (toExpr true))
+    .param .body b (if p.isAppOfArity ``LeanFastapi.mkParam 17 then mkAppN p.getAppFn (p.getAppArgs.set! 10 (toExpr true))
       else p)
   | .sub key α fn kind uc sc own sch args ovFn ovKind ovArgs =>
     .sub key α fn kind uc sc own sch (Node.embedBodiesList args) ovFn ovKind (Node.embedBodiesList ovArgs)

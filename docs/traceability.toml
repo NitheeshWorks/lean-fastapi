@@ -397,8 +397,8 @@ id = "forms.embed-rule"
 upstream = "fastapi/dependencies/utils.py::_should_embed_body_fields"
 title = "Body parameters are read from members of the body exactly when there is another body parameter name, the first is embed=True, or the first is a form field whose type is not a model"
 status = "implemented"
-realises = ["LeanFastapi.shouldEmbedBodyFields", "LeanFastapi.BodyField"]
-theorem = ["LeanFastapi.embed_rule"]
+realises = ["LeanFastapi.shouldEmbedBodyFields", "LeanFastapi.BodyField", "LeanFastapi.embedBodies", "LeanFastapi.ParamInfo.bodyField"]
+theorem = ["LeanFastapi.embed_rule", "LeanFastapi.embedBodies_embed", "LeanFastapi.shouldEmbed_embedBodies"]
 test = ["tests/apps/RequestForms001.lean", "tests/apps/RequestFormModels001.lean", "tests/Conformance.lean"]
 
 [[requirement]]
@@ -422,10 +422,10 @@ test = ["tests/apps/RequestFiles001.lean", "tests/apps/RequestFiles001_02.lean",
 [[requirement]]
 id = "forms.models"
 upstream = "tests/test_tutorial/test_request_form_models/test_tutorial001.py"
-title = "A model under Form() is read from the form's fields (tutorial002, extra='forbid', waits on lean-pydantic)"
+title = "A model under Form() is read from the value _extract_form_body builds: the model's fields by validation alias in field order (a sequence field's every value, another's last, an absent one its default unless required or None), then the other keys in received order, a repeated key as a list (tutorial002, extra='forbid', waits on lean-pydantic)"
 status = "partial"
-realises = ["LeanFastapi.Form"]
-test = ["tests/apps/RequestFormModels001.lean", "tests/Conformance.lean"]
+realises = ["LeanFastapi.Form", "LeanFastapi.formBody", "LeanFastapi.formModelFields", "LeanFastapi.formModelFieldsOf"]
+test = ["tests/apps/RequestFormModels001.lean", "tests/apps/FormModelAliased.lean", "tests/Conformance.lean"]
 
 [[requirement]]
 id = "forms.upload-input-422"
@@ -442,3 +442,11 @@ title = "A text value of a list[bytes] File parameter is read as UTF-8 bytes; Fa
 status = "deviation"
 realises = ["LeanFastapi.readEach"]
 test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.large-uploads"
+upstream = "fastapi/dependencies/utils.py::_extract_form_body (large uploads; critic, pso2kuyvm4hr)"
+title = "10 and 20 MiB uploads through File bytes, UploadFile and list[UploadFile] answer as FastAPI does, in process within twice FastAPI's time over TCP; over TCP the gap is lean-starlette's transport (see CONTRIBUTING.md)"
+status = "tested"
+realises = ["LeanFastapi.BodyInput.load", "LeanFastapi.readForm"]
+test = ["tests/golden/bench.json", "tests/apps/Bench.lean", "tests/BenchServer.lean", "tests/Conformance.lean"]

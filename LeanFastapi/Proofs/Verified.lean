@@ -27,6 +27,7 @@ structure VerifiedRequests : Prop where
   headerAliasHyphen : Spec.HeaderAliasHyphen
   serializeResponseConforms : Spec.SerializeResponseConforms
   embedRule : Spec.EmbedRule
+  embedBodies : Spec.EmbedBodies
   formExtractLoc : Spec.FormExtractLoc
 
 theorem theVerifiedRequests : VerifiedRequests where
@@ -38,6 +39,7 @@ theorem theVerifiedRequests : VerifiedRequests where
   headerAliasHyphen := header_alias_hyphen
   serializeResponseConforms := serialize_response_conforms
   embedRule := embed_rule
+  embedBodies fs := ⟨embedBodies_embed fs, shouldEmbed_embedBodies fs⟩
   formExtractLoc p inp fs hs he hb :=
     ⟨fun es h => form_field_loc p inp es hs he h, fun hr hd => form_missing p inp fs hs he hb hr hd⟩
 

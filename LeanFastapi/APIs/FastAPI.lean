@@ -27,7 +27,7 @@ open LeanStarlette (Request Response)
 
 export LeanStarlette (Request Response JSONResponse HTMLResponse PlainTextResponse RedirectResponse Exception)
 export LeanJson (Json)
-export LeanPydantic (Decimal Model)
+export LeanPydantic (Decimal Model Alias)
 
 namespace FastAPI
 

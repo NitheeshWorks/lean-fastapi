@@ -17,4 +17,19 @@ def dictBody (d : LeanPydantic.Dict Int) : Handler Json := do
   let keys := d.entries.length
   return json% {"keys": keys}
 
+-- Large uploads (critic, pso2kuyvm4hr): 10 and 20 MiB through each file shape.
+@[post "/bytes/"]
+def uploadBytes (file : File Bytes) : Handler Json :=
+  return json% {"size": (file.size)}
+
+@[post "/upload/"]
+def uploadOne (file : UploadFile) : Handler Json := do
+  let data ← file.read
+  return json% {"filename": (file.filename), "size": (data.size)}
+
+@[post "/uploads/"]
+def uploadMany (files : List UploadFile) : Handler Json := do
+  let sizes ← files.mapM fun f => f.size
+  return json% {"sizes": sizes}
+
 end Tests.Bench

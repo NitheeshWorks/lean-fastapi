@@ -63,6 +63,15 @@ def EmbedRule : Prop :=
     shouldEmbedBodyFields (f :: fs) = true ↔
       (∃ g ∈ fs, g.name ≠ f.name) ∨ f.embed = true ∨ (f.isForm = true ∧ f.isModel = false)
 
+/-- `embed_bodies`: the route macro's embed flag (`embedBodies`) is the embed
+rule: every body parameter is embedded when it holds, none changes when it
+does not, and the rule reads the same off the result. -/
+def EmbedBodies : Prop :=
+  ∀ fs : List BodyField,
+    ((shouldEmbedBodyFields fs = true → ∀ f ∈ embedBodies fs, f.embed = true) ∧
+      (shouldEmbedBodyFields fs = false → embedBodies fs = fs)) ∧
+    shouldEmbedBodyFields (embedBodies fs) = shouldEmbedBodyFields fs
+
 /-- `form_extract_loc`: an embedded body field read from a form locates
 every error under `["body", alias]`, and, absent without a default, is one
 `missing` error there. -/

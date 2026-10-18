@@ -323,5 +323,305 @@
    ]
   ],
   "response": "{\"keys\":100000}"
+ },
+ {
+  "fixture": "bench",
+  "name": "10 MiB upload, File bytes",
+  "method": "POST",
+  "prefix": "/bytes/",
+  "body": "upload:file:10",
+  "budget_ms": 68,
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "multipart/form-data; boundary=b0undary"
+   ],
+   [
+    "Content-Length",
+    "10485889"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "17"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"size\":10485760}"
+ },
+ {
+  "fixture": "bench",
+  "name": "10 MiB upload, UploadFile read",
+  "method": "POST",
+  "prefix": "/upload/",
+  "body": "upload:file:10",
+  "budget_ms": 66,
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "multipart/form-data; boundary=b0undary"
+   ],
+   [
+    "Content-Length",
+    "10485889"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "32"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"filename\":\"f\",\"size\":10485760}"
+ },
+ {
+  "fixture": "bench",
+  "name": "10 MiB upload, list[UploadFile]",
+  "method": "POST",
+  "prefix": "/uploads/",
+  "body": "upload:files:10",
+  "budget_ms": 56,
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "multipart/form-data; boundary=b0undary"
+   ],
+   [
+    "Content-Length",
+    "10485890"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "20"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"sizes\":[10485760]}"
+ },
+ {
+  "fixture": "bench",
+  "name": "20 MiB upload, File bytes",
+  "method": "POST",
+  "prefix": "/bytes/",
+  "body": "upload:file:20",
+  "budget_ms": 106,
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "multipart/form-data; boundary=b0undary"
+   ],
+   [
+    "Content-Length",
+    "20971649"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "17"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"size\":20971520}"
+ },
+ {
+  "fixture": "bench",
+  "name": "20 MiB upload, UploadFile read",
+  "method": "POST",
+  "prefix": "/upload/",
+  "body": "upload:file:20",
+  "budget_ms": 102,
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "multipart/form-data; boundary=b0undary"
+   ],
+   [
+    "Content-Length",
+    "20971649"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "32"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"filename\":\"f\",\"size\":20971520}"
+ },
+ {
+  "fixture": "bench",
+  "name": "20 MiB upload, list[UploadFile]",
+  "method": "POST",
+  "prefix": "/uploads/",
+  "body": "upload:files:20",
+  "budget_ms": 88,
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "multipart/form-data; boundary=b0undary"
+   ],
+   [
+    "Content-Length",
+    "20971650"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "20"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"sizes\":[20971520]}"
  }
 ]

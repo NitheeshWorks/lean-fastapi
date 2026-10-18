@@ -56,6 +56,12 @@ name = "axioms"
 root = "scripts.Axioms"
 supportInterpreter = true
 
+# The timed fixture (tests/apps/Bench.lean) over TCP, for comparing with its
+# Python twin under uvicorn: `lake exe benchserver [port]`.
+[[lean_exe]]
+name = "benchserver"
+root = "tests.BenchServer"
+
 # The milestone 1 demo on 127.0.0.1:8000: `lake exe example`.
 [[lean_exe]]
 name = "example"

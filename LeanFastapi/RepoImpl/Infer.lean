@@ -158,6 +158,17 @@ def shouldEmbedBodyFields : List BodyField → Bool
   | [] => false
   | f :: fs => decide (((f :: fs).map (·.name)).eraseDups.length > 1) || f.embed || (f.isForm && !f.isModel)
 
+/-- The body parameters as the route macro leaves them
+(`Macro.Node.embedBodiesList`): every one read from a member of the body
+when the embed rule holds, each as declared otherwise. -/
+def embedBodies (fs : List BodyField) : List BodyField :=
+  if shouldEmbedBodyFields fs then fs.map ({ · with embed := true }) else fs
+
+/-- The embed rule read off a route's body parameters, as `ParamInfo`s
+(`name`, `embed`, `media_type`, `isModel`). -/
+def ParamInfo.bodyField (i : ParamInfo) : BodyField :=
+  { name := i.name, embed := i.embed, isForm := isFormMediaType i.media_type, isModel := i.isModel }
+
 /-! ## The parameter of a wrapper -/
 
 /-- The `Param` of an argument, from its source and its wrapper's metadata. -/
@@ -165,7 +176,8 @@ def mkParam {α : Type} (source : Source) (name : String) (default : Option α) 
     (convert_underscores : Bool := true) (title : Option String := none) (description : Option String := none)
     (deprecated : Bool := false) (include_in_schema : Bool := true) (embed : Bool := false)
     (media_type : String := "application/json") (json_schema_extra : List (String × LeanJson.Json) := [])
-    (isSeq : Bool := false) (isModel : Bool := false) (file : Option FileShape := none) :
+    (isSeq : Bool := false) (isModel : Bool := false) (file : Option FileShape := none)
+    (formFields : List FormModelField := []) :
     Param α where
   source
   name
@@ -181,6 +193,7 @@ def mkParam {α : Type} (source : Source) (name : String) (default : Option α) 
   isSeq
   isModel
   file
+  formFields
 
 /-! ## Dependencies -/
 

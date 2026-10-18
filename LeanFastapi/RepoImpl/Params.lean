@@ -150,6 +150,71 @@ def wholeBody (inp : Inputs) : Option Json :=
 
 end Inputs
 
+/-! ## Form models -/
+
+/-- What `_extract_form_body` reads off a model's field: its validation
+alias, whether its type is a sequence (`getlist`), whether it is required,
+and its default. -/
+structure FormModelField where
+  alias : String
+  isSeq : Bool := false
+  required : Bool := true
+  default : Option Json := none
+  deriving Inhabited, Repr
+
+/-- An array schema (a list, set or tuple). -/
+def isArraySchema : LeanPydantic.Schema → Bool
+  | .array _ _ | .tuple _ => true
+  | _ => false
+
+/-- `field_annotation_is_sequence`: a sequence, or a union with one. -/
+def isSeqSchema : LeanPydantic.Schema → Bool
+  | .annotated s _ _ => isSeqSchema s
+  | .anyOf alts => alts.any isArraySchema
+  | s => isArraySchema s
+
+/-- A field schema's default, as the model's JSON Schema records it. -/
+def schemaDefault : LeanPydantic.Schema → Option Json
+  | .annotated _ _ d => d
+  | _ => none
+
+/-- A model's fields from its JSON Schema (properties in field order, by
+validation alias); none for a type that is not a model. -/
+def formModelFields : LeanPydantic.Schema → List FormModelField
+  | .ref _ s => formModelFields s
+  | .annotated s _ _ => formModelFields s
+  | .object _ props req => props.map fun (k, s) =>
+      { alias := k, isSeq := isSeqSchema s, required := req.contains k, default := schemaDefault s }
+  | _ => []
+
+/-- The fields of the model `α` (`get_cached_model_fields`). -/
+def formModelFieldsOf (α : Type) [JsonSchema α] : List FormModelField := formModelFields (JsonSchema.schema α)
+
+/-- **`_extract_form_body`** on a form: each field of the model by its alias,
+in field order (every value of a sequence field, the last of another; an
+absent one takes its default unless it is required or `None`), then every
+other key in the order received, a repeated key as the list of its values. -/
+def formBody (fields : List FormModelField) (fs : List (String × FormInput)) : Json :=
+  let get (f : FormModelField) : Option Json :=
+    let v : Option Json :=
+      if f.isSeq then
+        match fs.filter (·.1 == f.alias) with
+        | [] => none
+        | vs => some (jarr (vs.map (·.2.toJson)))
+      else (fs.reverse.lookup f.alias).map FormInput.toJson
+    match v with
+    | some v => some v
+    | none => if f.required then none else match f.default with
+      | some .null => none
+      | d => d
+  let own := fields.filterMap fun f => (get f).map (f.alias, ·)
+  let aliases := fields.map (·.alias)
+  let others := ((fs.map (·.1)).eraseDups.filter (!aliases.contains ·)).map fun k =>
+    match fs.filter (·.1 == k) with
+    | [(_, v)] => (k, v.toJson)
+    | vs => (k, jarr (vs.map (·.2.toJson)))
+  jobj (own ++ others)
+
 /-! ## Parameters -/
 
 /-- The form media types (`Form(...)`, `File(...)`). -/
@@ -189,6 +254,8 @@ structure Param (α : Type) where
   isModel : Bool := false
   /-- The type holds uploaded files. -/
   file : Option FileShape := none
+  /-- A model's fields, for a whole-body form (`_extract_form_body`). -/
+  formFields : List FormModelField := []
 
 namespace Param
 
@@ -210,7 +277,10 @@ Python's `None` is, and so are an empty form field and an empty list
 (`_get_multidict_value`). -/
 def raw (p : Param α) (inp : Inputs) : Option RawValue :=
   let v : Option RawValue :=
-    if p.isWholeBody then inp.wholeBody.map .json
+    if p.isWholeBody then
+      match inp.body with
+      | .form fs => some (.json (formBody p.formFields fs))
+      | _ => inp.wholeBody.map .json
     else match p.source, inp.body with
       | .body, .form fs => Inputs.formRaw fs p.alias p.isSeq
       | _, _ => (inp.lookup p.source p.alias).map .json

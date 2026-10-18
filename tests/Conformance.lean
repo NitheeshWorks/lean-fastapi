@@ -46,6 +46,7 @@ import tests.apps.RequestFiles002
 import tests.apps.RequestFiles003
 import tests.apps.RequestFormsAndFiles001
 import tests.apps.RequestFormModels001
+import tests.apps.FormModelAliased
 import tests.apps.DependencySharedCache
 import tests.apps.Dependencies007
 import tests.apps.Dependencies008
@@ -159,6 +160,7 @@ def fixtures : List (String × FastAPI) :=
    ("request_files_003", Tests.RequestFiles003.app.complete),
    ("request_forms_and_files_001", Tests.RequestFormsAndFiles001.app.complete),
    ("request_form_models_001", Tests.RequestFormModels001.app.complete),
+   ("form_model_aliased", Tests.FormModelAliased.app.complete),
    ("security_api_key_query", Tests.SecurityApiKeyQuery.app.complete),
    ("security_api_key_header_optional", Tests.SecurityApiKeyHeaderOptional.app.complete),
    ("security_api_key_cookie", Tests.SecurityApiKeyCookie.app.complete),
@@ -283,15 +285,24 @@ def members (n : Nat) : String := ",".intercalate ((List.range n).map fun i => s
 /-- lean-json's keys that share a bucket under Lean's fixed-seed `String.hash`. -/
 def collideKeysPath : System.FilePath := ".lake/packages/LeanJson/tests/fixtures/collide-keys.txt"
 
+/-- The uploaded bytes of an `upload:` recipe: byte `i` is
+`i * 2654435761 % 251`, as `upload_data` in `generate.py`. -/
+def uploadData (mib : Nat) : ByteArray :=
+  (mib * 1048576).fold (fun i _ b => b.push (i * 2654435761 % 251).toUInt8)
+    (ByteArray.emptyWithCapacity (mib * 1048576))
+
 /-- A body recipe of `bench.json`, as `bench_body` in `generate.py`. -/
-def benchBody : Option String → IO String
-  | none => pure ""
+def benchBody : Option String → IO ByteArray
+  | none => pure .empty
   | some "collide" => do
     let keys := ((← IO.FS.readFile collideKeysPath).splitOn "\n").filter (· ≠ "")
-    pure ("{\"name\":\"x\",\"price\":2," ++ ",".intercalate (keys.map fun k => s!"\"{k}\":0") ++ "}")
+    pure ("{\"name\":\"x\",\"price\":2," ++ ",".intercalate (keys.map fun k => s!"\"{k}\":0") ++ "}").toUTF8
   | some r => match r.splitOn ":" with
-    | ["wide", n] => pure ("{\"name\":\"x\",\"price\":2," ++ members n.toNat! ++ "}")
-    | ["dict", n] => pure ("{" ++ members n.toNat! ++ "}")
+    | ["wide", n] => pure ("{\"name\":\"x\",\"price\":2," ++ members n.toNat! ++ "}").toUTF8
+    | ["dict", n] => pure ("{" ++ members n.toNat! ++ "}").toUTF8
+    | ["upload", field, mib] => pure <|
+        s!"--b0undary\r\nContent-Disposition: form-data; name=\"{field}\"; filename=\"f\"\r\nContent-Type: application/octet-stream\r\n\r\n".toUTF8
+          ++ uploadData mib.toNat! ++ "\r\n--b0undary--\r\n".toUTF8
     | _ => throw (IO.userError s!"unknown body recipe {r}")
 
 def natField? (e : Json) (k : String) : Option Nat :=
@@ -318,7 +329,7 @@ def benchCases (bench : Json) : List Case :=
       let req : LeanStarlette.Request :=
         { method := (str? e "method").getD "GET", path, query_string
           headers := LeanStarlette.Headers.ofList (pairs e "request_headers" ++ extra)
-          bodyBytes := body.toUTF8, server := some ("testserver", 80) }
+          bodyBytes := body, server := some ("testserver", 80) }
       let budget := (natField? e "budget_ms").getD 2000
       let t0 ← IO.monoMsNow
       let r ← app.call req
@@ -482,6 +493,17 @@ def afterCompleteCase : Case :=
     let n ← getVia c "/name"
     pure (r == (200, "{\"db\":\"test\"}") && n == (200, "{\"name\":\"orig\"}"))⟩
 
+/-- What the route macro builds agrees with the embed rule on every fixture:
+each route's body parameters are embedded exactly when
+`shouldEmbedBodyFields` holds for them (`embedBodies_embed`,
+`shouldEmbed_embedBodies`). -/
+def embedFlagCase : Case :=
+  ⟨"fastapi/dependencies/utils.py::_should_embed_body_fields (the macro's embed flag)",
+   "every fixture route's body parameters carry the embed rule", do
+    pure (fixtures.all fun (_, app) => app.routes.all fun r =>
+      let fs := (r.params.filter (·.source == .body)).map ParamInfo.bodyField
+      fs.all (·.embed == shouldEmbedBodyFields fs))⟩
+
 /-- An exception of a request-scoped exit after the response is reported
 (uvicorn logs it), and the response stands. -/
 def lateExitCase : Case :=
@@ -494,7 +516,7 @@ def lateExitCase : Case :=
     pure ((match out with | .ok r => r.status_code == 200 | .error _ => false) && logged == [toString boom])⟩
 
 def unitCases : List Case :=
-  [notCompiledCase, letBoundCase, letPlainCase, afterCompleteCase, lateExitCase,
+  [notCompiledCase, embedFlagCase, letBoundCase, letPlainCase, afterCompleteCase, lateExitCase,
    ⟨"tests/test_tutorial/test_header_params/test_tutorial002.py::test", "header alias user_agent is user-agent",
      pure (headerParamAlias "user_agent" none true == "user-agent")⟩,
    ⟨"tests/test_tutorial/test_path_params/test_tutorial004.py::test_file_path", "path format drops convertors",
