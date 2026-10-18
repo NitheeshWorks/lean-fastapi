@@ -1,0 +1,197 @@
+import LeanFastapi.DataTypes.Params
+import LeanFastapi.RepoImpl.PyJson
+
+/-!
+# RepoImpl: reading and validating parameters
+
+`fastapi/dependencies/utils.py`, `request_params_to_args` and
+`request_body_to_args`, for parameters declared one by one:
+
+* a parameter's raw value is `values.get(alias)` of its source (the last
+  query value, the first header, the cookie, the body or one of its
+  members); an absent value, or a JSON `null` body, takes the default or is
+  `missing` (input `null`);
+* a present value is validated by the parameter type's pydantic validator in
+  Python (lax) mode, so `"42"` is an `int`;
+* every error is located under `[source, alias]`, or under `["body"]` for a
+  body that is not embedded (Keel's `Validator.atPath`).
+
+`Params β` is a product of parameters, built with `Params.nil` and
+`Params.cons`; its `extract` is Keel's `Validator.both` chain, so every
+parameter is validated and all their errors are reported, in declaration
+order. The endpoint macro declares parameters sorted by `Source.rank`, which
+makes that order FastAPI's (path, query, header, cookie, body).
+-/
+
+namespace LeanFastapi
+
+open LeanJson (Json)
+open LeanPydantic (FromJson ToJson JsonSchema ErrorDetails)
+
+namespace RequestError
+
+/-- The error as FastAPI serialises it. -/
+def toJson (e : RequestError) : Json :=
+  jobj <| [("type", .str e.type), ("loc", ErrorDetails.locJson e.loc), ("msg", .str e.msg),
+    ("input", e.input)] ++ (if e.ctx = [] then [] else [("ctx", jobj e.ctx)])
+
+/-- A pydantic line error as FastAPI reports it (`errors(include_url=False)`).
+FastAPI validates with `from_attributes=True`, so pydantic reports a model
+given a non-object as `model_attributes_type`, not `model_type`. -/
+def ofDetails (e : ErrorDetails) : RequestError :=
+  match e.kind with
+  | .modelType _ =>
+    { type := "model_attributes_type", loc := e.loc, input := e.input
+      msg := "Input should be a valid dictionary or object to extract fields from" }
+  | _ => { type := e.type, loc := e.loc, msg := e.msg, input := e.input, ctx := e.ctx }
+
+/-- `get_missing_field_error`: a required parameter is absent. -/
+def missing : RequestError := { type := "missing", loc := [], msg := "Field required", input := .null }
+
+end RequestError
+
+/-! ## Cookies -/
+
+/-- Python's `str.strip()` on ASCII and Unicode whitespace. -/
+def pyStrip (s : String) : String :=
+  String.ofList ((s.toList.dropWhile Char.isWhitespace).reverse.dropWhile Char.isWhitespace).reverse
+
+/-- `http.cookies._unquote`: a value in double quotes loses them, and its
+`\"`, `\\` and three-digit octal escapes are decoded. -/
+def cookieUnquote (v : String) : String :=
+  let cs := v.toList
+  if cs.length < 2 || cs.head? ≠ some '"' || cs.getLast? ≠ some '"' then v
+  else String.ofList (go ((cs.drop 1).take (cs.length - 2)))
+where
+  octal (c : Char) : Bool := '0' ≤ c && c ≤ '7'
+  go : List Char → List Char
+    | '\\' :: a :: b :: c :: rest =>
+      if octal a && octal b && octal c then
+        Char.ofNat ((a.toNat - 48) * 64 + (b.toNat - 48) * 8 + (c.toNat - 48)) :: go rest
+      else a :: go (b :: c :: rest)
+    | '\\' :: a :: rest => a :: go rest
+    | c :: rest => c :: go rest
+    | [] => []
+
+/-- `starlette.requests.cookie_parser`: `name=value` chunks split on `;`,
+stripped, a chunk without `=` having an empty name; later names win. -/
+def cookieParser (header : String) : List (String × String) :=
+  (header.splitOn ";").foldl (init := []) fun acc chunk =>
+    let (k, v) := match chunk.splitOn "=" with
+      | [] => ("", "")
+      | [v] => ("", v)
+      | k :: rest => (k, "=".intercalate rest)
+    let (k, v) := (pyStrip k, pyStrip v)
+    if k.isEmpty && v.isEmpty then acc
+    else (acc.filter (·.1 != k)) ++ [(k, cookieUnquote v)]
+
+/-! ## Reading a raw value -/
+
+namespace Inputs
+
+/-- `values.get(key)` for a source; the whole body for `body` is
+`Inputs.wholeBody`. -/
+def lookup (inp : Inputs) : Source → String → Option Json
+  | .path, k => (inp.path.lookup k).map .str
+  | .query, k => (inp.query.get? k).map .str
+  | .header, k => (inp.headers.get? k).map .str
+  | .cookie, k => (inp.cookies.lookup k).map .str
+  | .body, k =>
+    match inp.body with
+    | .json j => (jfields? j).bind (LeanJson.Json.lookupLast k)
+    | _ => none
+
+/-- The body as one value, `none` when there is none. -/
+def wholeBody (inp : Inputs) : Option Json :=
+  match inp.body with
+  | .none => none
+  | .json j => some j
+  | .bytes t => some (.str t)
+
+end Inputs
+
+/-! ## Parameters -/
+
+/-- A declared parameter of type `α`: its source, Python name and wire name,
+its default (`none`: required), and its OpenAPI metadata. -/
+structure Param (α : Type) where
+  source : Source
+  name : String
+  alias : String := name
+  /-- A body parameter read from a member of the body (`Body(embed=True)`, or
+  one of several body parameters) rather than from the whole body. -/
+  embed : Bool := false
+  default : Option α := none
+  title : Option String := none
+  description : Option String := none
+  deprecated : Bool := false
+  include_in_schema : Bool := true
+  media_type : String := "application/json"
+
+namespace Param
+
+variable {α : Type}
+
+/-- Whether the parameter is the whole (not embedded) body. -/
+def isWholeBody (p : Param α) : Bool := p.source == .body && !p.embed
+
+/-- Where its errors are located: `[source, alias]`, or `["body"]`. -/
+def loc (p : Param α) : Keel.Loc :=
+  if p.isWholeBody then [.key "body"] else [.key p.source.value, .key p.alias]
+
+/-- Its raw value in the inputs. A JSON `null` is absent, as Python's `None`
+is. -/
+def raw (p : Param α) (inp : Inputs) : Option Json :=
+  let v := if p.isWholeBody then inp.wholeBody else inp.lookup p.source p.alias
+  match v with
+  | some .null => none
+  | v => v
+
+/-- Validate the raw value, or take the default, before locating errors. -/
+def read [FromJson α] (p : Param α) : Keel.Validator RequestError Inputs α := fun inp =>
+  match p.raw inp with
+  | none =>
+    match p.default with
+    | some d => .ok d
+    | none => .error [RequestError.missing]
+  | some v => (LeanPydantic.fromJson {} v).mapError (List.map RequestError.ofDetails)
+
+/-- The parameter's validator: `read`, with every error under `loc`. -/
+def validator [FromJson α] (p : Param α) : Keel.Validator RequestError Inputs α :=
+  p.read.atPath p.loc
+
+/-- What OpenAPI needs to know about it. -/
+def info [ToJson α] [JsonSchema α] (p : Param α) : ParamInfo where
+  source := p.source
+  name := p.name
+  alias := p.alias
+  required := p.default.isNone
+  schema := JsonSchema.schema α
+  default := p.default.map (LeanPydantic.toJson {})
+  title := p.title
+  description := p.description
+  deprecated := p.deprecated
+  include_in_schema := p.include_in_schema
+  media_type := p.media_type
+
+end Param
+
+/-- A product of declared parameters: their OpenAPI descriptions and their
+joint validator. -/
+structure Params (β : Type) where
+  infos : List ParamInfo
+  extract : Keel.Validator RequestError Inputs β
+
+namespace Params
+
+/-- No parameters. -/
+def nil : Params Unit := ⟨[], fun _ => .ok ()⟩
+
+/-- The parameter `p` before the parameters `rest`. -/
+def cons {α β : Type} [FromJson α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β) :
+    Params (α × β) :=
+  ⟨p.info :: rest.infos, p.validator.both rest.extract⟩
+
+end Params
+
+end LeanFastapi
