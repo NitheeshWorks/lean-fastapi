@@ -357,7 +357,7 @@ theorem refs_mainContent (r : APIRoute) (m : String) (c : MediaContent)
   · cases h
 
 theorem requestBody_mem (r : APIRoute) (m : String) (b : RequestBody) (h : r.requestBody m = some b) :
-    (∃ bi ∈ r.params, ∃ a t, b.content.schema = fieldSchema bi.schema a t) ∨
+    (∃ bi ∈ r.params, ∃ a t, b.content.schema = fieldSchemaO bi.oschema a t) ∨
       (r.embedsBody = true ∧ b.content.schema = .ref r.bodyModelName) := by
   unfold APIRoute.requestBody at h
   split at h
@@ -393,9 +393,9 @@ theorem refs_operation (routes : List APIRoute) (r : APIRoute) (hr : r ∈ route
     | some b =>
       intro hn
       rcases requestBody_mem r m b hb with ⟨bi, hbi, a, t, hs⟩ | ⟨he, hs⟩
-      · simp only [hs, OSchema.refs_fieldSchema] at hn
+      · simp only [hs, OSchema.refs_fieldSchemaO] at hn
         exact refs_route_schema routes r hr hi bi.schema
-          (List.mem_append_left _ (List.mem_map.2 ⟨bi, hbi, rfl⟩)) n hn
+          (List.mem_append_left _ (List.mem_map.2 ⟨bi, hbi, rfl⟩)) n (OSchema.refs_oschema bi n hn)
       · simp only [hs, OSchema.refs, List.mem_singleton] at hn
         subst hn
         exact List.mem_map.2 ⟨_, body_mem_definitions routes r hr hi he, rfl⟩
@@ -441,7 +441,7 @@ theorem refs_definition (routes : List APIRoute) (c : String × OSchema) (hc : c
         subst hc
         simp only [APIRoute.bodyModel, OSchema.refs] at hn
         have key : ∀ (ps : List ParamInfo), (∀ p ∈ ps, p ∈ r.params) →
-            ∀ n ∈ OSchema.refsProps (ps.map fun p => (p.alias, fieldSchema p.schema
+            ∀ n ∈ OSchema.refsProps (ps.map fun p => (p.alias, fieldSchemaO p.oschema
               { title := p.title, description := p.description, default := p.default, extra := p.extra }
               (LeanPydantic.fieldTitle p.alias))),
             n ∈ OSchema.names (openapiDefinitions routes) := by
@@ -450,10 +450,11 @@ theorem refs_definition (routes : List APIRoute) (c : String × OSchema) (hc : c
           | nil => simp [OSchema.refsProps]
           | cons p ps ih =>
             intro n hn
-            simp only [List.map_cons, OSchema.refsProps, List.mem_append, OSchema.refs_fieldSchema] at hn
+            simp only [List.map_cons, OSchema.refsProps, List.mem_append, OSchema.refs_fieldSchemaO] at hn
             rcases hn with hn | hn
             · have := refs_route_schema routes r hr (by simpa using hi) p.schema
-                (List.mem_append_left _ (List.mem_map.2 ⟨p, hps p List.mem_cons_self, rfl⟩)) n hn
+                (List.mem_append_left _ (List.mem_map.2 ⟨p, hps p List.mem_cons_self, rfl⟩)) n
+                (OSchema.refs_oschema p n hn)
               unfold openapiDefinitions at this
               exact this
             · exact ih (fun q hq => hps q (List.mem_cons_of_mem _ hq)) n hn

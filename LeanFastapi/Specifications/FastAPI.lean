@@ -25,15 +25,15 @@ def ParamsToArgsLoc : Prop :=
 /-- `extract_sound`: a parameter's value is its validated raw value, or its
 default when absent. -/
 def ExtractSound : Prop :=
-  ∀ {α : Type} [FromJson α] (p : Param α) (inp : Inputs) (a : α),
+  ∀ {α : Type} [ParamValue α] (p : Param α) (inp : Inputs) (a : α),
     p.validator inp = .ok a ↔
       match p.raw inp with
       | none => p.default = some a
-      | some v => LeanPydantic.fromJson fastapiCfg v = .ok a
+      | some v => ParamValue.read v = .ok a
 
 /-- Extraction of a product succeeds exactly when each parameter's does. -/
 def ExtractConsOkIff : Prop :=
-  ∀ {α β : Type} [FromJson α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β) (inp : Inputs) (a : α)
+  ∀ {α β : Type} [ParamValue α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β) (inp : Inputs) (a : α)
     (b : β), (Params.cons p rest).extract inp = .ok (a, b) ↔ p.validator inp = .ok a ∧ rest.extract inp = .ok b
 
 /-- `extract_422`: a solve that records validation errors (and enters no
@@ -54,6 +54,24 @@ def InferParam : Prop :=
 def HeaderAliasHyphen : Prop :=
   ∀ name : String,
     headerParamAlias name none true = String.ofList (name.toList.map fun c => if c = '_' then '-' else c)
+
+/-- `embed_rule` (`_should_embed_body_fields`): body parameters are read from
+members of the body exactly when there is another name, the first is
+embedded, or the first is a form field whose type is not a model. -/
+def EmbedRule : Prop :=
+  ∀ (f : BodyField) (fs : List BodyField),
+    shouldEmbedBodyFields (f :: fs) = true ↔
+      (∃ g ∈ fs, g.name ≠ f.name) ∨ f.embed = true ∨ (f.isForm = true ∧ f.isModel = false)
+
+/-- `form_extract_loc`: an embedded body field read from a form locates
+every error under `["body", alias]`, and, absent without a default, is one
+`missing` error there. -/
+def FormExtractLoc : Prop :=
+  ∀ {α : Type} [ParamValue α] (p : Param α) (inp : Inputs) (fs : List (String × FormInput)),
+    p.source = .body → p.embed = true → inp.body = .form fs →
+      (∀ es, p.validator inp = .error es → ∀ e ∈ es, [.key "body", .key p.alias] <+: e.loc) ∧
+      (Inputs.formRaw fs p.alias p.isSeq = none → p.default = none →
+        p.validator inp = .error [{ RequestError.missing with loc := [.key "body", .key p.alias] }])
 
 /-! ## Response models -/
 

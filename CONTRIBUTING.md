@@ -87,6 +87,12 @@ Listed here with the reason, and in `docs/traceability.toml` with
 * **Urlencoded forms** (`readForm`): Starlette's `FormParser` limits and
   python-multipart's splitting, checked on a 1500-body corpus recorded from
   `Request.form()` (`tests/golden/form.json`).
+* **Multipart forms and uploads** (`readForm`, `BodyInput.load`, the
+  `ParamValue` instances of `UploadFile` and `bytes`): parsed by
+  lean-starlette over lean-multipart, opened as `UploadFile`s in IO, and
+  compared with fastapi on the request-forms, request-files,
+  forms-and-files and form-models tutorials; the order and multiplicity of
+  a form's values (`Inputs.formRaw`) are a property test.
 * **Security schemes and OAuth2PasswordRequestForm**: their 401s, headers
   and OpenAPI objects are compared with fastapi's on the security tutorials
   and tests; what is proved is the parsing underneath (`bearer_parse`,
@@ -146,8 +152,16 @@ Listed here with the reason, and in `docs/traceability.toml` with
   fakes in place of the Mocks their tests patch in. Dependencies tutorials
   013 and 014 need sqlmodel and a database and have no upstream test
   (follow-up card q8kwp43vju4p).
-* Not yet: `multipart/form-data` and `File` (milestone 4); `root_path` and
-  the `servers` entry.
+* A 422 for an upload sent where a `str` form field goes echoes the
+  `UploadFile` as its filename, size and headers; FastAPI serializes its
+  `SpooledTemporaryFile` internals (UP-061).
+* A text value of a `list[bytes]` `File()` parameter is read as its UTF-8
+  bytes, as for a single `bytes` one; FastAPI calls `.read()` on the `str`
+  and answers 500 (UP-062).
+* Form models with `model_config = {"extra": "forbid"}`
+  (`request_form_models` tutorial002) wait on lean-pydantic's
+  `extra="forbid"`; tutorial001 is ported.
+* Not yet: `root_path` and the `servers` entry.
 
 ## Tests
 

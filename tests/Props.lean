@@ -209,7 +209,35 @@ def properties : List Property := [
       let (base, r) := r.pick ["application/json", "Application/JSON", "application/vnd.api+json", "text/plain", "application/jsonx", "application/x-www-form-urlencoded"]
       let (params, r) := r.pick ["", "; charset=utf-8", " ;q=1"]
       let want := ["application/json", "application/vnd.api+json"].contains (base.toLower)
-      (check (isJsonContentType (some (base ++ params)) == want) s!"{base}{params}", r) }
+      (check (isJsonContentType (some (base ++ params)) == want) s!"{base}{params}", r) },
+  { name := "form fields: a list parameter reads every value under its name in order, a scalar the last"
+    check := fun r =>
+      let (n, r) := r.nat 6
+      let (fields, r) := (List.range n).foldl (fun (acc, r) _ =>
+        let (k, r) := r.pick ["a", "b", "c"]
+        let (v, r) := genIdent r ['x', 'y', '1']
+        (acc ++ [(k, v)], r)) ([], r)
+      let (k, r) := r.pick ["a", "b", "d"]
+      let body := "&".intercalate (fields.map fun (k, v) => k ++ "=" ++ v)
+      let req : LeanStarlette.Request :=
+        { method := "POST", path := "/", query_string := ""
+          headers := LeanStarlette.Headers.ofList [("content-type", "application/x-www-form-urlencoded")]
+          bodyBytes := body.toUTF8 }
+      let fs : List (String × FormInput) := match readForm req with
+        | .ok (.formItems items) => items.map fun (k, v) => (k, match v with
+            | .text t => FormInput.text t
+            | .file _ => FormInput.text "<file>")
+        | _ => []
+      let vals := (fields.filter (·.1 == k)).map (·.2)
+      let text : RawValue → String := fun
+        | .json (.str t) => t
+        | _ => "?"
+      let many := match Inputs.formRaw fs k true with
+        | some (.seq vs) => some (vs.map text)
+        | _ => none
+      let one := (Inputs.formRaw fs k false).map text
+      let wantMany := if vals.isEmpty then none else some vals
+      (check (fs.length == fields.length && many == wantMany && one == vals.getLast?) body, r) }
 ]
 
 def main (args : List String) : IO UInt32 := do

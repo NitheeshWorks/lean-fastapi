@@ -220,7 +220,9 @@ def ctx (req : Request) (body : BodyInput) : Ctx :=
 the values (or `none`), or an exception a dependency raised, and the state
 it leaves (errors, exits, cache). -/
 def solveIO (e : Endpoint σ β γ) (req : Request) (body : BodyInput) :
-    IO (Except Exception (Option β) × SolveState σ) :=
+    IO (Except Exception (Option β) × SolveState σ) := do
+  -- a form's uploads are opened first (`FormData`)
+  let body ← body.load
   ((e.solve.run (ctx req body)).run).run { shared := {}, cache := Cache.empty σ }
 
 /-- **The operation as an application**: read the body; solve; respond; then

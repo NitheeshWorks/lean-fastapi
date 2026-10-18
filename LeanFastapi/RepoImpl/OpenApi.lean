@@ -140,7 +140,7 @@ def keywordRank : Keyword → Nat
 def keyRank (k : String) : Nat :=
   match ["$ref", "anyOf", "prefixItems", "items", "properties", "additionalProperties", "type", "enum",
       "const", "multipleOf", "maximum", "exclusiveMaximum", "minimum", "exclusiveMinimum", "maxLength",
-      "minLength", "pattern", "maxItems", "minItems", "uniqueItems", "format", "required", "title", "description", "default",
+      "minLength", "pattern", "maxItems", "minItems", "uniqueItems", "format", "contentMediaType", "required", "title", "description", "default",
       "deprecated"].idxOf? k with
   | some i => i
   | none => 100
@@ -276,13 +276,34 @@ def validationErrorResponseSpec : ResponseSpec :=
 /-- `METHODS_WITH_BODY`. -/
 def methodsWithBody : List String := ["GET", "HEAD", "POST", "PUT", "DELETE", "PATCH"]
 
+/-- An uploaded file's schema: `{"type": "string", "contentMediaType":
+"application/octet-stream"}`. -/
+def binarySchema : OSchema := .ann (.string []) { extra := [("contentMediaType", .str "application/octet-stream")] }
+
+/-- A file parameter's schema, by its shape. -/
+def FileShape.schema : FileShape → OSchema
+  | .single => binarySchema
+  | .optional => .anyOf [binarySchema, .null]
+  | .list => .array binarySchema []
+
+/-- A parameter's schema inside the document: its type's (models as
+references), or a file's. -/
+def ParamInfo.oschema (p : ParamInfo) : OSchema :=
+  match p.file with
+  | some f => f.schema
+  | none => OSchema.ofSchema p.schema
+
 /-- `get_schema_from_model_field`: a field's schema, with the title FastAPI
 gives a schema that is not a `$ref`. -/
-def fieldSchema (s : Schema) (a : Annotations) (autoTitle : String) : OSchema :=
-  match OSchema.ofSchema s with
+def fieldSchemaO (o : OSchema) (a : Annotations) (autoTitle : String) : OSchema :=
+  match o with
   | .ref n => if a.default.isNone && a.description.isNone && !a.deprecated then .ref n
     else .ann (.ref n) { a with title := none }
   | o => .ann o { a with title := some (a.title.getD autoTitle), explicitTitle := a.title.isSome }
+
+/-- `fieldSchemaO` of a pydantic schema. -/
+def fieldSchema (s : Schema) (a : Annotations) (autoTitle : String) : OSchema :=
+  fieldSchemaO (OSchema.ofSchema s) a autoTitle
 
 /-- A parameter's OpenAPI object. -/
 def ParamInfo.toParameter (p : ParamInfo) : Parameter where
@@ -335,19 +356,21 @@ def embedsBody (r : APIRoute) : Bool := r.bodyParams.any (·.embed)
 /-- `Body_<unique_id>`: the body model's name. -/
 def bodyModelName (r : APIRoute) : String := "Body_" ++ r.operationId (r.methods.headD "GET")
 
-/-- The body's media type: the one its parameters share, else the form or
-JSON default. -/
+/-- The body's media type (`_get_body_field`'s field class): a
+`multipart/form-data` body when a parameter is a `File()`, else a form when
+one is a `Form()`, else the media type the parameters share, else JSON. -/
 def bodyMediaType (r : APIRoute) : String :=
-  match (r.bodyParams.map (·.media_type)).eraseDups with
-  | [m] => m
-  | _ => if r.bodyParams.any (isFormMediaType ·.media_type) then "application/x-www-form-urlencoded"
-    else "application/json"
+  if r.bodyParams.any (·.media_type == "multipart/form-data") then "multipart/form-data"
+  else if r.bodyParams.any (isFormMediaType ·.media_type) then "application/x-www-form-urlencoded"
+  else match (r.bodyParams.map (·.media_type)).eraseDups with
+    | [m] => m
+    | _ => "application/json"
 
 /-- The body model (`create_model("Body_...", **fields)`): each body parameter
 a property under its alias, with its own title and default. -/
 def bodyModel (r : APIRoute) : OSchema :=
   .object r.bodyModelName
-    (r.bodyParams.map fun p => (p.alias, fieldSchema p.schema
+    (r.bodyParams.map fun p => (p.alias, fieldSchemaO p.oschema
       { title := p.title, description := p.description, default := p.default, extra := p.extra } (fieldTitle p.alias)))
     ((r.bodyParams.filter (·.required)).map (·.alias))
 
@@ -362,7 +385,7 @@ def requestBody (r : APIRoute) (method : String) : Option RequestBody :=
       else
         some { required := b.required
                content := { mediaType := b.media_type
-                            schema := fieldSchema b.schema { title := b.title, description := b.description, extra := b.extra }
+                            schema := fieldSchemaO b.oschema { title := b.title, description := b.description, extra := b.extra }
                               (fieldTitle b.alias) } }
     | [] => none
   else none

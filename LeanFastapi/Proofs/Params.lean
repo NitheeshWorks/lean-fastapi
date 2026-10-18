@@ -15,7 +15,9 @@ import LeanFastapi.RepoImpl.Infer
   JSON Schema, and `serialize_response_dump`: a value of the model is sent as
   its own dump;
 * `infer_param`, `header_alias_hyphen`: FastAPI's classification rule and
-  header naming, as equations.
+  header naming, as equations;
+* `embed_rule`, `form_field_loc`, `form_missing`: when body parameters are
+  embedded, and where a form field's errors are located.
 -/
 
 namespace LeanFastapi
@@ -38,20 +40,20 @@ theorem atPath_ok_iff {ι α : Type} (v : Keel.Validator RequestError ι α) (x 
   | k :: p => by rw [Keel.Validator.atPath_cons, Keel.Validator.at_ok_iff, atPath_ok_iff v x a p]
 
 /-- **A parameter's value is its raw value, validated, or its default.** -/
-theorem extract_sound {α : Type} [FromJson α] (p : Param α) (inp : Inputs) (a : α) :
+theorem extract_sound {α : Type} [ParamValue α] (p : Param α) (inp : Inputs) (a : α) :
     p.validator inp = .ok a ↔
       match p.raw inp with
       | none => p.default = some a
-      | some v => LeanPydantic.fromJson fastapiCfg v = .ok a := by
+      | some v => ParamValue.read v = .ok a := by
   unfold Param.validator
   rw [atPath_ok_iff]
   unfold Param.read
   cases hr : p.raw inp with
   | none => cases p.default <;> simp
-  | some v => cases h : LeanPydantic.fromJson (α := α) fastapiCfg v <;> simp [Except.mapError, h]
+  | some v => simp
 
 /-- **A product of parameters succeeds exactly when each does.** -/
-theorem extract_cons_ok_iff {α β : Type} [FromJson α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β)
+theorem extract_cons_ok_iff {α β : Type} [ParamValue α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β)
     (inp : Inputs) (a : α) (b : β) :
     (Params.cons p rest).extract inp = .ok (a, b) ↔ p.validator inp = .ok a ∧ rest.extract inp = .ok b :=
   Keel.Validator.both_ok_iff _ _ _ _ _
@@ -141,5 +143,66 @@ theorem infer_param_explicit (s : ParamShape) (w : Wrapper) (hw : w ≠ .none) (
 (unless it has an alias or `convert_underscores=False`). -/
 theorem header_alias_hyphen (name : String) :
     headerParamAlias name none true = String.ofList (name.toList.map fun c => if c = '_' then '-' else c) := rfl
+
+/-! ## Forms and the embed rule -/
+
+/-- A list headed by `a` has more than one distinct element exactly when
+something in its tail differs from `a`. -/
+theorem eraseDups_cons_length_gt_one {β : Type} [BEq β] [LawfulBEq β] (a : β) (l : List β) :
+    (a :: l).eraseDups.length > 1 ↔ ∃ b ∈ l, b ≠ a := by
+  rw [List.eraseDups_cons]
+  simp only [List.length_cons, gt_iff_lt, Nat.lt_add_left_iff_pos]
+  constructor
+  · intro h
+    cases hf : l.filter (fun b => !b == a) with
+    | nil => rw [hf] at h; simp [List.eraseDups] at h
+    | cons b bs =>
+      have hb : b ∈ l.filter (fun b => !b == a) := by rw [hf]; exact List.mem_cons_self
+      rw [List.mem_filter] at hb
+      exact ⟨b, hb.1, by simpa using hb.2⟩
+  · rintro ⟨b, hb, hne⟩
+    cases hf : l.filter (fun b => !b == a) with
+    | nil =>
+      have : b ∈ l.filter (fun b => !b == a) := List.mem_filter.2 ⟨hb, by simpa using hne⟩
+      rw [hf] at this; cases this
+    | cons c cs => rw [List.eraseDups_cons]; simp
+
+/-- **The embed rule** (`_should_embed_body_fields`): the body parameters are
+read from members of the body exactly when there is another body parameter
+name, the first is `embed=True`, or the first is a form field whose type is
+not a model. -/
+theorem embed_rule (f : BodyField) (fs : List BodyField) :
+    shouldEmbedBodyFields (f :: fs) = true ↔
+      (∃ g ∈ fs, g.name ≠ f.name) ∨ f.embed = true ∨ (f.isForm = true ∧ f.isModel = false) := by
+  simp only [shouldEmbedBodyFields, List.map_cons, Bool.or_eq_true, decide_eq_true_eq,
+    eraseDups_cons_length_gt_one, List.mem_map, Bool.and_eq_true, Bool.not_eq_true']
+  constructor
+  · rintro ((⟨n, ⟨g, hg, rfl⟩, hn⟩ | h) | h)
+    · exact .inl ⟨g, hg, hn⟩
+    · exact .inr (.inl h)
+    · exact .inr (.inr h)
+  · rintro (⟨g, hg, hn⟩ | h | h)
+    · exact .inl (.inl ⟨g.name, ⟨g, hg, rfl⟩, hn⟩)
+    · exact .inl (.inr h)
+    · exact .inr h
+
+/-- **A form field's errors are under `["body", alias]`.** -/
+theorem form_field_loc {α : Type} [ParamValue α] (p : Param α) (inp : Inputs) (es : List RequestError)
+    (hs : p.source = .body) (he : p.embed = true) (h : p.validator inp = .error es) :
+    ∀ e ∈ es, [.key "body", .key p.alias] <+: e.loc := by
+  have hl : p.loc = [.key "body", .key p.alias] := by
+    simp [Param.loc, Param.isWholeBody, hs, he, Source.value]
+  rw [← hl]; exact p.validator_loc inp es h
+
+/-- **A form field absent from the form is one `missing` error at
+`["body", alias]`** (when it has no default). -/
+theorem form_missing {α : Type} [ParamValue α] (p : Param α) (inp : Inputs) (fs : List (String × FormInput))
+    (hs : p.source = .body) (he : p.embed = true) (hb : inp.body = .form fs)
+    (hr : Inputs.formRaw fs p.alias p.isSeq = none) (hd : p.default = none) :
+    p.validator inp = .error [{ RequestError.missing with loc := [.key "body", .key p.alias] }] := by
+  have hraw : p.raw inp = none := by
+    simp [Param.raw, Param.isWholeBody, hs, he, hb, hr]
+  simp [Param.validator, Param.loc, Param.isWholeBody, hs, he, Source.value, Keel.Validator.at,
+    Param.read, hraw, hd, Except.mapError, Keel.Located.within, RequestError.missing]
 
 end LeanFastapi

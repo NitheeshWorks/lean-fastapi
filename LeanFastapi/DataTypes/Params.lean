@@ -76,6 +76,14 @@ instance : Keel.Located RequestError where
   within k e := { e with loc := k :: e.loc }
   loc_within _ _ := rfl
 
+/-- How a file parameter's type holds its files: one (`bytes`,
+`UploadFile`), maybe one (`bytes | None`), or a list (`list[UploadFile]`). -/
+inductive FileShape where
+  | single
+  | optional
+  | list
+  deriving DecidableEq, Repr, Inhabited
+
 /-- What the OpenAPI generator knows about one parameter. -/
 structure ParamInfo where
   source : Source
@@ -100,19 +108,42 @@ structure ParamInfo where
   extra : List (String × Json) := []
   /-- Where its errors are located (`[source, alias]`, or `["body"]`). -/
   loc : Keel.Loc := []
+  /-- The type is a model (or an optional one): FastAPI's non-scalar field. -/
+  isModel : Bool := false
+  /-- An uploaded file (`bytes` or `UploadFile` with `File()`), a list of
+  them, or an optional one: its schema is a binary string. -/
+  file : Option FileShape := none
   deriving Inhabited
+
+/-- A value of a form as validation sees it: text, or an uploaded file
+(its data, and the `UploadFile` the handler gets). -/
+inductive FormInput where
+  | text (s : String)
+  | file (data : LeanStarlette.UploadData) (upload : LeanStarlette.UploadFile)
 
 /-- A request body as FastAPI hands it to validation: absent (an empty body),
 a parsed JSON value, or bytes that were not read as JSON (a body without a
-JSON content type), which pydantic sees as text. -/
+JSON content type), which pydantic sees as text. A form is parsed
+(`formItems`, what `request.form()` reads) and then, with its uploads
+opened as `UploadFile`s, `form`. -/
 inductive BodyInput where
   | none
   | json (j : Json)
   | bytes (text : String)
-  /-- A parsed form (`application/x-www-form-urlencoded`): its fields in
-  order. -/
-  | form (fields : List (String × String))
+  /-- A parsed form (`application/x-www-form-urlencoded` or
+  `multipart/form-data`): its items in order. -/
+  | formItems (items : List (String × LeanStarlette.FormItem))
+  /-- A form with its uploads opened. -/
+  | form (fields : List (String × FormInput))
   deriving Inhabited
+
+/-- A parameter's raw value: JSON (a path, query, header or cookie value,
+a JSON body or a member of one, a form's text), an uploaded file, or the
+values of a list parameter of a form (`getlist`). -/
+inductive RawValue where
+  | json (j : Json)
+  | file (data : LeanStarlette.UploadData) (upload : LeanStarlette.UploadFile)
+  | seq (vs : List RawValue)
 
 /-- What parameters are read from: the request's converted path parameters,
 query string, headers, cookies and body. -/

@@ -10,8 +10,9 @@ argument of a path operation function, where its value comes from:
 2. a name in the path template is a path parameter (an explicit wrapper
    other than `Path` is an error: "Cannot use `Query` for path param");
 3. an explicit `Path`, `Query`, `Header`, `Cookie` or `Body` says so;
-4. otherwise a non-scalar type (a model, or an optional model) is the body,
-   and anything else is a query parameter.
+4. otherwise an `UploadFile` (or a list or an optional one) is a file of the
+   form, a non-scalar type (a model, or an optional model) is the body, and
+   anything else is a query parameter.
 
 `inferParam` is that rule as a total function of the argument's shape; the
 endpoint attribute computes the shape of each argument and calls it.
@@ -31,6 +32,7 @@ inductive Wrapper where
   | cookie
   | body
   | form
+  | file
   deriving DecidableEq, Repr, Inhabited
 
 /-- What `analyze_param` looks at. -/
@@ -43,6 +45,8 @@ structure ParamShape where
   isModel : Bool := false
   /-- The type is `Request`. -/
   isRequest : Bool := false
+  /-- The type is `UploadFile`, or a list or an optional one. -/
+  isUpload : Bool := false
   deriving DecidableEq, Repr
 
 /-- What an argument is. -/
@@ -58,7 +62,7 @@ def Wrapper.source : Wrapper → Source
   | .path => .path
   | .header => .header
   | .cookie => .cookie
-  | .body | .form => .body
+  | .body | .form | .file => .body
 
 /-- The Python class name of a wrapper, for messages. -/
 def Wrapper.className : Wrapper → String
@@ -69,6 +73,7 @@ def Wrapper.className : Wrapper → String
   | .cookie => "Cookie"
   | .body => "Body"
   | .form => "Form"
+  | .file => "File"
 
 /-- **`analyze_param`'s rule.** -/
 def inferParam (s : ParamShape) : ParamKind :=
@@ -79,7 +84,7 @@ def inferParam (s : ParamShape) : ParamKind :=
     | w => .invalid s!"Cannot use `{w.className}` for path param '{s.name}'"
   else
     match s.wrapper with
-    | .none => .param (if s.isModel then .body else .query)
+    | .none => .param (if s.isUpload || s.isModel then .body else .query)
     | w => .param w.source
 
 /-- A header parameter's wire name: its `alias`, else its name with `_` as
@@ -125,13 +130,42 @@ body. `json_schema_extra` adds members to its schema. -/
     (description : Option String := none) (media_type : String := "application/x-www-form-urlencoded")
     (json_schema_extra : List (String × LeanJson.Json) := []) : Type := α
 
+set_option linter.unusedVariables false in
+/-- `Annotated[α, File(...)]`: an uploaded file (`bytes`, `UploadFile`, a
+list or an optional one) of a `multipart/form-data` body. -/
+@[reducible] def File (α : Type) (alias : Option String := none) (title : Option String := none)
+    (description : Option String := none) (media_type : String := "multipart/form-data")
+    (json_schema_extra : List (String × LeanJson.Json) := []) : Type := α
+
+/-! ## The embed rule -/
+
+/-- What `_should_embed_body_fields` looks at in a body parameter: its name,
+an explicit `Body(embed=True)`, whether it is a form field (`Form()` or
+`File()`), and whether its type is a model. -/
+structure BodyField where
+  name : String
+  embed : Bool := false
+  isForm : Bool := false
+  isModel : Bool := false
+  deriving DecidableEq, Repr
+
+/-- **`_should_embed_body_fields`**: the body parameters (in the order of the
+flattened dependant, the operation's own first) are read from members of
+the body when there is more than one name, when the first is explicitly
+embedded, or when the first is a form field whose type is not a model (a
+form's fields are named). -/
+def shouldEmbedBodyFields : List BodyField → Bool
+  | [] => false
+  | f :: fs => decide (((f :: fs).map (·.name)).eraseDups.length > 1) || f.embed || (f.isForm && !f.isModel)
+
 /-! ## The parameter of a wrapper -/
 
 /-- The `Param` of an argument, from its source and its wrapper's metadata. -/
 def mkParam {α : Type} (source : Source) (name : String) (default : Option α) (alias : Option String := none)
     (convert_underscores : Bool := true) (title : Option String := none) (description : Option String := none)
     (deprecated : Bool := false) (include_in_schema : Bool := true) (embed : Bool := false)
-    (media_type : String := "application/json") (json_schema_extra : List (String × LeanJson.Json) := []) :
+    (media_type : String := "application/json") (json_schema_extra : List (String × LeanJson.Json) := [])
+    (isSeq : Bool := false) (isModel : Bool := false) (file : Option FileShape := none) :
     Param α where
   source
   name
@@ -144,6 +178,9 @@ def mkParam {α : Type} (source : Source) (name : String) (default : Option α) 
   include_in_schema
   media_type
   extra := json_schema_extra
+  isSeq
+  isModel
+  file
 
 /-! ## Dependencies -/
 

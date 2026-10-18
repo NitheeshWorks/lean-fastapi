@@ -77,6 +77,7 @@ def wrapperOf (ty : Expr) : Wrapper × Array Expr :=
   | some ``LeanFastapi.Cookie => (.cookie, args)
   | some ``LeanFastapi.Body => (.body, args)
   | some ``LeanFastapi.Form => (.form, args)
+  | some ``LeanFastapi.File => (.file, args)
   | _ => (.none, #[ty])
 
 /-- Whether a type is FastAPI's non-scalar field, read from the body: a
@@ -86,6 +87,30 @@ def isModelType (ty : Expr) : MetaM Bool := do
   let base := if ty.isAppOfArity ``Option 1 then ty.appArg! else ty
   if base.isAppOfArity ``LeanPydantic.Dict 1 || base.isAppOfArity ``List 1 then return true
   return (← synthInstance? (mkApp (Lean.mkConst ``LeanPydantic.Model) base)).isSome
+
+/-- `List α`, or `Option (List α)`: a sequence field. -/
+def isListType (ty : Expr) : Bool :=
+  let base := if ty.isAppOfArity ``Option 1 then ty.appArg! else ty
+  base.isAppOfArity ``List 1
+
+/-- A pydantic model (or an optional one): FastAPI's `BaseModel` test. -/
+def isModelClass (ty : Expr) : MetaM Bool := do
+  let ty ← instantiateMVars ty
+  let base := if ty.isAppOfArity ``Option 1 then ty.appArg! else ty
+  return (← synthInstance? (mkApp (Lean.mkConst ``LeanPydantic.Model) base)).isSome
+
+/-- How a file type holds its files, by its shape: a list, an option, or one. -/
+def uploadShape? (ty : Expr) : MetaM (Option FileShape) := do
+  let ty ← instantiateMVars ty
+  if ty.isAppOfArity ``List 1 then return some .list
+  if ty.isAppOfArity ``Option 1 then return some .optional
+  return some .single
+
+/-- `UploadFile`, or a list or an optional one. -/
+def isUploadType (ty : Expr) : MetaM Bool := do
+  let ty ← instantiateMVars ty
+  let base := if ty.isAppOfArity ``List 1 || ty.isAppOfArity ``Option 1 then ty.appArg! else ty
+  isDefEq base (Lean.mkConst ``LeanStarlette.UploadFile)
 
 /-- `none : Option String`. -/
 def noneString : MetaM Expr := mkAppOptM ``Option.none #[some (Lean.mkConst ``String)]
@@ -100,7 +125,7 @@ def sourceExpr : Source → Expr
 
 /-- The `Param` of an argument. -/
 def paramExpr (source : Source) (name : String) (w : Wrapper) (args : Array Expr) (α : Expr)
-    (default : Option Expr) : MetaM Expr := do
+    (default : Option Expr) (isSeq isModel : Bool) (file : Option FileShape) : MetaM Expr := do
   let ns ← noneString
   let arg (i : Nat) (d : Expr) : Expr := args.getD i d
   -- alias, convert_underscores, title, description, deprecated, include_in_schema, embed, media_type
@@ -114,19 +139,28 @@ def paramExpr (source : Source) (name : String) (w : Wrapper) (args : Array Expr
         toExpr false, toExpr "application/json")
     | .body => (arg 3 ns, toExpr true, arg 4 ns, arg 5 ns, toExpr false, toExpr true, arg 1 (toExpr false),
         arg 2 (toExpr "application/json"))
-    | .form => (arg 1 ns, toExpr true, arg 2 ns, arg 3 ns, toExpr false, toExpr true, toExpr true,
+    | .form => (arg 1 ns, toExpr true, arg 2 ns, arg 3 ns, toExpr false, toExpr true, toExpr false,
         arg 4 (toExpr "application/x-www-form-urlencoded"))
+    | .file => (arg 1 ns, toExpr true, arg 2 ns, arg 3 ns, toExpr false, toExpr true, toExpr false,
+        arg 4 (toExpr "multipart/form-data"))
     | .none => (ns, toExpr true, ns, ns, toExpr false, toExpr true, toExpr false, toExpr "application/json")
   let extra ← match w with
-    | .form => pure (args.getD 5 (← mkAppOptM ``List.nil #[some (← mkAppM ``Prod #[Lean.mkConst ``String,
+    | .form | .file => pure (args.getD 5 (← mkAppOptM ``List.nil #[some (← mkAppM ``Prod #[Lean.mkConst ``String,
         Lean.mkConst ``LeanJson.Json])]))
     | _ => mkAppOptM ``List.nil #[some (← mkAppM ``Prod #[Lean.mkConst ``String, Lean.mkConst ``LeanJson.Json])]
   let dflt ← match default with
     | some d => mkAppOptM ``Option.some #[some α, some d]
     | none => mkAppOptM ``Option.none #[some α]
+  let fileE ← match file with
+    | none => mkAppOptM ``Option.none #[some (Lean.mkConst ``FileShape)]
+    | some f => mkAppM ``Option.some #[match f with
+        | .single => Lean.mkConst ``FileShape.single
+        | .optional => Lean.mkConst ``FileShape.optional
+        | .list => Lean.mkConst ``FileShape.list]
   mkAppOptM ``LeanFastapi.mkParam
     #[some α, some (sourceExpr source), some (toExpr name), some dflt, some alias, some conv, some title,
-      some descr, some depr, some incl, some embed, some media, some extra]
+      some descr, some depr, some incl, some embed, some media, some extra, some (toExpr isSeq),
+      some (toExpr isModel), some fileE]
 
 /-- `(v.2.2. ... .1)`: the `k`-th component of a right-nested product. -/
 def projAt (v : Expr) : Nat → MetaM Expr
@@ -332,11 +366,17 @@ def argsOf (fuel : Nat) (ovs : Overrides) (pathNames : List String) (current : L
         let base := wargs.getD 0 ty
         let isRequest := base.isConstOf ``LeanStarlette.Request
         let isModel ← isModelType base
-        match inferParam { name := pname, inPath := pathNames.contains pname, wrapper := w, isModel, isRequest } with
+        let shape ← uploadShape? base
+        let isUpload := shape.isSome && (← isUploadType base)
+        match inferParam { name := pname, inPath := pathNames.contains pname, wrapper := w, isModel, isRequest,
+                           isUpload } with
         | .invalid msg => throwError msg
         | .request => nodes := nodes ++ [.request]
         | .param src =>
-          let p ← paramExpr src pname w wargs base default
+          -- an unwrapped `UploadFile` is `File()`
+          let w := if w == .none && isUpload then .file else w
+          let file := if w == .file then shape else none
+          let p ← paramExpr src pname w wargs base default (isListType base) (← isModelClass base) file
           nodes := nodes ++ [.param src base p]
       return nodes
 
@@ -392,31 +432,42 @@ def Node.bodiesList : List Node → Nat
 
 end
 
-/-- The name of a body parameter (`mkParam`'s third argument). -/
-def paramName? (p : Expr) : Option String :=
-  if p.isAppOfArity ``LeanFastapi.mkParam 13 then
-    match p.getAppArgs[2]! with
-    | .lit (.strVal s) => some s
-    | _ => none
+/-- What the embed rule reads off a body parameter (`mkParam`'s name,
+`embed`, `media_type` and `isModel` arguments). -/
+def bodyField? (p : Expr) : Option BodyField :=
+  if p.isAppOfArity ``LeanFastapi.mkParam 16 then
+    let a := p.getAppArgs
+    match a[2]!, a[11]! with
+    | .lit (.strVal name), .lit (.strVal media) =>
+      some { name, embed := a[10]!.isConstOf ``Bool.true, isForm := isFormMediaType media,
+             isModel := a[14]!.isConstOf ``Bool.true }
+    | _, _ => none
   else none
 
-mutual
-
-/-- The names of the body parameters of a tree, each use counted. -/
-def Node.bodyNames : Node → List String
-  | .param .body _ p => (paramName? p).toList
-  | .sub _ _ _ _ _ _ _ _ args _ _ _ => Node.bodyNamesList args
-  | _ => []
-
-def Node.bodyNamesList : List Node → List String
+/-- A dependant's own body parameters. -/
+def Node.ownBodies : List Node → List BodyField
   | [] => []
-  | n :: ns => n.bodyNames ++ Node.bodyNamesList ns
+  | .param .body _ p :: ns => (bodyField? p).toList ++ Node.ownBodies ns
+  | _ :: ns => Node.ownBodies ns
+
+/-- The body parameters of the sub-dependencies of a dependant, each
+flattened. -/
+def Node.subBodies : List Node → List BodyField
+  | [] => []
+  | .sub _ _ _ _ _ _ _ _ args _ _ _ :: ns => Node.ownBodies args ++ Node.subBodies args ++ Node.subBodies ns
+  | _ :: ns => Node.subBodies ns
+
+/-- The body parameters of a tree, as the flattened dependant lists them: a
+dependant's own first, then each sub-dependency's (each use counted). -/
+def Node.bodyFieldsList (ns : List Node) : List BodyField := Node.ownBodies ns ++ Node.subBodies ns
+
+mutual
 
 /-- The tree with every body parameter read from a member of the body
 (`embed_body_fields`). -/
 def Node.embedBodies : Node → Node
   | .param .body b p =>
-    .param .body b (if p.isAppOfArity ``LeanFastapi.mkParam 13 then mkAppN p.getAppFn (p.getAppArgs.set! 10 (toExpr true))
+    .param .body b (if p.isAppOfArity ``LeanFastapi.mkParam 16 then mkAppN p.getAppFn (p.getAppArgs.set! 10 (toExpr true))
       else p)
   | .sub key α fn kind uc sc own sch args ovFn ovKind ovArgs =>
     .sub key α fn kind uc sc own sch (Node.embedBodiesList args) ovFn ovKind (Node.embedBodiesList ovArgs)

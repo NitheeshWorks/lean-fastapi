@@ -135,13 +135,28 @@ theorem modelsProps_closed : ∀ (ps : List (String × Schema)), ∀ c ∈ model
     · exact .inr (modelsProps_closed ps c hc n hn)
 end
 
+/-- A field's schema refers to what the schema it annotates does. -/
+theorem refs_fieldSchemaO (o : OSchema) (a : Annotations) (t : String) :
+    (fieldSchemaO o a t).refs = o.refs := by
+  unfold fieldSchemaO
+  split
+  · split <;> simp [refs]
+  · simp [refs]
+
 /-- A field's schema refers to what its pydantic schema's conversion does. -/
 theorem refs_fieldSchema (s : Schema) (a : Annotations) (t : String) :
-    (fieldSchema s a t).refs = (ofSchema s).refs := by
-  unfold fieldSchema
-  split
-  · rename_i n h; rw [h]; split <;> simp [refs]
-  · simp [refs]
+    (fieldSchema s a t).refs = (ofSchema s).refs := refs_fieldSchemaO _ a t
+
+/-- A file's schema refers to nothing. -/
+theorem refs_fileShape (f : FileShape) : f.schema.refs = [] := by
+  cases f <;> rfl
+
+/-- A parameter's schema in the document refers to no more than its type's. -/
+theorem refs_oschema (p : ParamInfo) (n : String) (h : n ∈ p.oschema.refs) : n ∈ (ofSchema p.schema).refs := by
+  unfold ParamInfo.oschema at h
+  split at h
+  · simp [refs_fileShape] at h
+  · exact h
 
 end OSchema
 

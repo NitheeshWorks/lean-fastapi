@@ -121,6 +121,11 @@ For every application (`LeanFastapi/Proofs/Verified.lean` bundles them):
   failure answers 422 with `{"detail": errors}` (`extract_422`); kind
   inference follows FastAPI's rule (`infer_param`); header names use hyphens
   (`header_alias_hyphen`).
+* **Forms and files.** Body parameters are read from members of the body
+  exactly when there is another body parameter name, the first is
+  `embed=True`, or the first is a non-model form field (`embed_rule`); a
+  form field's errors are located under `["body", alias]`, and a missing
+  one is a single `missing` error there (`form_field_loc`, `form_missing`).
 * **Responses.** With a response model the body conforms to the model's
   schema (`serialize_response_conforms`).
 * **OpenAPI.** Every route and method appears exactly once
@@ -151,12 +156,13 @@ fastapi output rather than proved; see CONTRIBUTING.md.
 
 ## Status
 
-Milestones 1 and 3: path, query, header and cookie parameters, JSON and
-urlencoded form bodies, 422 errors, response models, HTTPException, OpenAPI
+Milestones 1, 3 and 4: path, query, header and cookie parameters, JSON,
+urlencoded and multipart form bodies, `Form`, `File`, `UploadFile` and form
+models, 422 errors, response models, HTTPException, OpenAPI
 and the docs pages, the demo; `Depends` with caching, overrides and `yield`
 dependencies, `Security` and `SecurityScopes`, API keys, HTTP Basic, Bearer
 and Digest, OAuth2 password and authorization code, and OpenID Connect.
-Multipart forms and files, middleware and streaming are the next milestones.
+Middleware and streaming are the next milestones.
 
 ## License
 

@@ -391,3 +391,54 @@ id = "forms.multipart"
 upstream = "starlette/formparsers.py::MultiPartParser"
 title = "multipart/form-data bodies and File/UploadFile are milestone 4"
 status = "excluded"
+
+[[requirement]]
+id = "forms.embed-rule"
+upstream = "fastapi/dependencies/utils.py::_should_embed_body_fields"
+title = "Body parameters are read from members of the body exactly when there is another body parameter name, the first is embed=True, or the first is a form field whose type is not a model"
+status = "implemented"
+realises = ["LeanFastapi.shouldEmbedBodyFields", "LeanFastapi.BodyField"]
+theorem = ["LeanFastapi.embed_rule"]
+test = ["tests/apps/RequestForms001.lean", "tests/apps/RequestFormModels001.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.fields"
+upstream = "tests/test_tutorial/test_request_forms/test_tutorial001.py"
+title = "Form fields are read from urlencoded and multipart bodies; errors are located under [body, alias], and an absent or empty field is one missing error there"
+status = "implemented"
+realises = ["LeanFastapi.Form", "LeanFastapi.readForm", "LeanFastapi.Inputs.formRaw", "LeanFastapi.Param.raw"]
+theorem = ["LeanFastapi.form_field_loc", "LeanFastapi.form_missing"]
+test = ["tests/apps/RequestForms001.lean", "tests/apps/RequestFormsAndFiles001.lean", "tests/Props.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.files"
+upstream = "tests/test_tutorial/test_request_files/test_tutorial001.py"
+title = "File parameters read uploads as bytes or UploadFile, single, optional or a list, with binary OpenAPI schemas; uploads are opened as UploadFiles before the operation runs"
+status = "tested"
+realises = ["LeanFastapi.File", "LeanFastapi.BodyInput.load", "LeanFastapi.readEach", "LeanFastapi.FileShape.schema"]
+theorem = ["LeanFastapi.bytes_of_upload", "LeanFastapi.uploadFile_of_upload"]
+test = ["tests/apps/RequestFiles001.lean", "tests/apps/RequestFiles001_02.lean", "tests/apps/RequestFiles001_03.lean", "tests/apps/RequestFiles002.lean", "tests/apps/RequestFiles003.lean", "tests/apps/RequestFormsAndFiles001.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.models"
+upstream = "tests/test_tutorial/test_request_form_models/test_tutorial001.py"
+title = "A model under Form() is read from the form's fields (tutorial002, extra='forbid', waits on lean-pydantic)"
+status = "partial"
+realises = ["LeanFastapi.Form"]
+test = ["tests/apps/RequestFormModels001.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.upload-input-422"
+upstream = "fastapi/encoders.py::jsonable_encoder (a 422 input that is an UploadFile)"
+title = "A 422 for an upload where a str goes echoes the UploadFile as filename, size and headers; FastAPI dumps its SpooledTemporaryFile internals (UP-061)"
+status = "deviation"
+realises = ["LeanFastapi.RawValue.toJson"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.bytes-list-text"
+upstream = "fastapi/dependencies/utils.py::_extract_form_body"
+title = "A text value of a list[bytes] File parameter is read as UTF-8 bytes; FastAPI fails with AttributeError and 500 (UP-062)"
+status = "deviation"
+realises = ["LeanFastapi.readEach"]
+test = ["tests/Conformance.lean"]

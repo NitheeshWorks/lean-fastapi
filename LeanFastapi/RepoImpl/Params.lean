@@ -86,6 +86,29 @@ def cookieParser (header : String) : List (String × String) :=
 
 /-! ## Reading a raw value -/
 
+/-- An upload as the input of a validation error. FastAPI reports the
+`UploadFile` object's attributes; this is their public part (filename,
+size, headers): see CONTRIBUTING, deviations. -/
+def uploadInputJson (d : LeanStarlette.UploadData) : Json :=
+  jobj [("filename", match d.filename with | some f => .str f | none => .null),
+        ("size", .num (.int d.data.size)),
+        ("headers", jobj (d.headers.items.map fun (k, v) => (k, .str v)))]
+
+/-- A form value as JSON (an upload as its `uploadInputJson`). -/
+def FormInput.toJson : FormInput → Json
+  | .text s => .str s
+  | .file d _ => uploadInputJson d
+
+namespace RawValue
+
+/-- A raw value as JSON, for a validator that reads JSON. -/
+def toJson : RawValue → Json
+  | .json j => j
+  | .file d _ => uploadInputJson d
+  | .seq vs => jarr (vs.map toJson)
+
+end RawValue
+
 namespace Inputs
 
 /-- `values.get(key)` for a source; the whole body for `body` is
@@ -98,16 +121,32 @@ def lookup (inp : Inputs) : Source → String → Option Json
   | .body, k =>
     match inp.body with
     | .json j => (jfields? j).bind (LeanJson.Json.lookupLast k)
-    | .form fs => (fs.reverse.lookup k).map .str
+    | .form fs => (fs.reverse.lookup k).map FormInput.toJson
     | _ => none
 
-/-- The body as one value, `none` when there is none. -/
+/-- A form's values under `k`: the last one (`form.get(k)`), or every one
+(`form.getlist(k)`, for a list parameter), as raw values. -/
+def formRaw (fs : List (String × FormInput)) (k : String) (many : Bool) : Option RawValue :=
+  let raw : FormInput → RawValue
+    | .text s => .json (.str s)
+    | .file d u => .file d u
+  if many then
+    match fs.filter (·.1 == k) with
+    | [] => none
+    | vs => some (.seq (vs.map (raw ·.2)))
+  else (fs.reverse.lookup k).map raw
+
+/-- The body as one value, `none` when there is none. A form is the object
+of its keys, each with its last value. -/
 def wholeBody (inp : Inputs) : Option Json :=
   match inp.body with
   | .none => none
   | .json j => some j
   | .bytes t => some (.str t)
-  | .form fs => some (jobj (fs.map fun (k, v) => (k, .str v)))
+  | .formItems _ => none
+  | .form fs =>
+    let keys := (fs.map (·.1)).eraseDups
+    some (jobj (keys.filterMap fun k => ((fs.reverse.lookup k).map fun v => (k, v.toJson))))
 
 end Inputs
 
@@ -116,6 +155,15 @@ end Inputs
 /-- The form media types (`Form(...)`, `File(...)`). -/
 def isFormMediaType (m : String) : Bool :=
   m == "application/x-www-form-urlencoded" || m == "multipart/form-data"
+
+/-- **How a parameter's type reads its raw value**: pydantic's validator on
+the JSON (every type with `FromJson`), or, for uploads, the file itself
+(`UploadFile`), its bytes (`bytes`), and lists and options of those. -/
+class ParamValue (α : Type) where
+  read : RawValue → Except (List RequestError) α
+
+instance (priority := low) {α : Type} [FromJson α] : ParamValue α :=
+  ⟨fun v => (LeanPydantic.fromJson fastapiCfg v.toJson).mapError (List.map RequestError.ofDetails)⟩
 
 /-- A declared parameter of type `α`: its source, Python name and wire name,
 its default (`none`: required), and its OpenAPI metadata. -/
@@ -134,6 +182,13 @@ structure Param (α : Type) where
   media_type : String := "application/json"
   /-- `json_schema_extra`. -/
   extra : List (String × Json) := []
+  /-- The type is a list (`field_annotation_is_sequence`): a form gives it
+  every value under its name. -/
+  isSeq : Bool := false
+  /-- The type is a model (FastAPI's non-scalar field). -/
+  isModel : Bool := false
+  /-- The type holds uploaded files. -/
+  file : Option FileShape := none
 
 namespace Param
 
@@ -149,26 +204,33 @@ def loc (p : Param α) : Keel.Loc :=
 /-- Whether it is a form field (`Form(...)`). -/
 def isForm (p : Param α) : Bool := isFormMediaType p.media_type
 
-/-- Its raw value in the inputs. A JSON `null` is absent, as Python's `None`
-is, and so is an empty form field (`_get_multidict_value`). -/
-def raw (p : Param α) (inp : Inputs) : Option Json :=
-  let v := if p.isWholeBody then inp.wholeBody else inp.lookup p.source p.alias
+/-- Its raw value in the inputs: the whole body, a form's value (every one
+for a list), or the value under its alias. A JSON `null` is absent, as
+Python's `None` is, and so are an empty form field and an empty list
+(`_get_multidict_value`). -/
+def raw (p : Param α) (inp : Inputs) : Option RawValue :=
+  let v : Option RawValue :=
+    if p.isWholeBody then inp.wholeBody.map .json
+    else match p.source, inp.body with
+      | .body, .form fs => Inputs.formRaw fs p.alias p.isSeq
+      | _, _ => (inp.lookup p.source p.alias).map .json
   match v with
-  | some .null => none
-  | some (.str "") => if p.isForm then none else some (.str "")
+  | some (.json .null) => none
+  | some (.json (.str "")) => if p.isForm then none else some (.json (.str ""))
+  | some (.seq []) => none
   | v => v
 
 /-- Validate the raw value, or take the default, before locating errors. -/
-def read [FromJson α] (p : Param α) : Keel.Validator RequestError Inputs α := fun inp =>
+def read [ParamValue α] (p : Param α) : Keel.Validator RequestError Inputs α := fun inp =>
   match p.raw inp with
   | none =>
     match p.default with
     | some d => .ok d
     | none => .error [RequestError.missing]
-  | some v => (LeanPydantic.fromJson fastapiCfg v).mapError (List.map RequestError.ofDetails)
+  | some v => ParamValue.read v
 
 /-- The parameter's validator: `read`, with every error under `loc`. -/
-def validator [FromJson α] (p : Param α) : Keel.Validator RequestError Inputs α :=
+def validator [ParamValue α] (p : Param α) : Keel.Validator RequestError Inputs α :=
   p.read.atPath p.loc
 
 /-- What OpenAPI needs to know about it. -/
@@ -187,9 +249,11 @@ def info [ToJson α] [JsonSchema α] (p : Param α) : ParamInfo where
   embed := p.embed
   extra := p.extra
   loc := p.loc
+  isModel := p.isModel
+  file := p.file
 
 /-- Every error of a parameter's validator is located under its `loc`. -/
-theorem validator_loc [FromJson α] (p : Param α) (inp : Inputs) (es : List RequestError)
+theorem validator_loc [ParamValue α] (p : Param α) (inp : Inputs) (es : List RequestError)
     (h : p.validator inp = .error es) : ∀ e ∈ es, p.loc <+: e.loc :=
   Keel.Validator.prefix_loc_atPath p.loc p.read inp es h
 
@@ -209,7 +273,7 @@ namespace Params
 def nil : Params Unit := ⟨[], fun _ => .ok (), fun _ _ h => by cases h⟩
 
 /-- The parameter `p` before the parameters `rest`. -/
-def cons {α β : Type} [FromJson α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β) :
+def cons {α β : Type} [ParamValue α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β) :
     Params (α × β) where
   infos := p.info :: rest.infos
   extract := p.validator.both rest.extract

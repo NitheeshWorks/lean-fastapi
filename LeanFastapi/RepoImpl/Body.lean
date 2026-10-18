@@ -1,4 +1,4 @@
-import LeanFastapi.RepoImpl.Params
+import LeanFastapi.RepoImpl.Files
 
 /-!
 # RepoImpl: reading the request body and the other inputs
@@ -92,29 +92,32 @@ def readBody (req : Request) : Except BodyError BodyInput :=
     | .error _ => python (.error .unparsable)
   else .ok (.bytes (String.fromUTF8? req.bodyBytes |>.getD (String.ofList (req.bodyBytes.toList.map fun b => Char.ofNat b.toNat))))
 
-/-- `max_fields` and `max_part_size` of `Request.form()`. -/
-def maxFormFields : Nat := 1000
-def maxFormPartSize : Nat := 1024 * 1024
+/-- `max_files`, `max_fields` and `max_part_size` of `Request.form()`. -/
+def formLimits : LeanMultipart.FormLimits := { maxFiles := 1000, maxFields := 1000, maxPartSize := 1024 * 1024 }
 
-/-- **`await request.form()`** for a path operation with form parameters:
-an `application/x-www-form-urlencoded` body is split at `&` into
-`name=value` fields (python-multipart's `QuerystringParser`), each decoded
-from Latin-1 and then `unquote_plus`ed (as `parse_qsl` does, so
-`QueryParams.parse`); a field larger than 1 MiB, or more than 1000 fields,
-is Starlette's `400`. Any other content type gives an empty form (a
-`multipart/form-data` body is not read yet: milestone 4). -/
+/-- **`await request.form()`** for a path operation with form (or file)
+parameters: lean-starlette's form parser (`multipart/form-data` with
+Starlette's `MultiPartParser`, `application/x-www-form-urlencoded` with its
+`FormParser`, any other content type an empty form), with Starlette's
+default limits; a body over a limit, or malformed multipart, is Starlette's
+`400` with its message. -/
 def readForm (req : Request) : Except BodyError BodyInput :=
-  let (m, s) := contentType ((req.headers.get? "content-type").getD "")
-  if m == "application" && s == "x-www-form-urlencoded" then
-    let text := String.ofList (req.bodyBytes.toList.map fun b => Char.ofNat b.toNat)
-    let chunks := (text.splitOn "&").filter (!·.isEmpty)
-    -- a field's size is its name and value, without the `=`
-    if chunks.any (fun c => c.length - (if c.contains '=' then 1 else 0) > maxFormPartSize) then
-      .error (.badForm s!"Field exceeded maximum size of {maxFormPartSize / 1024}KB.")
-    else if chunks.length > maxFormFields then
-      .error (.badForm s!"Too many fields. Maximum number of fields is {maxFormFields}.")
-    else .ok (.form (LeanStarlette.QueryParams.parse text).items)
-  else .ok (.form [])
+  match LeanStarlette.formItems formLimits (req.headers.get? "content-type") req.bodyBytes with
+  | .ok items => .ok (.formItems items)
+  | .error e => .error (.badForm (LeanStarlette.formErrorMessage e))
+
+/-- Open a parsed form's uploads as `UploadFile`s (Starlette's `FormData`,
+what the path operation's parameters read). -/
+def BodyInput.load : BodyInput → IO BodyInput
+  | .formItems items => do
+    let fields ← items.mapM fun (k, v) => do
+      match v with
+      | .text s => pure (k, FormInput.text s)
+      | .file d => do
+        let u ← LeanStarlette.UploadFile.new d.data d.filename d.headers (some d.data.size)
+        pure (k, FormInput.file d u)
+    pure (.form fields)
+  | b => pure b
 
 /-- The inputs of a request, with an already read body. -/
 def Inputs.ofRequest (req : Request) (body : BodyInput) : Inputs where

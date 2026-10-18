@@ -26,6 +26,8 @@ structure VerifiedRequests : Prop where
   inferParam : Spec.InferParam
   headerAliasHyphen : Spec.HeaderAliasHyphen
   serializeResponseConforms : Spec.SerializeResponseConforms
+  embedRule : Spec.EmbedRule
+  formExtractLoc : Spec.FormExtractLoc
 
 theorem theVerifiedRequests : VerifiedRequests where
   paramsToArgsLoc := params_to_args_loc
@@ -35,6 +37,9 @@ theorem theVerifiedRequests : VerifiedRequests where
   inferParam := infer_param
   headerAliasHyphen := header_alias_hyphen
   serializeResponseConforms := serialize_response_conforms
+  embedRule := embed_rule
+  formExtractLoc p inp fs hs he hb :=
+    ⟨fun es h => form_field_loc p inp es hs he h, fun hr hd => form_missing p inp fs hs he hb hr hd⟩
 
 /-- The OpenAPI document, for every application. -/
 structure VerifiedOpenapi : Prop where

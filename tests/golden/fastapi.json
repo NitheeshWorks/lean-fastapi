@@ -8198,6 +8198,2163 @@
    "response": "{\"count\":2,\"calls\":2}"
   },
   {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py::test_post_body_form",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "28"
+    ]
+   ],
+   "body": "username=Foo&password=secret",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "18"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"Foo\"}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py::test_post_body_form_no_password",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "12"
+    ]
+   ],
+   "body": "username=Foo",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "93"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py::test_post_body_form_no_username",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "15"
+    ]
+   ],
+   "body": "password=secret",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "93"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py::test_post_body_form_no_data",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "174"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py::test_post_body_json",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "41"
+    ]
+   ],
+   "body": "{\"username\": \"Foo\", \"password\": \"secret\"}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "174"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py (a multipart form)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "153"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\nFoo\r\n--b0undary\r\nContent-Disposition: form-data; name=\"password\"\r\n\r\nsecret\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "18"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"Foo\"}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py (an empty field is missing)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "25"
+    ]
+   ],
+   "body": "username=&password=secret",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "93"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_tutorial/test_request_forms/test_tutorial001.py (a file where a field goes)",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "197"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"username\"; filename=\"u.txt\"\r\nContent-Type: text/plain\r\n\r\nFoo\r\n--b0undary\r\nContent-Disposition: form-data; name=\"password\"\r\n\r\nsecret\r\n--b0undary--\r\n",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "466"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"username\"],\"msg\":\"Input should be a valid string\",\"input\":{\"filename\":\"u.txt\",\"file\":{\"_file\":{},\"_max_size\":1048576,\"_rolled\":false,\"_TemporaryFileArgs\":{\"mode\":\"w+b\",\"buffering\":-1,\"suffix\":null,\"prefix\":null,\"encoding\":null,\"newline\":null,\"dir\":null,\"errors\":null}},\"size\":3,\"headers\":{\"content-disposition\":\"form-data; name=\\\"username\\\"; filename=\\\"u.txt\\\"\",\"content-type\":\"text/plain\"},\"_max_mem_size\":1048576}}]}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py::test_post_form_no_body",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "89"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"file\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py::test_post_body_json",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "15"
+    ]
+   ],
+   "body": "{\"file\": \"Foo\"}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "89"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"file\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py::test_post_file",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "16"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":14}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py::test_post_large_file",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "65673"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "19"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":65537}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py::test_post_upload_file",
+   "method": "POST",
+   "url": "/uploadfile/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "23"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"filename\":\"test.txt\"}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py (bytes from a text field)",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "81"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhéllo\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "15"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":6}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py (an UploadFile from a text field)",
+   "method": "POST",
+   "url": "/uploadfile/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "80"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--b0undary--\r\n",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "158"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"file\"],\"msg\":\"Value error, Expected UploadFile, received: <class 'str'>\",\"input\":\"hello\",\"ctx\":{\"error\":{}}}]}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py (an empty file)",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "133"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"e.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "15"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":0}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py (no upload)",
+   "method": "POST",
+   "url": "/uploadfile/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "89"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"file\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py (malformed multipart)",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "7"
+    ]
+   ],
+   "body": "garbage",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "36"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Invalid multipart data.\"}"
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001.py (no boundary)",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data"
+    ],
+    [
+     "Content-Length",
+     "130"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"t\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--b0undary--\r\n",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Missing boundary in multipart.\"}"
+  },
+  {
+   "fixture": "request_files_001_02",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001_02.py::test_post_form_no_body",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "26"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"message\":\"No file sent\"}"
+  },
+  {
+   "fixture": "request_files_001_02",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001_02.py::test_post_uploadfile_no_body",
+   "method": "POST",
+   "url": "/uploadfile/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"message\":\"No upload file sent\"}"
+  },
+  {
+   "fixture": "request_files_001_02",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001_02.py::test_post_file",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "16"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":14}"
+  },
+  {
+   "fixture": "request_files_001_02",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001_02.py::test_post_upload_file",
+   "method": "POST",
+   "url": "/uploadfile/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "23"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"filename\":\"test.txt\"}"
+  },
+  {
+   "fixture": "request_files_001_03",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001_03.py::test_post_file",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "16"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":14}"
+  },
+  {
+   "fixture": "request_files_001_03",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial001_03.py::test_post_upload_file",
+   "method": "POST",
+   "url": "/uploadfile/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "23"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"filename\":\"test.txt\"}"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py::test_post_form_no_body",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "90"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"files\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py::test_post_body_json",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "15"
+    ]
+   ],
+   "body": "{\"file\": \"Foo\"}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "90"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"files\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py::test_post_files",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "290"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content2>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "22"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_sizes\":[14,15]}"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py::test_post_upload_file",
+   "method": "POST",
+   "url": "/uploadfiles/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "290"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content2>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "38"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"filenames\":[\"test.txt\",\"test2.txt\"]}"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py (one text value among the uploads)",
+   "method": "POST",
+   "url": "/uploadfiles/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "206"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"files\"\r\n\r\nhello\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--b0undary--\r\n",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "161"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"files\",0],\"msg\":\"Value error, Expected UploadFile, received: <class 'str'>\",\"input\":\"hello\",\"ctx\":{\"error\":{}}}]}"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py (a text value among bytes files)",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "206"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"files\"\r\n\r\nhello\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--b0undary--\r\n",
+   "status": 500,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ]
+   ],
+   "response": "Internal Server Error"
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial002.py::test_get_root",
+   "method": "GET",
+   "url": "/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "306"
+    ],
+    [
+     "content-type",
+     "text/html; charset=utf-8"
+    ]
+   ],
+   "response": "\n<body>\n<form action=\"/files/\" enctype=\"multipart/form-data\" method=\"post\">\n<input name=\"files\" type=\"file\" multiple>\n<input type=\"submit\">\n</form>\n<form action=\"/uploadfiles/\" enctype=\"multipart/form-data\" method=\"post\">\n<input name=\"files\" type=\"file\" multiple>\n<input type=\"submit\">\n</form>\n</body>\n    "
+  },
+  {
+   "fixture": "request_files_003",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial003.py::test_post_files",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "290"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content2>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "22"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_sizes\":[14,15]}"
+  },
+  {
+   "fixture": "request_files_003",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial003.py::test_post_upload_file",
+   "method": "POST",
+   "url": "/uploadfiles/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "290"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content2>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "38"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"filenames\":[\"test.txt\",\"test2.txt\"]}"
+  },
+  {
+   "fixture": "request_files_003",
+   "upstream": "tests/test_tutorial/test_request_files/test_tutorial003.py::test_get_root",
+   "method": "GET",
+   "url": "/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "306"
+    ],
+    [
+     "content-type",
+     "text/html; charset=utf-8"
+    ]
+   ],
+   "response": "\n<body>\n<form action=\"/files/\" enctype=\"multipart/form-data\" method=\"post\">\n<input name=\"files\" type=\"file\" multiple>\n<input type=\"submit\">\n</form>\n<form action=\"/uploadfiles/\" enctype=\"multipart/form-data\" method=\"post\">\n<input name=\"files\" type=\"file\" multiple>\n<input type=\"submit\">\n</form>\n</body>\n    "
+  },
+  {
+   "fixture": "request_forms_and_files_001",
+   "upstream": "tests/test_tutorial/test_request_forms_and_files/test_tutorial001.py::test_post_form_no_body",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "245"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"file\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"fileb\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"token\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_and_files_001",
+   "upstream": "tests/test_tutorial/test_request_forms_and_files/test_tutorial001.py::test_post_form_no_file",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "9"
+    ]
+   ],
+   "body": "token=foo",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "167"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"file\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"fileb\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_and_files_001",
+   "upstream": "tests/test_tutorial/test_request_forms_and_files/test_tutorial001.py::test_post_body_json",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "31"
+    ]
+   ],
+   "body": "{\"file\": \"Foo\", \"token\": \"Bar\"}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "245"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"file\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"fileb\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"token\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_and_files_001",
+   "upstream": "tests/test_tutorial/test_request_forms_and_files/test_tutorial001.py::test_post_file_no_token",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "150"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary--\r\n",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "168"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"fileb\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"token\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "request_forms_and_files_001",
+   "upstream": "tests/test_tutorial/test_request_forms_and_files/test_tutorial001.py::test_post_files_and_token",
+   "method": "POST",
+   "url": "/files/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "multipart/form-data; boundary=b0undary"
+    ],
+    [
+     "Content-Length",
+     "341"
+    ]
+   ],
+   "body": "--b0undary\r\nContent-Disposition: form-data; name=\"token\"\r\n\r\nfoo\r\n--b0undary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\nContent-Type: application/octet-stream\r\n\r\n<file content>\r\n--b0undary\r\nContent-Disposition: form-data; name=\"fileb\"; filename=\"testb.txt\"\r\nContent-Type: text/plain\r\n\r\n<file b content>\r\n--b0undary--\r\n",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "64"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"file_size\":14,\"token\":\"foo\",\"fileb_content_type\":\"text/plain\"}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "tests/test_tutorial/test_request_form_models/test_tutorial001.py::test_post_body_form",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "28"
+    ]
+   ],
+   "body": "username=Foo&password=secret",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "38"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"Foo\",\"password\":\"secret\"}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "tests/test_tutorial/test_request_form_models/test_tutorial001.py::test_post_body_form_no_password",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "12"
+    ]
+   ],
+   "body": "username=Foo",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "107"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":{\"username\":\"Foo\"}}]}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "tests/test_tutorial/test_request_form_models/test_tutorial001.py::test_post_body_form_no_username",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "15"
+    ]
+   ],
+   "body": "password=secret",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "110"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{\"password\":\"secret\"}}]}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "tests/test_tutorial/test_request_form_models/test_tutorial001.py::test_post_body_form_no_data",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "170"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{}},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":{}}]}"
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "tests/test_tutorial/test_request_form_models/test_tutorial001.py::test_post_body_json",
+   "method": "POST",
+   "url": "/login/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "41"
+    ]
+   ],
+   "body": "{\"username\": \"Foo\", \"password\": \"secret\"}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "170"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":{}},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":{}}]}"
+  },
+  {
    "fixture": "security_004",
    "upstream": "tests/test_tutorial/test_security/test_tutorial004.py::test_login",
    "method": "POST",
@@ -18045,6 +20202,1289 @@
          }
         }
        }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_forms_001",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/login/": {
+      "post": {
+       "summary": "Login",
+       "operationId": "login_login__post",
+       "requestBody": {
+        "content": {
+         "application/x-www-form-urlencoded": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_login_login__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_login_login__post": {
+       "properties": {
+        "username": {
+         "type": "string",
+         "title": "Username"
+        },
+        "password": {
+         "type": "string",
+         "title": "Password"
+        }
+       },
+       "type": "object",
+       "required": [
+        "username",
+        "password"
+       ],
+       "title": "Body_login_login__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_files_001",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/files/": {
+      "post": {
+       "summary": "Create File",
+       "operationId": "create_file_files__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_file_files__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/uploadfile/": {
+      "post": {
+       "summary": "Create Upload File",
+       "operationId": "create_upload_file_uploadfile__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_upload_file_uploadfile__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_create_file_files__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file"
+       ],
+       "title": "Body_create_file_files__post"
+      },
+      "Body_create_upload_file_uploadfile__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file"
+       ],
+       "title": "Body_create_upload_file_uploadfile__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_files_001_02",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/files/": {
+      "post": {
+       "summary": "Create File",
+       "operationId": "create_file_files__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_file_files__post"
+          }
+         }
+        }
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/uploadfile/": {
+      "post": {
+       "summary": "Create Upload File",
+       "operationId": "create_upload_file_uploadfile__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_upload_file_uploadfile__post"
+          }
+         }
+        }
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_create_file_files__post": {
+       "properties": {
+        "file": {
+         "anyOf": [
+          {
+           "type": "string",
+           "contentMediaType": "application/octet-stream"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "File"
+        }
+       },
+       "type": "object",
+       "title": "Body_create_file_files__post"
+      },
+      "Body_create_upload_file_uploadfile__post": {
+       "properties": {
+        "file": {
+         "anyOf": [
+          {
+           "type": "string",
+           "contentMediaType": "application/octet-stream"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "File"
+        }
+       },
+       "type": "object",
+       "title": "Body_create_upload_file_uploadfile__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_files_001_03",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/files/": {
+      "post": {
+       "summary": "Create File",
+       "operationId": "create_file_files__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_file_files__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/uploadfile/": {
+      "post": {
+       "summary": "Create Upload File",
+       "operationId": "create_upload_file_uploadfile__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_upload_file_uploadfile__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_create_file_files__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File",
+         "description": "A file read as bytes"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file"
+       ],
+       "title": "Body_create_file_files__post"
+      },
+      "Body_create_upload_file_uploadfile__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File",
+         "description": "A file read as UploadFile"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file"
+       ],
+       "title": "Body_create_upload_file_uploadfile__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_files_002",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/files/": {
+      "post": {
+       "summary": "Create Files",
+       "operationId": "create_files_files__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_files_files__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/uploadfiles/": {
+      "post": {
+       "summary": "Create Upload Files",
+       "operationId": "create_upload_files_uploadfiles__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_upload_files_uploadfiles__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/": {
+      "get": {
+       "summary": "Main",
+       "operationId": "main__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_create_files_files__post": {
+       "properties": {
+        "files": {
+         "items": {
+          "type": "string",
+          "contentMediaType": "application/octet-stream"
+         },
+         "type": "array",
+         "title": "Files"
+        }
+       },
+       "type": "object",
+       "required": [
+        "files"
+       ],
+       "title": "Body_create_files_files__post"
+      },
+      "Body_create_upload_files_uploadfiles__post": {
+       "properties": {
+        "files": {
+         "items": {
+          "type": "string",
+          "contentMediaType": "application/octet-stream"
+         },
+         "type": "array",
+         "title": "Files"
+        }
+       },
+       "type": "object",
+       "required": [
+        "files"
+       ],
+       "title": "Body_create_upload_files_uploadfiles__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_files_003",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/files/": {
+      "post": {
+       "summary": "Create Files",
+       "operationId": "create_files_files__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_files_files__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/uploadfiles/": {
+      "post": {
+       "summary": "Create Upload Files",
+       "operationId": "create_upload_files_uploadfiles__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_upload_files_uploadfiles__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/": {
+      "get": {
+       "summary": "Main",
+       "operationId": "main__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_create_files_files__post": {
+       "properties": {
+        "files": {
+         "items": {
+          "type": "string",
+          "contentMediaType": "application/octet-stream"
+         },
+         "type": "array",
+         "title": "Files",
+         "description": "Multiple files as bytes"
+        }
+       },
+       "type": "object",
+       "required": [
+        "files"
+       ],
+       "title": "Body_create_files_files__post"
+      },
+      "Body_create_upload_files_uploadfiles__post": {
+       "properties": {
+        "files": {
+         "items": {
+          "type": "string",
+          "contentMediaType": "application/octet-stream"
+         },
+         "type": "array",
+         "title": "Files",
+         "description": "Multiple files as UploadFile"
+        }
+       },
+       "type": "object",
+       "required": [
+        "files"
+       ],
+       "title": "Body_create_upload_files_uploadfiles__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_forms_and_files_001",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/files/": {
+      "post": {
+       "summary": "Create File",
+       "operationId": "create_file_files__post",
+       "requestBody": {
+        "content": {
+         "multipart/form-data": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_create_file_files__post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_create_file_files__post": {
+       "properties": {
+        "file": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "File"
+        },
+        "fileb": {
+         "type": "string",
+         "contentMediaType": "application/octet-stream",
+         "title": "Fileb"
+        },
+        "token": {
+         "type": "string",
+         "title": "Token"
+        }
+       },
+       "type": "object",
+       "required": [
+        "file",
+        "fileb",
+        "token"
+       ],
+       "title": "Body_create_file_files__post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "request_form_models_001",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/login/": {
+      "post": {
+       "summary": "Login",
+       "operationId": "login_login__post",
+       "requestBody": {
+        "content": {
+         "application/x-www-form-urlencoded": {
+          "schema": {
+           "$ref": "#/components/schemas/FormData"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "FormData": {
+       "properties": {
+        "username": {
+         "type": "string",
+         "title": "Username"
+        },
+        "password": {
+         "type": "string",
+         "title": "Password"
+        }
+       },
+       "type": "object",
+       "required": [
+        "username",
+        "password"
+       ],
+       "title": "FormData"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
       }
      }
     }

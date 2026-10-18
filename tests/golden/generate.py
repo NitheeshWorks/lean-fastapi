@@ -585,6 +585,16 @@ FIXTURES = {
     "dependency_overrides_typed": typed_overrides_app(False),
     "dependency_overrides_typed_on": typed_overrides_app(True),
     "dependency_shared_cache": shared_cache_app,
+    "request_forms_001": tutorial("request_forms.tutorial001_an_py310"),
+    "request_files_001": tutorial("request_files.tutorial001_an_py310"),
+    "request_files_001_02": tutorial("request_files.tutorial001_02_an_py310"),
+    "request_files_001_03": tutorial("request_files.tutorial001_03_an_py310"),
+    "request_files_002": tutorial("request_files.tutorial002_an_py310"),
+    "request_files_003": tutorial("request_files.tutorial003_an_py310"),
+    "request_forms_and_files_001": tutorial("request_forms_and_files.tutorial001_an_py310"),
+    "request_form_models_001": tutorial("request_form_models.tutorial001_an_py310"),
+    # request_form_models.tutorial002 (`model_config = {"extra": "forbid"}`) waits
+    # on lean-pydantic's extra="forbid" (no ConfigDict extra yet).
     "security_api_key_query": upstream_test("test_security_api_key_query"),
     "security_api_key_header_optional": upstream_test("test_security_api_key_header_optional"),
     "security_api_key_cookie": upstream_test("test_security_api_key_cookie"),
@@ -602,6 +612,30 @@ T = "tests/test_tutorial/"
 TD = T + "test_dependencies/"
 TS = T + "test_security/"
 BASIC = "Basic am9objpzZWNyZXQ="  # john:secret
+TF = T + "test_request_forms/"
+TFI = T + "test_request_files/"
+TFF = T + "test_request_forms_and_files/"
+TFM = T + "test_request_form_models/"
+BOUNDARY = "b0undary"
+MPH = {"content-type": "multipart/form-data; boundary=" + BOUNDARY}
+
+
+def MP(*parts):
+    """A multipart/form-data body as httpx sends `files=` and `data=`: each part a
+    (name, filename or None, content type or None, content)."""
+    out = ""
+    for name, filename, ctype, content in parts:
+        out += "--" + BOUNDARY + "\r\n" + f'Content-Disposition: form-data; name="{name}"'
+        if filename is not None:
+            out += f'; filename="{filename}"'
+        out += "\r\n"
+        if ctype is not None:
+            out += f"Content-Type: {ctype}\r\n"
+        out += "\r\n" + content + "\r\n"
+    return out + "--" + BOUNDARY + "--\r\n"
+
+
+OCT = "application/octet-stream"
 # (fixture, upstream test, method, url, extra headers, body)
 SCENARIOS = [
     ("first_steps_001", T + "test_first_steps/test_tutorial001_tutorial002_tutorial003.py::test_get_path", "GET", "/", {}, None),
@@ -795,6 +829,52 @@ SCENARIOS = [
     ("dependency_shared_cache", "tests/test_dependency_cache.py (application and route dependencies share one cache)", "POST", "/reset", {}, None),
     ("dependency_shared_cache", "tests/test_dependency_cache.py (application and route dependencies share one cache)", "GET", "/count", {}, None),
     ("dependency_shared_cache", "tests/test_dependency_cache.py (application and route dependencies share one cache)", "GET", "/count", {}, None),
+    # milestone 4: forms and files
+    ("request_forms_001", TF + "test_tutorial001.py::test_post_body_form", "POST", "/login/", F, "username=Foo&password=secret"),
+    ("request_forms_001", TF + "test_tutorial001.py::test_post_body_form_no_password", "POST", "/login/", F, "username=Foo"),
+    ("request_forms_001", TF + "test_tutorial001.py::test_post_body_form_no_username", "POST", "/login/", F, "password=secret"),
+    ("request_forms_001", TF + "test_tutorial001.py::test_post_body_form_no_data", "POST", "/login/", {}, None),
+    ("request_forms_001", TF + "test_tutorial001.py::test_post_body_json", "POST", "/login/", J, '{"username": "Foo", "password": "secret"}'),
+    ("request_forms_001", TF + "test_tutorial001.py (a multipart form)", "POST", "/login/", MPH, MP(("username", None, None, "Foo"), ("password", None, None, "secret"))),
+    ("request_forms_001", TF + "test_tutorial001.py (an empty field is missing)", "POST", "/login/", F, "username=&password=secret"),
+    ("request_forms_001", TF + "test_tutorial001.py (a file where a field goes)", "POST", "/login/", MPH, MP(("username", "u.txt", "text/plain", "Foo"), ("password", None, None, "secret"))),
+    ("request_files_001", TFI + "test_tutorial001.py::test_post_form_no_body", "POST", "/files/", {}, None),
+    ("request_files_001", TFI + "test_tutorial001.py::test_post_body_json", "POST", "/files/", J, '{"file": "Foo"}'),
+    ("request_files_001", TFI + "test_tutorial001.py::test_post_file", "POST", "/files/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_files_001", TFI + "test_tutorial001.py::test_post_large_file", "POST", "/files/", MPH, MP(("file", "test.txt", OCT, "x" * (2**16 + 1)))),
+    ("request_files_001", TFI + "test_tutorial001.py::test_post_upload_file", "POST", "/uploadfile/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_files_001", TFI + "test_tutorial001.py (bytes from a text field)", "POST", "/files/", MPH, MP(("file", None, None, "héllo"))),
+    ("request_files_001", TFI + "test_tutorial001.py (an UploadFile from a text field)", "POST", "/uploadfile/", MPH, MP(("file", None, None, "hello"))),
+    ("request_files_001", TFI + "test_tutorial001.py (an empty file)", "POST", "/files/", MPH, MP(("file", "e.txt", OCT, ""))),
+    ("request_files_001", TFI + "test_tutorial001.py (no upload)", "POST", "/uploadfile/", {}, None),
+    ("request_files_001", TFI + "test_tutorial001.py (malformed multipart)", "POST", "/files/", MPH, "garbage"),
+    ("request_files_001", TFI + "test_tutorial001.py (no boundary)", "POST", "/files/", {"content-type": "multipart/form-data"}, MP(("file", "t", OCT, "x"))),
+    ("request_files_001_02", TFI + "test_tutorial001_02.py::test_post_form_no_body", "POST", "/files/", {}, None),
+    ("request_files_001_02", TFI + "test_tutorial001_02.py::test_post_uploadfile_no_body", "POST", "/uploadfile/", {}, None),
+    ("request_files_001_02", TFI + "test_tutorial001_02.py::test_post_file", "POST", "/files/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_files_001_02", TFI + "test_tutorial001_02.py::test_post_upload_file", "POST", "/uploadfile/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_files_001_03", TFI + "test_tutorial001_03.py::test_post_file", "POST", "/files/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_files_001_03", TFI + "test_tutorial001_03.py::test_post_upload_file", "POST", "/uploadfile/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_files_002", TFI + "test_tutorial002.py::test_post_form_no_body", "POST", "/files/", {}, None),
+    ("request_files_002", TFI + "test_tutorial002.py::test_post_body_json", "POST", "/files/", J, '{"file": "Foo"}'),
+    ("request_files_002", TFI + "test_tutorial002.py::test_post_files", "POST", "/files/", MPH, MP(("files", "test.txt", OCT, "<file content>"), ("files", "test2.txt", OCT, "<file content2>"))),
+    ("request_files_002", TFI + "test_tutorial002.py::test_post_upload_file", "POST", "/uploadfiles/", MPH, MP(("files", "test.txt", OCT, "<file content>"), ("files", "test2.txt", OCT, "<file content2>"))),
+    ("request_files_002", TFI + "test_tutorial002.py (one text value among the uploads)", "POST", "/uploadfiles/", MPH, MP(("files", None, None, "hello"), ("files", "test2.txt", OCT, "x"))),
+    ("request_files_002", TFI + "test_tutorial002.py (a text value among bytes files)", "POST", "/files/", MPH, MP(("files", None, None, "hello"), ("files", "test2.txt", OCT, "x"))),
+    ("request_files_002", TFI + "test_tutorial002.py::test_get_root", "GET", "/", {}, None),
+    ("request_files_003", TFI + "test_tutorial003.py::test_post_files", "POST", "/files/", MPH, MP(("files", "test.txt", OCT, "<file content>"), ("files", "test2.txt", OCT, "<file content2>"))),
+    ("request_files_003", TFI + "test_tutorial003.py::test_post_upload_file", "POST", "/uploadfiles/", MPH, MP(("files", "test.txt", OCT, "<file content>"), ("files", "test2.txt", OCT, "<file content2>"))),
+    ("request_files_003", TFI + "test_tutorial003.py::test_get_root", "GET", "/", {}, None),
+    ("request_forms_and_files_001", TFF + "test_tutorial001.py::test_post_form_no_body", "POST", "/files/", {}, None),
+    ("request_forms_and_files_001", TFF + "test_tutorial001.py::test_post_form_no_file", "POST", "/files/", F, "token=foo"),
+    ("request_forms_and_files_001", TFF + "test_tutorial001.py::test_post_body_json", "POST", "/files/", J, '{"file": "Foo", "token": "Bar"}'),
+    ("request_forms_and_files_001", TFF + "test_tutorial001.py::test_post_file_no_token", "POST", "/files/", MPH, MP(("file", "test.txt", OCT, "<file content>"))),
+    ("request_forms_and_files_001", TFF + "test_tutorial001.py::test_post_files_and_token", "POST", "/files/", MPH, MP(("token", None, None, "foo"), ("file", "test.txt", OCT, "<file content>"), ("fileb", "testb.txt", "text/plain", "<file b content>"))),
+    ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_form", "POST", "/login/", F, "username=Foo&password=secret"),
+    ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_form_no_password", "POST", "/login/", F, "username=Foo"),
+    ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_form_no_username", "POST", "/login/", F, "password=secret"),
+    ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_form_no_data", "POST", "/login/", {}, None),
+    ("request_form_models_001", TFM + "test_tutorial001.py::test_post_body_json", "POST", "/login/", J, '{"username": "Foo", "password": "secret"}'),
     # milestone 3: security
     ("security_004", TS + "test_tutorial004.py::test_login", "POST", "/token", F, "username=johndoe&password=secret"),
     ("security_004", TS + "test_tutorial004.py::test_login_incorrect_password", "POST", "/token", F, "username=johndoe&password=incorrect"),

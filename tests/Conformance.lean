@@ -38,6 +38,14 @@ import tests.apps.DependencyDuplicates
 import tests.apps.DependencyYield
 import tests.apps.DependencyOverrides
 import tests.apps.DependencyOverridesTyped
+import tests.apps.RequestForms001
+import tests.apps.RequestFiles001
+import tests.apps.RequestFiles001_02
+import tests.apps.RequestFiles001_03
+import tests.apps.RequestFiles002
+import tests.apps.RequestFiles003
+import tests.apps.RequestFormsAndFiles001
+import tests.apps.RequestFormModels001
 import tests.apps.DependencySharedCache
 import tests.apps.Dependencies007
 import tests.apps.Dependencies008
@@ -143,6 +151,14 @@ def fixtures : List (String × FastAPI) :=
    ("dependency_overrides_typed", Tests.DependencyOverridesTyped.app.complete),
    ("dependency_overrides_typed_on", Tests.DependencyOverridesTyped.appOverridden.complete),
    ("dependency_shared_cache", Tests.DependencySharedCache.app.complete),
+   ("request_forms_001", Tests.RequestForms001.app.complete),
+   ("request_files_001", Tests.RequestFiles001.app.complete),
+   ("request_files_001_02", Tests.RequestFiles001_02.app.complete),
+   ("request_files_001_03", Tests.RequestFiles001_03.app.complete),
+   ("request_files_002", Tests.RequestFiles002.app.complete),
+   ("request_files_003", Tests.RequestFiles003.app.complete),
+   ("request_forms_and_files_001", Tests.RequestFormsAndFiles001.app.complete),
+   ("request_form_models_001", Tests.RequestFormModels001.app.complete),
    ("security_api_key_query", Tests.SecurityApiKeyQuery.app.complete),
    ("security_api_key_header_optional", Tests.SecurityApiKeyHeaderOptional.app.complete),
    ("security_api_key_cookie", Tests.SecurityApiKeyCookie.app.complete),
@@ -164,7 +180,11 @@ def knownDeviations : List (String × String × String × Option String × Strin
    ("response_model", "PUT", "/multi", none, "allow",
     "lean-starlette's 405 allows the union of every partially matching route's methods; Starlette uses the first (UP-027)"),
    ("response_model", "HEAD", "/multi", none, "allow",
-    "lean-starlette's 405 allows the union of every partially matching route's methods; Starlette uses the first (UP-027)")]
+    "lean-starlette's 405 allows the union of every partially matching route's methods; Starlette uses the first (UP-027)"),
+   ("request_forms_001", "POST", "/login/", some "--b0undary\r\nContent-Disposition: form-data; name=\"username\"; filename=\"u.txt\"\r\nContent-Type: text/plain\r\n\r\nFoo\r\n--b0undary\r\nContent-Disposition: form-data; name=\"password\"\r\n\r\nsecret\r\n--b0undary--\r\n", "*",
+    "a 422 for an upload where a str goes echoes the UploadFile as filename, size and headers; FastAPI dumps its SpooledTemporaryFile internals (UP-061)"),
+   ("request_files_002", "POST", "/files/", some "--b0undary\r\nContent-Disposition: form-data; name=\"files\"\r\n\r\nhello\r\n--b0undary\r\nContent-Disposition: form-data; name=\"files\"; filename=\"test2.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--b0undary--\r\n", "*",
+    "a text value of a list[bytes] File parameter is read as its UTF-8 bytes, as for a single bytes File; FastAPI calls .read() on the str and fails with 500 (UP-062)")]
 
 /-! ## JSON helpers -/
 
@@ -402,7 +422,9 @@ def formCase (corpus : List Json) : Case :=
         | some m => .inl m
         | none => .inr ((arr? e "fields").filterMap strPair?)
       let got : String ⊕ List (String × String) := match readForm req with
-        | .ok (.form fs) => .inr fs
+        | .ok (.formItems fs) => .inr (fs.map fun (k, v) => (k, match v with
+            | .text t => t
+            | .file _ => "<file>"))
         | .error (.badForm m) => .inl m
         | _ => .inl "unexpected"
       if got != want then
