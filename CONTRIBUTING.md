@@ -91,12 +91,6 @@ Listed here with the reason, and in `docs/traceability.toml` with
   body with a lone surrogate escape (`"\ud800"`) is a 400 "There was an error
   parsing the body", since lean-json rejects it, and a deeply nested array
   (5000 levels) is a 422; FastAPI answers 500 for both (UP-049).
-* `float` fields of the tutorials and the demo are `Decimal` (exact and
-  finite): `Infinity` is a 422 `finite_number` where Python's `float` accepts
-  it (and dumps `null`), `1e400` is kept where Python overflows it to `inf`,
-  and `12345678901234567890` prints all its digits where Python rounds to a
-  double (`1.2345678901234567e+19`). This waits for a float-faithful type in
-  lean-pydantic; the golden cases are listed in `knownDeviations`.
 * `operationId` is generated per method, so a multi-method route has distinct
   ids; upstream reuses the first method of a set (UP-046).
 * `\W` in `generate_unique_id` treats every non-ASCII character as a word

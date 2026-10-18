@@ -9,7 +9,7 @@ def app := FastAPI.new
 
 structure Public where
   name : String
-  price : Decimal
+  price : Float
   deriving Model
 
 @[get "/public" (response_model := Public)]

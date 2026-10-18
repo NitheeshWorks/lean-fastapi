@@ -7,8 +7,8 @@ namespace Tests.Body001
 structure Item where
   name : String
   description : Option String := none
-  price : Decimal
-  tax : Option Decimal := none
+  price : Float
+  tax : Option Float := none
   deriving Model
 
 def app := FastAPI.new

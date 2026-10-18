@@ -46,6 +46,15 @@ class IntoResult (γ : Type) where
 instance (priority := low) {γ : Type} [LeanJson.IntoJson γ] : IntoResult γ := ⟨fun x => .json (LeanJson.intoJson x)⟩
 instance : IntoResult Response := ⟨.response⟩
 
+/-- A pydantic value is returned as its round-trip dump (by alias, non-finite
+floats kept as `Infinity`/`NaN`), which a response model then validates
+again: FastAPI validates the returned object itself, so nothing the value
+holds is lost on the way. -/
+instance {γ : Type} [LeanPydantic.ToJson γ] : IntoResult γ :=
+  ⟨fun x => .json (LeanPydantic.toJson { LeanPydantic.DumpOpts.roundTrip with ser_json_inf_nan := .constants } x)⟩
+
+instance : IntoResult Json := ⟨.json⟩
+
 /-- A response model: its JSON Schema, and `serialize_response`: validate the
 returned value against the model (errors under `"response"`), then dump the
 validated value. -/

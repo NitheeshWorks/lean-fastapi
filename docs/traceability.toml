@@ -223,9 +223,10 @@ test = ["tests/Conformance.lean"]
 [[requirement]]
 id = "body.float-fields"
 upstream = "docs_src (float fields)"
-title = "Tutorial float fields are Decimal until lean-pydantic has a float-faithful type: inf, overflow and rounding differ"
-status = "deviation"
-test = ["tests/Conformance.lean", "demo/App.lean"]
+title = "float fields are lean-pydantic's Float: Infinity and 1e400 dump null, 12345678901234567890 rounds to 1.2345678901234567e+19, byte for byte"
+status = "tested"
+realises = ["LeanFastapi.ResponseModel.of"]
+test = ["tests/Conformance.lean", "tests/golden/fastapi.json", "demo/App.lean"]
 
 [[requirement]]
 id = "app.run"

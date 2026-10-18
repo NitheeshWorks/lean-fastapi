@@ -25,8 +25,8 @@ def readItem (item_id : Int) (q : Option String := none) : Handler Json :=
 structure Item where
   name        : String ∣ maxLength 50
   description : Option String := none
-  price       : Decimal ∣ gt 0
-  tax         : Option Decimal := none
+  price       : Float ∣ gt 0
+  tax         : Option Float := none
   deriving Model
 
 @[put "/items/{item_id}" (response_model := Item)]
