@@ -75,7 +75,11 @@ def readItems (token : Depends oauth2Scheme) (db : Depends getDb) : Handler Json
 `Security oauth2Scheme ["items"]` and a `SecurityScopes` parameter carry
 OAuth2 scopes; `app.dependency_overrides` (`app.overrideDependency`)
 replaces a dependency in tests:
-`app.overrideDependency (Depends commonParameters) (Depends overrider)`.
+`app.overrideDependency (Depends getDb) (Depends getTestDb)`, which must
+give the same type. Overrides apply inside an override's own dependencies,
+and `FastAPI.new (dependencies := [Depends verifyToken])` shares the
+route's cache: both are compiled into the routes when the application
+collects them.
 
 ```
 lake exe example      # demo/App.lean on http://127.0.0.1:8000
@@ -130,8 +134,9 @@ For every application (`LeanFastapi/Proofs/Verified.lean` bundles them):
 * **Dependencies.** Sub-dependencies run in declaration order, before the
   dependant (`solve_order`), and the errors of a tree are its nodes' errors
   in that order (`params_errors`); two uses under one cache key share a value
-  within a request (`cache_same_key`); an override replaces the dependency
-  and its sub-tree (`override_replaces`); exit code runs in reverse order of
+  within a request (`cache_same_key`); with an override in force, the
+  dependant gets the override's value, under the dependency's own key
+  (`override_replaces`); exit code runs in reverse order of
   entry (`cleanup_reverse`), and function-scoped exits finish before the
   response (`function_scope_not_outlive`); `SecurityScopes` holds the scopes
   of every `Security` on the way to it (`security_scopes_accumulate`).

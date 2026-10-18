@@ -116,25 +116,30 @@ Listed here with the reason, and in `docs/traceability.toml` with
 * UTF-16 and UTF-32 JSON bodies are not detected (only UTF-8, BOM dropped).
 * JSON bodies nested deeper than 9998 levels are rejected by lean-json's
   depth limit; Python's limit depends on the interpreter stack.
-* An override's value reaches the dependant through JSON (`FromJson` of the
-  dependency's type, or `Json` itself); a value that does not decode is a
-  500 `DependencyOverrideError`. Python passes any object.
-* The dependencies of an override are not themselves overridden; FastAPI
-  applies `dependency_overrides` again inside the override's tree.
-* App and router `dependencies=[...]` run with their own per-request cache,
-  so a dependency used both there and in the path operation runs twice;
-  FastAPI shares one cache.
+* `app.dependency_overrides` and `FastAPI(dependencies=[...])` are settled
+  when the application's routes are compiled: `declared_routes` (behind
+  `app.run`, `TestClient.new`, `app.openapi` and `app.complete`) reads them
+  off the application's definition and compiles every route with them, so
+  overrides are typed (an override of another value type does not compile)
+  and the application's dependencies share the route's cache. An
+  application whose overrides cannot be read at compile time (built by a
+  run-time `if`, say) is a compile error; a route added by hand to an
+  application it was not compiled for answers 500 (`FastAPIError`), so an
+  override is never silently ignored. In Python both can change between
+  requests; in Lean an application with other overrides is another value.
 * An exception raised by request-scoped exit code after the response has
-  been sent is dropped; under uvicorn FastAPI logs it.
+  been sent is written to standard error (`Exception in ASGI application`,
+  as uvicorn logs it); the response stands.
 * `DependencyScopeError` (a request-scoped `yield` dependency depending on a
   function-scoped one) is an elaboration error, not a runtime error when the
   route is added.
 * The same parameter declared by the path operation and a dependency reports
   its validation error once per declaration, as FastAPI does (UP-060).
-* Security tutorials 004 (argon2 and PyJWT) is not twinned; 005 is, with a
-  fake hash and token in place of those libraries. Dependencies tutorials
-  007, 008, 010, 013 and 014 are fragments or need sqlmodel and are not
-  twinned.
+* Security tutorials 004 and 005 are twinned with a fake hash and token in
+  place of argon2 and PyJWT; dependencies tutorials 007, 008 and 010 with
+  fakes in place of the Mocks their tests patch in. Dependencies tutorials
+  013 and 014 need sqlmodel and a database and have no upstream test
+  (follow-up card q8kwp43vju4p).
 * Not yet: `multipart/form-data` and `File` (milestone 4); `root_path` and
   the `servers` entry.
 

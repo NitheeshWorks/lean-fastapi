@@ -39,6 +39,13 @@ A dependency is:
 `Security f ["items"]` is `Security(f, scopes=["items"])`. Named arguments:
 `(use_cache := false)`, `(scope := "function")`.
 
+Overrides (`app.overrideDependency (Depends f) (Depends g)`) and the
+application's `dependencies` are compiled into each route's tree when the
+application collects its routes (`declared_routes`): a dependency with an
+override in force is solved with the override's callable and arguments (and
+so, recursively, inside the override's own tree), under its own cache key
+and scope (`Dep.call`'s `ov`).
+
 The analysis is a `MetaM` program over the types, bounded by the depth of
 the tree (`maxDepth`): no `partial`.
 -/
@@ -224,15 +231,18 @@ inductive Node where
   | scopes (s : List String)
   | param (source : Source) (base : Expr) (param : Expr)
   /-- A sub-dependency: its cache key, value type, callable, kind, `use_cache`,
-  computed scope, own scopes, scheme, and its own arguments. -/
+  computed scope, own scopes, scheme, and its own arguments; and the
+  override in force for it, if any (`ovFn`): its callable, kind and
+  arguments. -/
   | sub (key : CacheKey) (α : Expr) (fn : Expr) (kind : Kind) (useCache : Bool) (scope : String)
       (own : List String) (scheme : Option Expr) (args : List Node)
+      (ovFn : Option Expr) (ovKind : Kind) (ovArgs : List Node)
   deriving Inhabited
 
 /-- `_uses_scopes`. -/
 def Node.usesScopes : Node → Bool
   | .scopes _ => true
-  | .sub _ _ _ _ _ _ own scheme args => !own.isEmpty || scheme.isSome || usesList args
+  | .sub _ _ _ _ _ _ own scheme args _ _ _ => !own.isEmpty || scheme.isSome || usesList args
   | _ => false
 where
   usesList : List Node → Bool
@@ -249,6 +259,11 @@ structure Mark where
   useCache : Bool
   scope : String
   own : List String
+  deriving Inhabited
+
+/-- The overrides in force while a tree is read: the replaced dependency's
+name, and the override's mark. -/
+abbrev Overrides := List (String × Mark)
 
 /-- Read a `DependsT`/`SecurityT` mark off an argument type. -/
 def markOf? (ty : Expr) : MetaM (Option Mark) := do
@@ -290,7 +305,7 @@ scopes of the way to it (`current`: the parent's, then its own). A
 request-scoped `yield` dependency (`isYieldRequest`) may not depend on a
 function-scoped one (`DependencyScopeError`). Each node holds closed
 expressions. -/
-def argsOf (fuel : Nat) (pathNames : List String) (current : List String) (name : String)
+def argsOf (fuel : Nat) (ovs : Overrides) (pathNames : List String) (current : List String) (name : String)
     (isYieldRequest : Bool) (shape : Shape) : MetaM (List Node) := do
   match fuel with
   | 0 => throwError "the dependency tree of `{name}` is deeper than {maxDepth}"
@@ -311,7 +326,7 @@ def argsOf (fuel : Nat) (pathNames : List String) (current : List String) (name 
           if isYieldRequest && m.scope == "function" then
             -- `call_name` is the function's own name, without its namespace
             throwError "The dependency \"{(name.splitOn ".").getLastD name}\" has a scope of \"request\", it cannot depend on dependencies with scope \"function\"."
-          nodes := nodes ++ [← subOf fuel pathNames current m]
+          nodes := nodes ++ [← subOf fuel ovs pathNames current m]
           continue
         let base0 := ty
         if base0.isConstOf ``SecurityScopes then
@@ -330,24 +345,41 @@ def argsOf (fuel : Nat) (pathNames : List String) (current : List String) (name 
           nodes := nodes ++ [.param src base p]
       return nodes
 
+/-- The kind and value type of a callable. -/
+def kindOf (shape : Shape) : MetaM (Kind × Expr) := do
+  forallTelescope (← inferType shape.fn) fun _ r => do
+    let (k, α) ← resultOf r
+    if α.hasFVar then throwError "the value type of `{shape.name}` depends on its arguments"
+    return (k, α)
+
 /-- The node of a marked argument (`get_sub_dependant`), under the scopes
-`parent`. -/
-def subOf (fuel : Nat) (pathNames : List String) (parent : List String) (m : Mark) : MetaM Node := do
+`parent`. With an override in force for it, the override's callable is
+read too (`get_dependant(call=override, ...)` in `solve_dependencies`), its
+arguments under the same scopes and overrides, and its value type must be
+the dependency's. -/
+def subOf (fuel : Nat) (ovs : Overrides) (pathNames : List String) (parent : List String) (m : Mark) :
+    MetaM Node := do
   match fuel with
   | 0 => throwError "the dependency tree is deeper than {maxDepth}"
   | fuel + 1 =>
     let shape ← shapeOf m.dependency
-    let (kind, α) ← forallTelescope (← inferType shape.fn) fun _ r => do
-      let (k, α) ← resultOf r
-      if α.hasFVar then throwError "the value type of `{shape.name}` depends on its arguments"
-      return (k, α)
+    let (kind, α) ← kindOf shape
     let scope := if m.scope.isEmpty then (if kind == .yield then "request" else "") else m.scope
     let current := parent ++ m.own
-    let args ← argsOf fuel pathNames current shape.name (kind == .yield && scope == "request") shape
-    let node0 := Node.sub {call := shape.name} α shape.fn kind m.useCache scope m.own shape.scheme args
+    let args ← argsOf fuel ovs pathNames current shape.name (kind == .yield && scope == "request") shape
+    let node0 := Node.sub {call := shape.name} α shape.fn kind m.useCache scope m.own shape.scheme args none .pure []
     let key : CacheKey := { call := shape.name, scope,
                             scopes := if node0.usesScopes then (dedupScopes current).mergeSort (· ≤ ·) else [] }
-    return .sub key α shape.fn kind m.useCache scope m.own shape.scheme args
+    let (ovFn, ovKind, ovArgs) ← match ovs.lookup shape.name with
+      | none => pure (none, Kind.pure, [])
+      | some om => do
+        let oshape ← shapeOf om.dependency
+        let (okind, oα) ← kindOf oshape
+        unless ← isDefEq oα α do
+          throwError "the override `{oshape.name}` of `{shape.name}` gives `{oα}`, not `{α}`"
+        let oargs ← argsOf fuel ovs pathNames current oshape.name (okind == .yield && scope == "request") oshape
+        pure (some oshape.fn, okind, oargs)
+    return .sub key α shape.fn kind m.useCache scope m.own shape.scheme args ovFn ovKind ovArgs
 
 end
 
@@ -356,7 +388,7 @@ mutual
 /-- The body parameters of a tree, each use counted. -/
 def Node.bodies : Node → Nat
   | .param .body _ _ => 1
-  | .sub _ _ _ _ _ _ _ _ args => Node.bodiesList args
+  | .sub _ _ _ _ _ _ _ _ args _ _ _ => Node.bodiesList args
   | _ => 0
 
 def Node.bodiesList : List Node → Nat
@@ -378,7 +410,7 @@ mutual
 /-- The names of the body parameters of a tree, each use counted. -/
 def Node.bodyNames : Node → List String
   | .param .body _ p => (paramName? p).toList
-  | .sub _ _ _ _ _ _ _ _ args => Node.bodyNamesList args
+  | .sub _ _ _ _ _ _ _ _ args _ _ _ => Node.bodyNamesList args
   | _ => []
 
 def Node.bodyNamesList : List Node → List String
@@ -391,7 +423,8 @@ def Node.embedBodies : Node → Node
   | .param .body b p =>
     .param .body b (if p.isAppOfArity ``LeanFastapi.mkParam 13 then mkAppN p.getAppFn (p.getAppArgs.set! 10 (toExpr true))
       else p)
-  | .sub key α fn kind uc sc own sch args => .sub key α fn kind uc sc own sch (Node.embedBodiesList args)
+  | .sub key α fn kind uc sc own sch args ovFn ovKind ovArgs =>
+    .sub key α fn kind uc sc own sch (Node.embedBodiesList args) ovFn ovKind (Node.embedBodiesList ovArgs)
   | n => n
 
 def Node.embedBodiesList : List Node → List Node
@@ -444,12 +477,12 @@ def markOfSyntax (stx : Syntax) : TermElabM Mark := do
 
 mutual
 
-/-- The distinct cache keys of a tree, first-seen order, with their value
-types. -/
+/-- The distinct cache keys of a tree (an override's too), first-seen order,
+with their value types. -/
 def keysOf : Node → List (CacheKey × Expr) → List (CacheKey × Expr)
-  | .sub key α _ _ _ _ _ _ args, acc =>
+  | .sub key α _ _ _ _ _ _ args _ _ ovArgs, acc =>
     let acc := if acc.any (·.1 == key) then acc else acc ++ [(key, α)]
-    keysOfList args acc
+    keysOfList ovArgs (keysOfList args acc)
   | _, acc => acc
 
 def keysOfList : List Node → List (CacheKey × Expr) → List (CacheKey × Expr)
@@ -494,98 +527,141 @@ def paramsOf (ps : List (Source × Expr × Expr)) : MetaM (Expr × Expr) := do
     β ← mkAppM ``Prod #[base, β]
   return (e, β)
 
+/-- **A dependant's solve** from its sub-dependencies' solves (`subs`,
+with their value types, in order): those, then its own parameters, the
+request and its scopes, as one `Dep σ β`; and, for a value `v : β`, the
+argument values in declaration order. -/
+def assembleArgs (σ : Expr) (args : List Node) (subs : List (Expr × Expr)) :
+    MetaM (Expr × Expr × (Expr → MetaM (List Expr))) := do
+  let ps := args.filterMap fun | .param s b p => some (s, b, p) | _ => none
+  let scopes := (args.findSome? fun | .scopes s => some s | _ => none).getD []
+  let mut comps : List (Expr × Expr) := subs
+  let (psE, psTy) ← paramsOf ps
+  comps := comps ++ [(← mkAppOptM ``Dep.params #[some σ, some psTy, some psE], psTy)]
+  comps := comps ++ [(← mkAppOptM ``Dep.request #[some σ], Lean.mkConst ``LeanStarlette.Request)]
+  comps := comps ++ [(← mkAppOptM ``Dep.scopes #[some σ, some (strList scopes)], Lean.mkConst ``SecurityScopes)]
+  let mut dep ← mkAppOptM ``Dep.pure #[some σ, some (Lean.mkConst ``Unit), some (Lean.mkConst ``Unit.unit)]
+  let mut β := Lean.mkConst ``Unit
+  for (c, t) in comps.reverse do
+    dep ← mkAppM ``Dep.both #[c, dep]
+    β ← mkAppM ``Prod #[t, β]
+  let nsubs := subs.length
+  let sortedPs := ps.mergeSort (fun a b => a.1.rank ≤ b.1.rank)
+  let project (v : Expr) : MetaM (List Expr) := do
+    let mut out : List Expr := []
+    let mut si := 0
+    for n in args do
+      match n with
+      | .sub .. => out := out ++ [← projAt v si]; si := si + 1
+      | .param _ _ p =>
+        let k := (sortedPs.findIdx? (fun q => q.2.2 == p)).getD 0
+        out := out ++ [← projAt (← projAt v nsubs) k]
+      | .request => out := out ++ [← projAt v (nsubs + 1)]
+      | .scopes _ => out := out ++ [← projAt v (nsubs + 2)]
+    return out
+  return (dep, β, project)
+
+/-- A callable on its solved arguments, as an `Invoke` (its exit, for a
+`yield` dependency, on the stack of `scope`), with the arguments' solve. -/
+def invokeOf (σ α fn : Expr) (kind : Kind) (scope : String) (args : List Node) (subs : List (Expr × Expr)) :
+    MetaM (Expr × Expr × Expr) := do
+  let (argDep, β, project) ← assembleArgs σ args subs
+  let lam ← withLocalDeclD `v β fun v => do
+    let body := mkAppN fn (← project v).toArray
+    let body ← match kind with
+      | .pure => mkAppM ``handlerPure #[body]
+      | _ => pure body
+    mkLambdaFVars #[v] body
+  let invoke ← match kind with
+    | .yield =>
+      let sc := if scope == "function" then Lean.mkConst ``DepScope.function else Lean.mkConst ``DepScope.request
+      mkAppOptM ``Dep.Invoke.yield #[some β, some α, some sc, some lam]
+    | _ => mkAppOptM ``Dep.Invoke.plain #[some β, some α, some lam]
+  return (invoke, argDep, β)
+
 mutual
 
-/-- **A dependant's solve**: its sub-dependencies in order, then its own
-parameters, the request and its scopes, as one `Dep σ β`; and, for a value
-`v : β`, the argument values in declaration order. -/
-def genArgs (fuel : Nat) (σ : Expr) (slots : List (CacheKey × Expr)) (args : List Node) :
-    MetaM (Expr × Expr × (Expr → MetaM (List Expr))) := do
-  match fuel with
-  | 0 => throwError "dependency tree too deep"
-  | fuel + 1 =>
-    let subs := args.filter fun | .sub .. => true | _ => false
-    let ps := args.filterMap fun | .param s b p => some (s, b, p) | _ => none
-    let scopes := (args.findSome? fun | .scopes s => some s | _ => none).getD []
-    let mut comps : List (Expr × Expr) := []
-    for n in subs do
-      let d ← genSub fuel σ slots n
-      comps := comps ++ [(d, (← inferType d).appArg!)]
-    let (psE, psTy) ← paramsOf ps
-    comps := comps ++ [(← mkAppOptM ``Dep.params #[some σ, some psTy, some psE], psTy)]
-    comps := comps ++ [(← mkAppOptM ``Dep.request #[some σ], Lean.mkConst ``LeanStarlette.Request)]
-    comps := comps ++ [(← mkAppOptM ``Dep.scopes #[some σ, some (strList scopes)], Lean.mkConst ``SecurityScopes)]
-    let mut dep ← mkAppOptM ``Dep.pure #[some σ, some (Lean.mkConst ``Unit), some (Lean.mkConst ``Unit.unit)]
-    let mut β := Lean.mkConst ``Unit
-    for (c, t) in comps.reverse do
-      dep ← mkAppM ``Dep.both #[c, dep]
-      β ← mkAppM ``Prod #[t, β]
-    let nsubs := subs.length
-    let sortedPs := ps.mergeSort (fun a b => a.1.rank ≤ b.1.rank)
-    let project (v : Expr) : MetaM (List Expr) := do
-      let mut out : List Expr := []
-      let mut si := 0
-      for n in args do
-        match n with
-        | .sub .. => out := out ++ [← projAt v si]; si := si + 1
-        | .param _ _ p =>
-          let k := (sortedPs.findIdx? (fun q => q.2.2 == p)).getD 0
-          out := out ++ [← projAt (← projAt v nsubs) k]
-        | .request => out := out ++ [← projAt v (nsubs + 1)]
-        | .scopes _ => out := out ++ [← projAt v (nsubs + 2)]
-      return out
-    return (dep, β, project)
-
-/-- **A sub-dependency's solve**: `Dep.call` (or `Dep.callFixed` for a value
-without a JSON form, which cannot be overridden) on its arguments' solve. -/
-def genSub (fuel : Nat) (σ : Expr) (slots : List (CacheKey × Expr)) : Node → MetaM Expr
-  | .sub key α fn kind useCache scope own scheme args => do
-    match fuel with
-    | 0 => throwError "dependency tree too deep"
-    | fuel + 1 =>
-      let (argDep, β, project) ← genArgs fuel σ slots args
-      let some idx := slots.findIdx? (·.1 == key) | throwError "no cache slot for {key.call}"
-      let slot ← slotExpr (slots.map (·.2)) idx
-      let lam ← withLocalDeclD `v β fun v => do
-        let body := mkAppN fn (← project v).toArray
-        let body ← match kind with
-          | .pure => mkAppM ``handlerPure #[body]
-          | _ => pure body
-        mkLambdaFVars #[v] body
-      let invoke ← match kind with
-        | .yield =>
-          let sc := if scope == "function" then Lean.mkConst ``DepScope.function else Lean.mkConst ``DepScope.request
-          mkAppOptM ``Dep.Invoke.yield #[some β, some α, some sc, some lam]
-        | _ => mkAppOptM ``Dep.Invoke.plain #[some β, some α, some lam]
-      let canOverride := (← synthInstance? (← mkAppM ``Dep.OverrideValue #[α])).isSome
-      let fname := if canOverride then ``Dep.call else ``Dep.callFixed
-      let args := #[some σ, some α, some β] ++ (if canOverride then #[none] else #[]) ++
-        #[some (keyExpr key), some slot, some (toExpr useCache), some (strList own), some (← schemeExpr scheme),
-          some invoke, some argDep]
-      mkAppOptM fname args
+/-- **A sub-dependency's solve**: `Dep.call` on its arguments' solve, with
+the override's callable and arguments when one is in force. Structural on
+the tree. -/
+def genSub (σ : Expr) (slots : List (CacheKey × Expr)) : Node → MetaM Expr
+  | .sub key α fn kind useCache scope own scheme args ovFn ovKind ovArgs => do
+    let (invoke, argDep, β) ← invokeOf σ α fn kind scope args (← genSubs σ slots args)
+    let ovSubs ← genSubs σ slots ovArgs
+    let some idx := slots.findIdx? (·.1 == key) | throwError "no cache slot for {key.call}"
+    let slot ← slotExpr (slots.map (·.2)) idx
+    let ovTy ← mkAppM ``Dep.Override #[σ, α]
+    let ov ← match ovFn with
+      | none => mkAppOptM ``Option.none #[some ovTy]
+      | some ofn => do
+        let (oinv, oarg, oβ) ← invokeOf σ α ofn ovKind scope ovArgs ovSubs
+        mkAppOptM ``Option.some #[some ovTy,
+          ← mkAppOptM ``Dep.Override.mk #[some σ, some α, some oβ, some oinv, some oarg]]
+    mkAppOptM ``Dep.call #[some σ, some α, some β, some (keyExpr key), some slot, some (toExpr useCache),
+      some (strList own), some (← schemeExpr scheme), some invoke, some argDep, some ov]
   | _ => throwError "not a dependency"
+
+/-- The solves of the sub-dependencies among `args`, in order, with their
+value types. -/
+def genSubs (σ : Expr) (slots : List (CacheKey × Expr)) : List Node → MetaM (List (Expr × Expr))
+  | [] => pure []
+  | n :: ns => do
+    let rest ← genSubs σ slots ns
+    match n with
+    | .sub .. =>
+      let d ← genSub σ slots n
+      pure ((d, (← inferType d).appArg!) :: rest)
+    | _ => pure rest
 
 end
 
+/-- **A dependant's solve**: its sub-dependencies, then its own parameters,
+the request and its scopes (`assembleArgs`). -/
+def genArgs (σ : Expr) (slots : List (CacheKey × Expr)) (args : List Node) :
+    MetaM (Expr × Expr × (Expr → MetaM (List Expr))) := do
+  assembleArgs σ args (← genSubs σ slots args)
+
 /-! ## `Depends` and `Security` as terms -/
 
-/-- The JSON form of a dependency's value, for a type-erased one. -/
-def toJsonFn (α : Expr) : MetaM Expr := do
-  let jsonTy := Lean.mkConst ``LeanJson.Json
-  if ← isDefEq α jsonTy then
-    return .lam `j jsonTy (.bvar 0) .default
-  if (← synthInstance? (← mkAppM ``LeanPydantic.ToJson #[α])).isSome then
-    return ← withLocalDeclD `v α fun v => do mkLambdaFVars #[v] (← mkAppM ``depToJson #[v])
-  withLocalDeclD `v α fun v => mkLambdaFVars #[v] (Lean.mkConst ``LeanJson.Json.null)
-
-/-- **A dependency as a value**: its tree, solved with a cache of its own. -/
+/-- **A dependency as a value** (`Dependency α`): the callable and the
+mark, kept for `declared_routes`, and its cache key. -/
 def dependencyValue (m : Mark) : MetaM Expr := do
-  let node ← subOf maxDepth [] [] m
+  let node ← subOf maxDepth [] [] [] m
   let .sub key α .. := node | throwError "not a dependency"
-  let slots := keysOf node []
-  let σ ← cacheTypes slots
-  let dep ← genSub maxDepth σ slots node
-  mkAppOptM ``Dependency.ofDep #[some σ, some α, some (keyExpr key), some (← toJsonFn α), some dep]
+  mkAppM ``Dependency.declared #[m.dependency, α, toExpr m.useCache, toExpr m.scope, strList m.own, keyExpr key]
+
+/-- Read a `Dependency.declared` term (possibly erased) back as a mark and
+its key. -/
+def markOfDependency? (e : Expr) : MetaM (Option (Mark × Expr)) := do
+  let e ← instantiateMVars e
+  let e := if e.isAppOfArity ``Dependency.erase 2 then e.appArg! else e
+  let e ← whnfCore e
+  if e.isAppOfArity ``Dependency.declared 7 then
+    let a := e.getAppArgs
+    let useCache ← match (← whnfD a[3]!).constName? with
+      | some ``Bool.false => pure false
+      | _ => pure true
+    let scope ← match ← whnfD a[4]! with
+      | .lit (.strVal s) => pure s
+      | _ => pure ""
+    let own ← strsOf a[5]!
+    return some ({ dependency := a[1]!, useCache, scope, own }, a[6]!)
+  return none
+where
+  strsOf (e : Expr) : MetaM (List String) := do
+    let some xs := listLit? e | throwError "scopes must be a list literal, not `{e}`"
+    xs.mapM fun x => do
+      match ← whnfD x with
+      | .lit (.strVal s) => pure s
+      | _ => throwError "a scope must be a string literal, not `{x}`"
+  listLit? (e : Expr) : Option (List Expr) :=
+    go 10000 e
+  go : Nat → Expr → Option (List Expr)
+    | 0, _ => none
+    | n + 1, e =>
+      if e.isAppOfArity ``List.nil 1 then some []
+      else if e.isAppOfArity ``List.cons 3 then (go n e.appArg!).map (e.appFn!.appArg! :: ·)
+      else none
 
 /-- Elaborate `Depends ...` or `Security ...`: the type `DependsT x α ...`
 in a type position, the `Dependency` elsewhere. -/
@@ -602,7 +678,13 @@ def elabMark (stx : Syntax) (expected? : Option Expr) : TermElabM Expr := do
       mkAppM ``SecurityT #[m.dependency, α, strList m.own, toExpr m.useCache]
     else mkAppM ``DependsT #[m.dependency, α, toExpr m.useCache, toExpr m.scope]
   else
-    dependencyValue m
+    let d ← dependencyValue m
+    -- an entry of `FastAPI(dependencies=[...])`: its value type forgotten
+    match expected? with
+    | some t =>
+      if (← whnfR (← instantiateMVars t)).isConstOf ``AnyDependency then mkAppM ``Dependency.erase #[d]
+      else pure d
+    | none => pure d
 
 @[term_elab dependsStx] def elabDepends : TermElab := elabMark
 

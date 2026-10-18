@@ -39,10 +39,10 @@ def ExtractConsOkIff : Prop :=
 /-- `extract_422`: a solve that records validation errors (and enters no
 `yield` dependency) is a 422 carrying exactly its errors. -/
 def Extract422 : Prop :=
-  ∀ {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv)
+  ∀ {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ)
     (req : LeanStarlette.Request) (b : BodyInput) (v? : Option β) (st : SolveState σ) (es : List RequestError),
-    e.body req = .ok b → e.solveIO env req b = pure (.ok v?, st) → st.shared = { errors := es } → es ≠ [] →
-      LeanStarlette.exceptionMiddleware defaultExceptionHandlers (e.app env) req =
+    e.body req = .ok b → e.solveIO req b = pure (.ok v?, st) → st.shared = { errors := es } → es ≠ [] →
+      LeanStarlette.exceptionMiddleware defaultExceptionHandlers e.app req =
         pure (validationErrorResponse (errorsJson es))
 
 /-- `infer_param`: FastAPI's classification of an unwrapped argument. -/
@@ -126,14 +126,17 @@ def CachedStores : Prop :=
     s₁.cache.get slot = none →
     (Dep.cached slot useCache compute).runAt c s = pure (.ok (some v), { s₁ with cache := s₁.cache.set slot v })
 
-/-- `override_replaces`: with an override, the dependency's own function and
-arguments play no part. -/
+/-- `override_replaces`: with an override in force, the dependant gets the
+override's value on the override's arguments, cached under the dependency's
+key; the dependency's own function and arguments play no part. -/
 def OverrideReplaces : Prop :=
-  ∀ {σ : List Type} {α β β' : Type} [Dep.OverrideValue α] (key : CacheKey) (slot : Slot σ α) (useCache : Bool)
+  ∀ {σ : List Type} {α β β' : Type} (key : CacheKey) (slot : Slot σ α) (useCache : Bool)
     (own : List String) (scheme : Option (String × SecurityScheme)) (f : Dep.Invoke β α) (arg : Dep σ β)
-    (f' : Dep.Invoke β' α) (arg' : Dep σ β') (c : Ctx) (o : ErasedRun) (s : SolveState σ),
-    c.overrides.lookup key.call = some o →
-    (Dep.call key slot useCache own scheme f arg).runAt c s = (Dep.call key slot useCache own scheme f' arg').runAt c s
+    (g : Dep.Invoke β' α) (arg' : Dep σ β') (c : Ctx) (s s₁ s₂ : SolveState σ) (b : β') (v : α),
+    arg'.runAt c s = pure (.ok (some b), s₁) → s₁.cache.get slot = none →
+    (g.call b).runAt c s₁ = pure (.ok v, s₂) → s₂.cache.get slot = none →
+    (Dep.call key slot useCache own scheme f arg (some ⟨g, arg'⟩)).runAt c s =
+      pure (.ok (some v), { s₂ with cache := s₂.cache.set slot v })
 
 /-- `cleanup_reverse`: exits run in the reverse of the order entered. -/
 def CleanupReverse : Prop :=

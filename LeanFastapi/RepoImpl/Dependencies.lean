@@ -26,10 +26,14 @@ combinators over one solving monad.
   re-raises, raises another, or returns, which suppresses it. Exits go on
   the function or request **exit stack** (`DepScope`), and stacks unwind in
   reverse order (`closeExits`).
-* `dependency_overrides`: an `Override` replaces the dependency with its
-  key. Its value reaches the dependant through its JSON form, since an
-  override may be any function (a recorded deviation: Python passes the
-  object itself).
+* `dependency_overrides`: `Dep.call` takes the override in force for the
+  dependency, if any (an `Override σ α`: another callable of the same value
+  type with its own arguments). The override's arguments are solved and the
+  override is called; the dependency's cache key, cache use and scope stay
+  the original's, as in `solve_dependencies`, and OpenAPI still describes
+  the original. Which override applies is settled when the application's
+  routes are compiled (`declared_routes`), so it is typed: an override of
+  another value type does not compile.
 
 Errors and exit stacks live in `Shared`; the cache in `SolveState`. A
 dependency raising an exception (an `HTTPException`) stops the solve, and
@@ -159,21 +163,9 @@ structure Env where
   request : Request
   inputs : Inputs
 
-/-- The monad a type-erased dependency (an override, an application's
-`dependencies`) solves in: the request, and the shared state only. -/
-abbrev SharedM := ReaderT Env (ExceptT Exception (StateT Shared IO))
-
-/-- A type-erased dependency's solve, in `solve_dependencies`'s two phases:
-solve its arguments (recording errors; `none` when there were any), then
-call it, which gives its value as JSON. -/
-abbrev ErasedRun := SharedM (Option (SharedM Json))
-
-/-- What a route's solve reads: the request, its inputs, and the overrides
-in force by dependency name. An override's own sub-dependencies are not
-overridden in turn (a recorded deviation). -/
+/-- What a route's solve reads: the request and its inputs. -/
 structure Ctx where
   env : Env
-  overrides : List (String × ErasedRun) := []
 
 /-- A solve's state: what is shared, and the typed cache. -/
 structure SolveState (σ : List Type) where
@@ -202,13 +194,6 @@ def report (es : List RequestError) : SolveM σ Unit :=
 /-- Push an exit on the stack of its scope. -/
 def pushExit (scope : DepScope) (x : Exit) : SolveM σ Unit :=
   modify fun s => { s with shared := s.shared.push scope x }
-
-/-- Run a computation over the shared state only (an override, an
-application-level dependency). -/
-def shared {α : Type} (m : SharedM α) : SolveM σ α := fun ctx =>
-  ExceptT.mk fun s => do
-    let (r, sh) ← ((m ctx.env).run).run s.shared
-    pure (r, { s with shared := sh })
 
 end SolveM
 
@@ -255,21 +240,6 @@ def both (a : Dep σ α) (b : Dep σ β) : Dep σ (α × β) where
     let y ← b.run
     Pure.pure (do Pure.pure (← x, ← y))
 
-/-- How a dependency's value is read back from an override's JSON:
-`fromJson` (lax, as a parameter), or the JSON itself. -/
-class OverrideValue (α : Type) where
-  decode : Json → Except (List LeanPydantic.ErrorDetails) α
-
-instance (priority := low) {α : Type} [FromJson α] : OverrideValue α := ⟨LeanPydantic.fromJson fastapiCfg⟩
-instance : OverrideValue Json := ⟨.ok⟩
-
-/-- The value under an override's JSON, as the dependant's type. -/
-def ofOverride [OverrideValue α] (key : CacheKey) (j : Json) : SolveM σ α :=
-  match OverrideValue.decode (α := α) j with
-  | .ok v => Pure.pure v
-  | .error _ => throw (.custom "DependencyOverrideError"
-      s!"the override of {key.call} returned a value of another shape" j)
-
 /-- How a sub-dependency is invoked: a plain function, or a `yield`
 dependency whose exit goes on the stack of its scope. -/
 inductive Invoke (β α : Type) where
@@ -295,58 +265,65 @@ def cached (slot : Slot σ α) (useCache : Bool) (compute : SolveM σ α) : Solv
     modify fun s => { s with cache := s.cache.fill slot v }
     Pure.pure (some v)
 
-/-- **A sub-dependency** (`Depends(f)`): with an override for its key, the
-override's arguments are solved and the override is called; otherwise its own
-arguments `arg` are solved and `f` is called. Either way, nothing is called
-after argument errors, and a cached value is reused when `useCache`. -/
-def call [OverrideValue α] (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (ownScopes : List String)
-    (scheme : Option (String × SecurityScheme)) (f : Invoke β α) (arg : Dep σ β) : Dep σ α where
-  info := [.sub key ownScopes scheme arg.info]
-  run := do
-    match (← read).overrides.lookup key.call with
-    | some o => do
-      match ← SolveM.shared o with
-      | none => Pure.pure none
-      | some callIt => cached slot useCache (do ofOverride key (← SolveM.shared callIt))
-    | none => do
-      match ← arg.run with
-      | none => Pure.pure none
-      | some b => cached slot useCache (f.call b)
+/-- An override in force for a dependency of value `α`: another callable,
+with its own arguments (`dependency_overrides[original] = override`). -/
+structure Override (σ : List Type) (α : Type) where
+  {β : Type}
+  invoke : Invoke β α
+  arg : Dep σ β
 
-/-- A sub-dependency that cannot be overridden (its value has no JSON
-form): `call` without the override lookup. -/
-def callFixed (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (ownScopes : List String)
-    (scheme : Option (String × SecurityScheme)) (f : Invoke β α) (arg : Dep σ β) : Dep σ α where
+/-- Solve the arguments, then (when they had no errors) take the cached
+value or call. -/
+def Override.solve (o : Override σ α) (slot : Slot σ α) (useCache : Bool) : SolveM σ (Option α) := do
+  match ← o.arg.run with
+  | none => Pure.pure none
+  | some b => cached slot useCache (o.invoke.call b)
+
+/-- The callable and arguments a sub-dependency solves: the override's when
+there is one, else its own. -/
+def Override.pick (ov : Option (Override σ α)) (f : Invoke β α) (arg : Dep σ β) : Override σ α :=
+  ov.getD ⟨f, arg⟩
+
+/-- **A sub-dependency** (`Depends(f)`), with the override in force for it
+(`ov`): the arguments of the override (or, without one, its own `arg`) are
+solved, then (when they had no errors) the value cached under `key` is
+reused (when `useCache`) or the override (or `f`) is called and its value
+cached. The cache key, cache use and exit scope are the original
+dependency's, and so is what OpenAPI sees (`info`). -/
+def call (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (ownScopes : List String)
+    (scheme : Option (String × SecurityScheme)) (f : Invoke β α) (arg : Dep σ β)
+    (ov : Option (Override σ α) := none) : Dep σ α where
   info := [.sub key ownScopes scheme arg.info]
-  run := do
-    match ← arg.run with
-    | none => Pure.pure none
-    | some b => cached slot useCache (f.call b)
+  run := (Override.pick ov f arg).solve slot useCache
 
 end Dep
 
-/-! ## Type-erased dependencies -/
+/-! ## Dependencies as values -/
 
-/-- A dependency outside a route's typed tree: an application's
-`dependencies=[...]` or an override. Its value is kept as JSON when it has a
-JSON form (`null` otherwise). -/
-structure Dependency where
+/-- `Depends(f)` as a value (in `FastAPI(dependencies=[...])` or
+`app.dependency_overrides[f] = g`): a dependency of value `α`. The callable
+itself is read when the application's routes are compiled; at run time the
+value is its cache key. -/
+structure Dependency (α : Type) where
   key : CacheKey
-  info : List DepInfo
-  run : ErasedRun
+  deriving Inhabited
 
-namespace Dependency
+/-- `Depends(f)` with its value type forgotten: an entry of
+`FastAPI(dependencies=[...])`. -/
+structure AnyDependency where
+  key : CacheKey
+  deriving Inhabited
 
-/-- Erase a dependency of its own (slots `σ`, a fresh cache), keeping its
-value as JSON. -/
-def ofDep {σ : List Type} {α : Type} (key : CacheKey) (toJson : α → Json) (d : Dep σ α) : Dependency where
-  key := key
-  info := d.info
-  run := fun env => ExceptT.mk fun sh => do
-    let (r, s) ← ((d.run { env }).run).run { shared := sh, cache := Cache.empty σ }
-    pure (r.map fun v? => v?.map fun v => (Pure.pure (toJson v) : SharedM Json), s.shared)
+/-- Forget the value type. -/
+def Dependency.erase {α : Type} (d : Dependency α) : AnyDependency := ⟨d.key⟩
 
-end Dependency
+instance {α : Type} : CoeOut (Dependency α) AnyDependency := ⟨Dependency.erase⟩
+
+/-- What `Depends dependency (use_cache := ...) (scope := ...)` and
+`Security dependency [scopes]` elaborate to as values: the callable and the
+mark's arguments, kept in the term so that `declared_routes` can read them. -/
+def Dependency.declared.{u} {δ : Sort u} (_dependency : δ) (α : Type) (_use_cache : Bool) (_scope : String)
+    (_scopes : List String) (key : CacheKey) : Dependency α := ⟨key⟩
 
 /-! ## Running a path operation inside its exit stacks -/
 
@@ -365,14 +342,18 @@ def responseUnbound : Exception :=
 /-- **The two exit stacks** (`request_response` in `fastapi/routing.py`):
 the path operation's outcome unwinds the function-scoped exits; a response
 then goes out and the request-scoped exits run after it (their exceptions
-come too late to change it); an exception unwinds the request-scoped exits
-too, and one they all suppress leaves no response (both are 500s). -/
+come too late to change it, and go to `late`, as the server logs them); an
+exception unwinds the request-scoped exits too, and one they all suppress
+leaves no response (both are 500s). -/
 def finishWith {m : Type → Type} [Monad m] {ε : Type} (run : ε → Option Exception → m (Except Exception Unit))
-    (outcome : Except Exception Response) (function request : List ε) : m (Except Exception Response) := do
+    (outcome : Except Exception Response) (function request : List ε)
+    (late : Exception → m Unit := fun _ => pure ()) : m (Except Exception Response) := do
   let e ← closeWith run function (match outcome with | .ok _ => none | .error e => some e)
   match outcome, e with
   | .ok r, none => do
-    let _ ← closeWith run request none
+    match ← closeWith run request none with
+    | some e' => late e'
+    | none => pure ()
     pure (.ok r)
   | _, some e => do
     match ← closeWith run request (some e) with
@@ -385,8 +366,14 @@ def finishWith {m : Type → Type} [Monad m] {ε : Type} (run : ε → Option Ex
     | some e' => pure (.error e')
     | none => pure (.error responseNotAwaited)
 
-/-- `finishWith` on a request's exit stacks. -/
+/-- How the server reports an exception raised after the response was sent
+(uvicorn logs it with `Exception in ASGI application` on standard error). -/
+def logLate (e : Exception) : IO Unit :=
+  IO.eprintln s!"Exception in ASGI application\n{e}"
+
+/-- `finishWith` on a request's exit stacks; a request-scoped exit's
+exception after the response is written to standard error. -/
 def finish (outcome : Except Exception Response) (sh : Shared) : AppM Response :=
-  ExceptT.mk (finishWith runExit outcome sh.function sh.request)
+  ExceptT.mk (finishWith runExit outcome sh.function sh.request logLate)
 
 end LeanFastapi

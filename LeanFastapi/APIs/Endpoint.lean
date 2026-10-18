@@ -44,8 +44,18 @@ namespace LeanFastapi
 
 open Lean Meta Elab Term
 
+/-- What `declared_routes` needs to compile a route again under an
+application's dependencies and overrides: the route's constant, its
+function, its path and its own `dependencies`. -/
+structure RouteRecord where
+  route : Name
+  decl : Name
+  path : String
+  deps : List Macro.Mark
+  deriving Inhabited
+
 /-- The routes declared in the current module, in declaration order. -/
-initialize routeExt : SimplePersistentEnvExtension Name (Array Name) ←
+initialize routeExt : SimplePersistentEnvExtension RouteRecord (Array RouteRecord) ←
   registerSimplePersistentEnvExtension { addEntryFn := Array.push, addImportedFn := fun _ => #[] }
 
 /-- One `(name := value)` argument of a path operation attribute. -/
@@ -100,38 +110,51 @@ def listElems : Nat → Syntax → Option (List Syntax)
       else none
 
 /-- The route-level `(dependencies := [Depends f, Security g ["s"]])`. -/
-def routeDependencies (args : Array (Name × Syntax)) (pathNames : List String) : TermElabM (List Node) := do
+def routeDependencies (args : Array (Name × Syntax)) : TermElabM (List Mark) := do
   match args.find? (·.1 == `dependencies) with
   | none => return []
   | some (_, s) =>
     match listElems 10000 s with
-    | some xs => xs.mapM fun x => do subOf maxDepth pathNames [] (← markOfSyntax x)
+    | some xs => xs.mapM markOfSyntax
     | none => throwErrorAt s "`dependencies` is a list `[Depends f, ...]`"
 
-/-- Build `decl.route` for a path operation attribute. -/
-def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermElabM Expr := do
+/-- **A path operation's tree** (`get_dependant` on the function, under the
+`dependencies` that head it: the application's, then the route's), with
+the overrides `ovs` compiled in: its cache slots `σ`, the type `β` of its
+values, its solve `Dep σ β`, and the call of the function on them. Whether
+the bodies are embedded is decided on the tree without overrides, as
+FastAPI decides it when the route is created. -/
+def routeTree (decl : Name) (pathNames : List String) (heads : List Mark) (ovs : Overrides) :
+    MetaM (Expr × Expr × Expr × Expr) := do
+  let fnE ← mkConstWithLevelParams decl
+  let pre ← heads.mapM (subOf maxDepth ovs pathNames [])
+  let fnArgs ← argsOf maxDepth ovs pathNames [] decl.toString false { fn := fnE, name := decl.toString }
+  let all := pre ++ fnArgs
+  -- `_should_embed_body_fields`: several body parameters (by name) are read
+  -- from members of the body
+  let all := if (Node.bodyNamesList all).eraseDups.length > 1 then Node.embedBodiesList all else all
+  let slots := keysOfList all []
+  let σ ← cacheTypes slots
+  let (depE, β, project) ← genArgs σ slots all
+  let callE ← withLocalDeclD `v β fun v => do
+    let vals ← project v
+    mkLambdaFVars #[v] (mkAppN fnE (vals.drop pre.length).toArray)
+  return (σ, β, depE, callE)
+
+/-- Build `decl.route` for a path operation attribute, and the route's own
+`dependencies`. -/
+def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermElabM (Expr × List Mark) := do
   let path := stx[1].isStrLit?.getD ""
   let args := namedArgs stx
   for (n, s) in args do
     unless knownArgs.contains n do throwErrorAt s "unknown path operation argument `{n}`"
   let info ← getConstInfo decl
   let pathNames := pathParamNames (pathFormat path)
-  let fnE ← mkConstWithLevelParams decl
-  let routeDeps ← routeDependencies args pathNames
-  let fnArgs ← argsOf maxDepth pathNames [] decl.toString false { fn := fnE, name := decl.toString }
-  let all := routeDeps ++ fnArgs
-  -- `_should_embed_body_fields`: several body parameters (by name) are read
-  -- from members of the body
-  let all := if (Node.bodyNamesList all).eraseDups.length > 1 then Node.embedBodiesList all else all
-  let slots := keysOfList all []
-  let σ ← cacheTypes slots
-  let (depE, β, project) ← genArgs maxDepth σ slots all
+  let routeDeps ← routeDependencies args
+  let (σ, β, depE, callE) ← routeTree decl pathNames routeDeps []
   forallTelescope info.type fun _ body => do
     let γ ← handlerResult body
     if γ.hasFVar then throwError "the result type of `{decl}` depends on its arguments"
-    let callE ← withLocalDeclD `v β fun v => do
-      let vals ← project v
-      mkLambdaFVars #[v] (mkAppN fnE (vals.drop routeDeps.length).toArray)
     -- the response model
     let jsonTy := Lean.mkConst ``LeanJson.Json
     let respTy := Lean.mkConst ``LeanStarlette.Response
@@ -190,19 +213,105 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
     let opIdE ← argOr args `operation_id optStr (mkAppOptM ``Option.none #[some strTy])
     let inclE ← argOr args `include_in_schema boolTy (pure (toExpr true))
     let explicit := toExpr ((args.find? (·.1 == `status_code)).isSome)
-    mkAppOptM ``LeanFastapi.APIRoute.make
+    let route ← mkAppOptM ``LeanFastapi.APIRoute.make
       #[some σ, some β, some γ, none, some endpointE, some (toExpr path), some methodsE, some nameE, some explicit,
         some tagsE, some summaryE, some descrE, some respDescrE, some deprE, some opIdE, some inclE]
+    return (route, routeDeps)
 
 /-- Run the attribute: define and record `decl.route`. -/
 def addRoute (decl : Name) (methods : List String) (stx : Syntax) : AttrM Unit := do
-  let value ← (Term.TermElabM.run' do instantiateMVars (← mkRoute decl methods stx)).run'
-  if value.hasMVar then throwError "could not build the route of `{decl}`"
+  let (value, deps) ← (Term.TermElabM.run' do
+    let (v, ds) ← mkRoute decl methods stx
+    let ds ← ds.mapM fun m => do pure { m with dependency := ← instantiateMVars m.dependency }
+    return (← instantiateMVars v, ds)).run'
+  if value.hasMVar || deps.any (·.dependency.hasMVar) then throwError "could not build the route of `{decl}`"
   let routeName := decl ++ `route
   addAndCompile <| .defnDecl {
     name := routeName, levelParams := [], type := Lean.mkConst ``LeanFastapi.APIRoute, value
     hints := .abbrev, safety := .safe }
-  modifyEnv (routeExt.addEntry · routeName)
+  modifyEnv (routeExt.addEntry · { route := routeName, decl, path := stx[1].isStrLit?.getD "", deps })
+
+/-! ## Compiling routes for an application -/
+
+/-- The application dependencies (mark and key) and the overrides (the
+replaced dependency's name, the override's mark, both keys) of an
+application term, read off the term: `FastAPI.new (dependencies := ...)`,
+`overrideDependency`, `clearOverrides`, `withRoutes`, `{ app with ... }`,
+and definitions of these. -/
+abbrev AppDeps := List (Mark × Expr) × List (String × Mark × Expr × Expr)
+
+mutual
+
+def readApp (fuel : Nat) (e : Expr) : MetaM AppDeps := do
+  match fuel with
+  | 0 => throwError "could not read the dependencies of `{e}`"
+  | fuel + 1 =>
+    let e ← whnfCore (← instantiateMVars e)
+    let args := e.getAppArgs
+    match e.getAppFn.constName? with
+    | some ``FastAPI.overrideDependency =>
+      let (ds, os) ← readApp fuel args[1]!
+      let some (om, ok) ← markOfDependency? args[2]! | throwError "`{args[2]!}` is not `Depends ...`"
+      let some (vm, vk) ← markOfDependency? args[3]! | throwError "`{args[3]!}` is not `Depends ...`"
+      let name := (← shapeOf om.dependency).name
+      return (ds, os.filter (·.1 != name) ++ [(name, vm, ok, vk)])
+    | some ``FastAPI.clearOverrides => return ((← readApp fuel args[0]!).1, [])
+    | some ``FastAPI.withRoutes => readApp fuel args[0]!
+    | some `LeanFastapi.FastAPI.new => return (← readDeps fuel args[10]!, [])
+    | some ``FastAPI.mk => return (← readDeps fuel args[13]!, ← readOvs fuel args[14]!)
+    | some _ =>
+      match ← unfoldDefinition? e with
+      | some e' => readApp fuel e'
+      | none => throwError "the dependencies and overrides of the application `{e}` must be known when its routes are compiled"
+    | none => throwError "the dependencies and overrides of the application `{e}` must be known when its routes are compiled"
+
+/-- An application's `dependencies` list. -/
+def readDeps (fuel : Nat) (e : Expr) : MetaM (List (Mark × Expr)) := do
+  match fuel with
+  | 0 => throwError "could not read the dependencies `{e}`"
+  | fuel + 1 =>
+    let e ← whnfCore (← instantiateMVars e)
+    if e.isAppOfArity ``FastAPI.dependencies 1 then return (← readApp fuel e.appArg!).1
+    if e.isAppOfArity ``List.nil 1 then return []
+    if e.isAppOfArity ``List.cons 3 then
+      let some d ← markOfDependency? e.appFn!.appArg! | throwError "`{e.appFn!.appArg!}` is not `Depends ...`"
+      return d :: (← readDeps fuel e.appArg!)
+    match ← unfoldDefinition? e with
+    | some e' => readDeps fuel e'
+    | none => throwError "the dependencies `{e}` must be a list of `Depends ...` known when the routes are compiled"
+
+/-- An application's `dependency_overrides`, kept from another application
+or cleared. -/
+def readOvs (fuel : Nat) (e : Expr) : MetaM (List (String × Mark × Expr × Expr)) := do
+  match fuel with
+  | 0 => throwError "could not read the overrides `{e}`"
+  | fuel + 1 =>
+    let e ← whnfCore (← instantiateMVars e)
+    if e.isAppOfArity ``FastAPI.dependency_overrides 1 then return (← readApp fuel e.appArg!).2
+    if e.isAppOfArity ``List.nil 1 then return []
+    throwError "the overrides `{e}` must come from `overrideDependency` on an application"
+
+end
+
+/-- **A route compiled for an application**: `route`'s tree again, headed
+by the application's dependencies, with its overrides in force, and
+marked with the application's `signatureOf`. -/
+def compileRoute (r : RouteRecord) (deps : List (Mark × Expr)) (ovs : List (String × Mark × Expr × Expr)) :
+    MetaM Expr := do
+  let some v := (← getConstInfo r.route).value? | throwError "no route `{r.route}`"
+  let a := v.getAppArgs
+  unless v.isAppOfArity ``LeanFastapi.APIRoute.make 16 do throwError "`{r.route}` is not a compiled route"
+  let epa := a[4]!.getAppArgs
+  let (σ, β, dep, call) ← routeTree r.decl (pathParamNames (pathFormat r.path)) (deps.map (·.1) ++ r.deps)
+    (ovs.map fun (n, m, _, _) => (n, m))
+  let ep := mkAppN (Lean.mkConst ``LeanFastapi.Endpoint.mk) #[σ, β, a[2]!, dep, call, epa[5]!, epa[6]!]
+  let route := mkAppN v.getAppFn (#[σ, β, a[2]!, a[3]!, ep] ++ a.extract 5 a.size)
+  let anyTy := Lean.mkConst ``LeanFastapi.AnyDependency
+  let keyTy := Lean.mkConst ``LeanFastapi.CacheKey
+  let depsE ← mkListLit anyTy (deps.map fun (_, k) => mkApp (Lean.mkConst ``LeanFastapi.AnyDependency.mk) k)
+  let ovsE ← mkListLit (← mkAppM ``Prod #[keyTy, keyTy]) (← ovs.mapM fun (_, _, ok, vk) => mkAppM ``Prod.mk #[ok, vk])
+  let sig ← mkAppM ``LeanFastapi.signatureOf #[depsE, ovsE]
+  mkAppM ``LeanFastapi.APIRoute.compiled #[sig, route]
 
 end Macro
 
@@ -257,13 +366,16 @@ elab "declared_routes" : tactic => Tactic.withMainContext do
     match env.find? c with
     | some ci => ci.type == fastapi
     | none => false
-  let names : Array Name := match appConst? with
+  let records : Array RouteRecord := match appConst? with
     | some c =>
       match env.getModuleIdxFor? c with
       | some idx => routeExt.getModuleEntries env idx
       | none => routeExt.getState env
     | none => #[]
-  goal.assign (← mkListLit (Lean.mkConst ``LeanFastapi.APIRoute) (names.toList.map mkConst))
+  let (deps, ovs) ← Macro.readApp 1000 app
+  let routes ← if deps.isEmpty && ovs.isEmpty then pure (records.toList.map fun r => Lean.mkConst r.route)
+    else records.toList.mapM fun r => Macro.compileRoute r deps ovs
+  goal.assign (← mkListLit (Lean.mkConst ``LeanFastapi.APIRoute) routes)
   Tactic.replaceMainGoal []
 
 end LeanFastapi

@@ -37,6 +37,12 @@ import tests.apps.DependencyCache
 import tests.apps.DependencyDuplicates
 import tests.apps.DependencyYield
 import tests.apps.DependencyOverrides
+import tests.apps.DependencyOverridesTyped
+import tests.apps.DependencySharedCache
+import tests.apps.Dependencies007
+import tests.apps.Dependencies008
+import tests.apps.Dependencies010
+import tests.apps.Security004
 import tests.apps.DependencyScopeError
 import tests.apps.SecurityApiKeyQuery
 import tests.apps.SecurityApiKeyHeaderOptional
@@ -130,6 +136,13 @@ def fixtures : List (String × FastAPI) :=
    ("dependency_overrides", Tests.DependencyOverrides.app.complete),
    ("dependency_overrides_simple", Tests.DependencyOverrides.appSimple.complete),
    ("dependency_overrides_with_sub", Tests.DependencyOverrides.appWithSub.complete),
+   ("dependencies_007", Tests.Dependencies007.app.complete),
+   ("dependencies_008", Tests.Dependencies008.app.complete),
+   ("dependencies_010", Tests.Dependencies010.app.complete),
+   ("security_004", Tests.Security004.app.complete),
+   ("dependency_overrides_typed", Tests.DependencyOverridesTyped.app.complete),
+   ("dependency_overrides_typed_on", Tests.DependencyOverridesTyped.appOverridden.complete),
+   ("dependency_shared_cache", Tests.DependencySharedCache.app.complete),
    ("security_api_key_query", Tests.SecurityApiKeyQuery.app.complete),
    ("security_api_key_header_optional", Tests.SecurityApiKeyHeaderOptional.app.complete),
    ("security_api_key_cookie", Tests.SecurityApiKeyCookie.app.complete),
@@ -399,8 +412,31 @@ def formCase (corpus : List Json) : Case :=
 
 /-! ## Unit cases -/
 
+/-- A route added by hand to an application with overrides (not compiled
+with them by `declared_routes`) answers 500, never a silently different
+solve. -/
+def notCompiledCase : Case :=
+  ⟨"tests/test_dependency_overrides.py (overrides are never silently ignored)",
+   "a route not compiled with the application's overrides is a 500", do
+    let app := Tests.DependencyOverridesTyped.appOverridden.withRoutes [Tests.DependencyOverridesTyped.readDb.route]
+    let r ← app.call { method := "GET", path := "/db", query_string := "", headers := LeanStarlette.Headers.ofList [],
+                       bodyBytes := .empty }
+    pure (r.status_code == 500)⟩
+
+/-- An exception of a request-scoped exit after the response is reported
+(uvicorn logs it), and the response stands. -/
+def lateExitCase : Case :=
+  ⟨"tests/test_dependency_contextmanager.py (an exit raising after the response)",
+   "request-scoped exit exceptions after the response are reported", do
+    let boom : Exception := .custom "ValueError" "boom" .null
+    let run (_ : Unit) (_ : Option Exception) : StateM (List String) (Except Exception Unit) := pure (.error boom)
+    let resp : LeanStarlette.Response := LeanStarlette.PlainTextResponse "ok"
+    let (out, logged) := (finishWith run (.ok resp) [] [()] (late := fun e => modify (· ++ [toString e]))).run []
+    pure ((match out with | .ok r => r.status_code == 200 | .error _ => false) && logged == [toString boom])⟩
+
 def unitCases : List Case :=
-  [⟨"tests/test_tutorial/test_header_params/test_tutorial002.py::test", "header alias user_agent is user-agent",
+  [notCompiledCase, lateExitCase,
+   ⟨"tests/test_tutorial/test_header_params/test_tutorial002.py::test", "header alias user_agent is user-agent",
      pure (headerParamAlias "user_agent" none true == "user-agent")⟩,
    ⟨"tests/test_tutorial/test_path_params/test_tutorial004.py::test_file_path", "path format drops convertors",
      pure (pathFormat "/files/{file_path:path}" == "/files/{file_path}")⟩,

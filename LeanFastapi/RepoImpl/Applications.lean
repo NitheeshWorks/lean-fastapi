@@ -24,7 +24,13 @@ docs pages are plain `Route`s, as in FastAPI.
 namespace LeanFastapi
 
 open LeanJson (Json)
-open LeanStarlette (Request Response App BaseRoute ExceptionKey ExceptionHandler Middleware)
+open LeanStarlette (Request Response App BaseRoute ExceptionKey ExceptionHandler Middleware Exception)
+
+/-- How a set of application dependencies and overrides is written in a
+route's `compiledWith`. -/
+def signatureOf (deps : List AnyDependency) (overrides : List (CacheKey × CacheKey)) : List String :=
+  deps.map (fun d => "dependency " ++ d.key.call) ++
+    (overrides.mergeSort (fun a b => a.1.call ≤ b.1.call)).map fun (o, v) => "override " ++ o.call ++ " -> " ++ v.call
 
 /-- A FastAPI application: `FastAPI(title=..., version=..., ...)` and its
 path operations. -/
@@ -43,31 +49,35 @@ structure FastAPI where
   routes : List APIRoute := []
   exception_handlers : List (ExceptionKey × ExceptionHandler) := []
   middleware : List Middleware := []
-  /-- `FastAPI(dependencies=[...])`: solved before every path operation's
-  own dependencies. -/
-  dependencies : List Dependency := []
-  /-- `app.dependency_overrides`: replacements by dependency name. -/
-  dependency_overrides : List (String × ErasedRun) := []
+  /-- `FastAPI(dependencies=[...])`: the head of every path operation's
+  dependency tree. -/
+  dependencies : List AnyDependency := []
+  /-- `app.dependency_overrides`: the replaced dependency's key, and the
+  override's. -/
+  dependency_overrides : List (CacheKey × CacheKey) := []
 
 namespace FastAPI
 
-/-- The application with more path operations, after its own; the
-application's `dependencies` head each one's tree. -/
+/-- The application with more path operations, after its own. (The routes
+`declared_routes` gives are compiled with the application's `dependencies`
+and overrides.) -/
 def withRoutes (app : FastAPI) (routes : List APIRoute) : FastAPI :=
-  { app with routes := app.routes ++ routes.map (APIRoute.withDependencies app.dependencies) }
+  { app with routes := app.routes ++ routes }
 
 /-- `app.dependency_overrides[original] = override`: requests solve
-`override` wherever `original` was declared. -/
-def overrideDependency (app : FastAPI) (original override : Dependency) : FastAPI :=
+`override` wherever `original` is declared, its value going where
+`original`'s went, so both have the same value type. -/
+def overrideDependency {α : Type} (app : FastAPI) (original override : Dependency α) : FastAPI :=
   { app with dependency_overrides :=
-      (original.key.call, override.run) :: app.dependency_overrides.filter (·.1 != original.key.call) }
+      app.dependency_overrides.filter (·.1.call != original.key.call) ++ [(original.key, override.key)] }
 
 /-- `app.dependency_overrides = {}`. -/
 def clearOverrides (app : FastAPI) : FastAPI := { app with dependency_overrides := [] }
 
-/-- What the routes read from the application. -/
-def routeEnv (app : FastAPI) : RouteEnv :=
-  { overrides := app.dependency_overrides, dependencies := app.dependencies }
+/-- The dependencies and overrides a route must have been compiled with to
+be served by this application. -/
+def signature (app : FastAPI) : List String :=
+  signatureOf app.dependencies app.dependency_overrides
 
 /-- The `info` object. -/
 def info (app : FastAPI) : Info :=
@@ -111,10 +121,19 @@ end FastAPI
 
 namespace APIRoute
 
-/-- The Starlette route of a path operation, under the application's
-overrides and dependencies: exactly its methods. -/
-def toBaseRoute (env : RouteEnv) (r : APIRoute) : BaseRoute :=
-  LeanStarlette.RouteExact r.path (r.endpoint env) (methods := r.methods) (name := r.name)
+/-- `FastAPIError`: a route compiled without the application's dependencies
+or overrides (added by hand rather than through `declared_routes`). -/
+def notCompiledFor (r : APIRoute) (sig : List String) : Exception :=
+  .custom "FastAPIError" (s!"the route {r.name} was compiled with {r.compiledWith}, " ++
+    s!"not with this application's dependencies and overrides {sig}") .null
+
+/-- The Starlette route of a path operation: exactly its methods. Under an
+application whose dependencies or overrides it was not compiled with, every
+request is a `FastAPIError` (a 500) rather than a silently different
+solve. -/
+def toBaseRoute (sig : List String) (r : APIRoute) : BaseRoute :=
+  let endpoint : App := if r.compiledWith == sig then r.endpoint else fun _ => throw (notCompiledFor r sig)
+  LeanStarlette.RouteExact r.path endpoint (methods := r.methods) (name := r.name)
 
 end APIRoute
 
@@ -123,7 +142,7 @@ namespace FastAPI
 /-- **The application as a Starlette application**: what serves requests. -/
 def application (app : FastAPI) : LeanStarlette.Application :=
   LeanStarlette.Starlette (debug := app.debug)
-    (routes := app.docsRoutes ++ app.routes.map (APIRoute.toBaseRoute app.routeEnv))
+    (routes := app.docsRoutes ++ app.routes.map (APIRoute.toBaseRoute app.signature))
     (middleware := app.middleware)
     (exception_handlers := app.exception_handlers ++ defaultExceptionHandlers)
 

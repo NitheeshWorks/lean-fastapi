@@ -8,8 +8,9 @@ A path operation function becomes an `App` (`get_request_handler` in
 
 1. read the body, when the operation or one of its dependencies has a body
    parameter (`readBody`);
-2. solve the application's dependencies, then the operation's dependency
-   tree and parameters (`solve_dependencies`); any error is a
+2. solve the operation's dependency tree (the application's dependencies
+   first, then the route's and the function's, with the overrides in force
+   compiled in) and parameters (`solve_dependencies`); any error is a
    `RequestValidationError` carrying all of them;
 3. call the function with the values;
 4. turn what it returned into a response: a `Response` is sent as it is;
@@ -98,13 +99,6 @@ def renderResult (model : Option ResponseModel) (status : Status) : EndpointResu
       | .ok out =>
         pure (Response.make (LeanStarlette.Responses.jsonBody out) status.val [] (some "application/json") status.property)
       | .error es => throw (ResponseValidationError es)
-
-/-- What a route's solve reads from its application: the dependency
-overrides in force (`app.dependency_overrides`, by dependency name) and the
-application's own `dependencies`, solved before the route's. -/
-structure RouteEnv where
-  overrides : List (String × ErasedRun) := []
-  dependencies : List Dependency := []
 
 /-- A path operation: its dependency tree, whose root is the operation's own
 arguments (`Dep`, with cache slots `σ`), its function, its response model
@@ -204,14 +198,9 @@ def hasForm (e : Endpoint σ β γ) : Bool := (flatBodyParams e.dep.info).any (i
 def body (e : Endpoint σ β γ) (req : Request) : Except BodyError BodyInput :=
   if e.hasForm then readForm req else if e.hasBody then readBody req else .ok .none
 
-/-- The application's dependencies, then the operation's tree: its values,
-or `none` when something failed to validate. -/
-def solve (e : Endpoint σ β γ) (env : RouteEnv) : SolveM σ (Option β) := do
-  for d in env.dependencies do
-    match ← SolveM.shared d.run with
-    | some callIt => let _ ← SolveM.shared callIt
-    | none => pure ()
-  e.dep.run
+/-- The operation's tree: its values, or `none` when something failed to
+validate. -/
+def solve (e : Endpoint σ β γ) : SolveM σ (Option β) := e.dep.run
 
 /-- After the solve: when nothing failed, call the function and render its
 result; otherwise raise `RequestValidationError` with every error. -/
@@ -223,28 +212,28 @@ def respond [IntoResult γ] (e : Endpoint σ β γ) (v? : Option β) : SolveM σ
     SolveM.lift (renderResult e.response_model e.status_code (IntoResult.intoResult out))
   | _, _ => throw (RequestValidationError errors)
 
-/-- What a route's solve reads: the request, its inputs and the overrides. -/
-def ctx (env : RouteEnv) (req : Request) (body : BodyInput) : Ctx :=
-  { env := { request := req, inputs := Inputs.ofRequest req body }, overrides := env.overrides }
+/-- What a route's solve reads: the request and its inputs. -/
+def ctx (req : Request) (body : BodyInput) : Ctx :=
+  { env := { request := req, inputs := Inputs.ofRequest req body } }
 
 /-- **The solve of a request**, from an empty cache and empty exit stacks:
 the values (or `none`), or an exception a dependency raised, and the state
 it leaves (errors, exits, cache). -/
-def solveIO (e : Endpoint σ β γ) (env : RouteEnv) (req : Request) (body : BodyInput) :
+def solveIO (e : Endpoint σ β γ) (req : Request) (body : BodyInput) :
     IO (Except Exception (Option β) × SolveState σ) :=
-  (((e.solve env).run (ctx env req body)).run).run { shared := {}, cache := Cache.empty σ }
+  ((e.solve.run (ctx req body)).run).run { shared := {}, cache := Cache.empty σ }
 
 /-- **The operation as an application**: read the body; solve; respond; then
 unwind the exit stacks (`finish`) with the outcome. -/
-def app [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv) : App := fun req =>
+def app [IntoResult γ] (e : Endpoint σ β γ) : App := fun req =>
   match e.body req with
   | .error (.invalid err) => throw (RequestValidationError [err])
   | .error .unparsable => throw (HTTPException 400 "There was an error parsing the body")
   | .error (.badForm detail) => throw (HTTPException 400 detail)
   | .ok body => ExceptT.mk do
-    let (r, st) ← e.solveIO env req body
+    let (r, st) ← e.solveIO req body
     let (outcome, st) ← match r with
-      | .ok v? => (((e.respond v?).run (ctx env req body)).run).run st
+      | .ok v? => (((e.respond v?).run (ctx req body)).run).run st
       | .error ex => pure (.error ex, st)
     (finish outcome st.shared).run
 
@@ -259,9 +248,12 @@ structure APIRoute where
   methods : List String
   /-- `route.name`: the function's name. -/
   name : String
-  /-- The application, given the overrides and application dependencies
-  in force. -/
-  endpoint : RouteEnv → App
+  /-- The application. -/
+  endpoint : App
+  /-- The application dependencies and overrides it was compiled with
+  (`FastAPI.signature`): an application serves it only under the same
+  ones, so an override is never silently ignored. -/
+  compiledWith : List String := []
   /-- The dependency tree: the operation's parameters and sub-dependencies. -/
   deps : List DepInfo := []
   /-- The parameters of the whole tree (`flatParams deps`). -/
@@ -300,11 +292,9 @@ def APIRoute.make {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint 
   operation_id
   include_in_schema
 
-/-- The route under an application's `dependencies`: they come first in its
-tree (`FastAPI(dependencies=[...])`). -/
-def APIRoute.withDependencies (ds : List Dependency) (r : APIRoute) : APIRoute :=
-  let deps := ds.flatMap (·.info) ++ r.deps
-  { r with deps, params := flatParams deps }
+/-- The route as compiled for an application with the dependencies and
+overrides `sig` (`signatureOf`). -/
+def APIRoute.compiled (sig : List String) (r : APIRoute) : APIRoute := { r with compiledWith := sig }
 
 /-- The security requirements of the route's tree. -/
 def APIRoute.security (r : APIRoute) : List (String × SecurityScheme × List String) :=

@@ -72,11 +72,11 @@ theorem respond_errors {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endp
 /-- **Validation errors are raised inside the exit stacks**: when the solve
 records errors, the operation's outcome is `RequestValidationError` with all
 of them, unwound through the exits the solve entered. -/
-theorem endpoint_app_errors {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv)
+theorem endpoint_app_errors {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ)
     (req : LeanStarlette.Request) (b : BodyInput) (v? : Option β) (st : SolveState σ)
-    (hb : e.body req = .ok b) (hs : e.solveIO env req b = pure (.ok v?, st)) (hne : st.shared.errors ≠ []) :
-    e.app env req = finish (.error (RequestValidationError st.shared.errors)) st.shared := by
-  have h1 : e.app env req = ExceptT.mk ((((e.respond v?).run (Endpoint.ctx env req b)).run).run st >>=
+    (hb : e.body req = .ok b) (hs : e.solveIO req b = pure (.ok v?, st)) (hne : st.shared.errors ≠ []) :
+    e.app req = finish (.error (RequestValidationError st.shared.errors)) st.shared := by
+  have h1 : e.app req = ExceptT.mk ((((e.respond v?).run (Endpoint.ctx req b)).run).run st >>=
       fun x => (finish x.1 x.2.shared).run) := by
     unfold Endpoint.app
     rw [hb]
@@ -89,13 +89,13 @@ theorem endpoint_app_errors {σ : List Type} {β γ : Type} [IntoResult γ] (e :
 FastAPI's exception handlers, an operation whose parameters (its own and its
 dependencies') fail to validate answers `422 {"detail": [...]}` listing
 every error, when no `yield` dependency was entered. -/
-theorem extract_422 {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv)
+theorem extract_422 {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ)
     (req : LeanStarlette.Request) (b : BodyInput) (v? : Option β) (st : SolveState σ) (es : List RequestError)
-    (hb : e.body req = .ok b) (hs : e.solveIO env req b = pure (.ok v?, st)) (hst : st.shared = { errors := es })
+    (hb : e.body req = .ok b) (hs : e.solveIO req b = pure (.ok v?, st)) (hst : st.shared = { errors := es })
     (hne : es ≠ []) :
-    LeanStarlette.exceptionMiddleware defaultExceptionHandlers (e.app env) req =
+    LeanStarlette.exceptionMiddleware defaultExceptionHandlers e.app req =
       pure (validationErrorResponse (errorsJson es)) := by
-  have h := endpoint_app_errors e env req b v? st hb hs (by rw [hst]; exact hne)
+  have h := endpoint_app_errors e req b v? st hb hs (by rw [hst]; exact hne)
   rw [hst] at h
   simp only [LeanStarlette.exceptionMiddleware, h]
   rfl

@@ -40,7 +40,7 @@ def new (debug : Bool := false) (title : String := "FastAPI") (summary : Option 
     (openapi_url : Option String := some "/openapi.json") (docs_url : Option String := some "/docs")
     (redoc_url : Option String := some "/redoc")
     (swagger_ui_oauth2_redirect_url : Option String := some "/docs/oauth2-redirect")
-    (swagger_ui_parameters : List (String × Json) := []) (dependencies : List Dependency := []) : FastAPI :=
+    (swagger_ui_parameters : List (String × Json) := []) (dependencies : List AnyDependency := []) : FastAPI :=
   { debug, title, summary, description, version, openapi_url, docs_url, redoc_url,
     swagger_ui_oauth2_redirect_url, swagger_ui_parameters, dependencies }
 

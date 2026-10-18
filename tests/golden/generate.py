@@ -19,7 +19,7 @@ the body are compared byte for byte.
 """
 import importlib, json, random, sys, types, warnings
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 warnings.simplefilter("ignore")
 HERE = Path(__file__).resolve().parent
@@ -339,6 +339,191 @@ async def read_system_status(current_user: Annotated[User, Depends(get_current_u
     return {"status": "ok"}
 
 
+# docs_src/dependencies/tutorial007, 008 and 010 as their upstream tests run
+# them (tests/test_tutorial/test_dependencies/test_tutorial007.py, 008, 010):
+# an app reading the dependency, with the session classes the tutorials leave
+# undefined patched in (fakes in place of Mocks: a name, and `close` logged).
+# Twins: tests/apps/Dependencies007.lean, 008.lean, 010.lean.
+def fake_resource(name, log):
+    class Fake:
+        def __str__(self):
+            return name
+
+        def close(self, *others):
+            log.append(f"close {name}" + "".join(f" after {o}" for o in others))
+    return Fake
+
+
+def mock_dependency_app(module, dependency, patches):
+    mod = importlib.import_module("docs_src.dependencies." + module)
+    log = []
+    for attr, name in patches.items():
+        fake = fake_resource(name, log)
+        setattr(mod, attr, fake if attr[0].isupper() else (lambda fake=fake: fake()))
+    app = FastAPI()
+
+    @app.get("/")
+    def read_root(c: Annotated[Any, Depends(getattr(mod, dependency))]):
+        return {"c": str(c)}
+
+    @app.get("/events")
+    def get_events():
+        out = list(log)
+        log.clear()
+        return out
+    return app
+
+
+dependencies_007 = mock_dependency_app("tutorial007_py310", "get_db", {"DBSession": "db"})
+dependencies_008 = mock_dependency_app("tutorial008_py310", "dependency_c",
+                                       {"generate_dep_a": "a", "generate_dep_b": "b", "generate_dep_c": "c"})
+dependencies_010 = mock_dependency_app("tutorial010_py310", "get_db", {"DBSession": "db"})
+
+
+# docs_src/security/tutorial004_an_py310.py with its argon2 hash and its JWT
+# replaced by fakes ("fakehashed" + password; the token "sub=<name>", a
+# payload of key=value pairs), twin of tests/apps/Security004.lean. Alice,
+# whom test_token_inactive_user patches in, is in the database throughout.
+security_004 = FastAPI()
+
+fake_users_db_004 = {
+    "johndoe": {"username": "johndoe", "full_name": "John Doe", "email": "johndoe@example.com",
+                "hashed_password": "fakehashedsecret", "disabled": False},
+    "alice": {"username": "alice", "full_name": "Alice Wonderson", "email": "alice@example.com",
+              "hashed_password": "fakehashedsecretalice", "disabled": True},
+}
+
+oauth2_scheme_004 = OAuth2PasswordBearer(tokenUrl="token")
+
+
+class InvalidTokenError(Exception):
+    pass
+
+
+def fake_decode(token):
+    payload = {}
+    for part in token.split("&"):
+        k, sep, v = part.partition("=")
+        if not sep:
+            raise InvalidTokenError
+        payload[k] = v
+    return payload
+
+
+def authenticate_user_004(db, username, password):
+    user = get_user_005(db, username)
+    if not user or "fakehashed" + password != user.hashed_password:
+        return False
+    return user
+
+
+async def get_current_user_004(token: Annotated[str, Depends(oauth2_scheme_004)]):
+    credentials_exception = HTTPException(
+        status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
+    try:
+        payload = fake_decode(token)
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except InvalidTokenError:
+        raise credentials_exception
+    user = get_user_005(fake_users_db_004, username=username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user_004(current_user: Annotated[User, Depends(get_current_user_004)]):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@security_004.post("/token")
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+    user = authenticate_user_004(fake_users_db_004, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect username or password",
+                            headers={"WWW-Authenticate": "Bearer"})
+    return Token(access_token="sub=" + user.username, token_type="bearer")
+
+
+@security_004.get("/users/me/")
+async def read_users_me(current_user: Annotated[User, Depends(get_current_active_user_004)]) -> User:
+    return current_user
+
+
+@security_004.get("/users/me/items/")
+async def read_own_items(current_user: Annotated[User, Depends(get_current_active_user_004)]):
+    return [{"item_id": "Foo", "owner": current_user.username}]
+
+
+# The review cases for overrides and application dependencies, twin of
+# tests/apps/DependencyOverridesTyped.lean: an override of a dependency whose
+# value has no JSON form, overrides applied inside an override's own tree,
+# and an application dependency shared with the route through one cache.
+class Db:
+    def __init__(self, name):
+        self.name = name
+
+
+def typed_overrides_app(override):
+    app = FastAPI()
+
+    def get_db():
+        return Db("prod")
+
+    def get_test_db():
+        return Db("test")
+
+    def name_dep():
+        return "orig"
+
+    def get_user():
+        return "alice"
+
+    def get_bob():
+        return "bob"
+
+    def get_name(user: Annotated[str, Depends(get_user)]):
+        return "override:" + user
+
+    @app.get("/db")
+    def read_db(db: Annotated[Db, Depends(get_db)]):
+        return {"db": db.name}
+
+    @app.get("/name")
+    def read_name(n: Annotated[str, Depends(name_dep)]):
+        return {"name": n}
+
+    if override:
+        app.dependency_overrides[get_db] = get_test_db
+        app.dependency_overrides[name_dep] = get_name
+        app.dependency_overrides[get_user] = get_bob
+    return app
+
+
+calls_holder = {"calls": 0}
+
+
+def count_call():
+    calls_holder["calls"] += 1
+    return calls_holder["calls"]
+
+
+shared_cache_app = FastAPI(dependencies=[Depends(count_call)])
+
+
+@shared_cache_app.get("/count")
+def read_count(n: Annotated[int, Depends(count_call)]):
+    return {"count": n, "calls": calls_holder["calls"]}
+
+
+@shared_cache_app.post("/reset", include_in_schema=False)
+def reset_calls():
+    calls_holder["calls"] = 0
+
+
 # tests/test_dependency_cache.py resets its counter in each test; here a
 # request does, outside the schema (twin: the Lean app's /reset).
 dependency_cache = upstream_test("test_dependency_cache")
@@ -393,6 +578,13 @@ FIXTURES = {
     "dependency_overrides": overrides_app(None),
     "dependency_overrides_simple": overrides_app("simple"),
     "dependency_overrides_with_sub": overrides_app("with_sub"),
+    "dependencies_007": dependencies_007,
+    "dependencies_008": dependencies_008,
+    "dependencies_010": dependencies_010,
+    "security_004": security_004,
+    "dependency_overrides_typed": typed_overrides_app(False),
+    "dependency_overrides_typed_on": typed_overrides_app(True),
+    "dependency_shared_cache": shared_cache_app,
     "security_api_key_query": upstream_test("test_security_api_key_query"),
     "security_api_key_header_optional": upstream_test("test_security_api_key_header_optional"),
     "security_api_key_cookie": upstream_test("test_security_api_key_cookie"),
@@ -590,7 +782,33 @@ SCENARIOS = [
     ("dependency_overrides_with_sub", "tests/test_dependency_overrides.py::test_override_with_sub_main_depends", "GET", "/main-depends/", {}, None),
     ("dependency_overrides_with_sub", "tests/test_dependency_overrides.py::test_override_with_sub_main_depends_k_bar", "GET", "/main-depends/?k=bar", {}, None),
     ("dependency_overrides_with_sub", "tests/test_dependency_overrides.py::test_override_with_sub_decorator_depends", "GET", "/decorator-depends/?k=bar", {}, None),
+    ("dependencies_007", TD + "test_tutorial007.py::test_get_db", "GET", "/", {}, None),
+    ("dependencies_007", TD + "test_tutorial007.py::test_get_db (close called once)", "GET", "/events", {}, None),
+    ("dependencies_008", TD + "test_tutorial008.py::test_get_db", "GET", "/", {}, None),
+    ("dependencies_008", TD + "test_tutorial008.py::test_get_db (closes in reverse)", "GET", "/events", {}, None),
+    ("dependencies_010", TD + "test_tutorial010.py::test_get_db", "GET", "/", {}, None),
+    ("dependencies_010", TD + "test_tutorial010.py::test_get_db (closed after)", "GET", "/events", {}, None),
+    ("dependency_overrides_typed", "tests/test_dependency_overrides.py (a value without a JSON form)", "GET", "/db", {}, None),
+    ("dependency_overrides_typed", "tests/test_dependency_overrides.py (no override)", "GET", "/name", {}, None),
+    ("dependency_overrides_typed_on", "tests/test_dependency_overrides.py (a value without a JSON form)", "GET", "/db", {}, None),
+    ("dependency_overrides_typed_on", "tests/test_dependency_overrides.py (overrides inside an override)", "GET", "/name", {}, None),
+    ("dependency_shared_cache", "tests/test_dependency_cache.py (application and route dependencies share one cache)", "POST", "/reset", {}, None),
+    ("dependency_shared_cache", "tests/test_dependency_cache.py (application and route dependencies share one cache)", "GET", "/count", {}, None),
+    ("dependency_shared_cache", "tests/test_dependency_cache.py (application and route dependencies share one cache)", "GET", "/count", {}, None),
     # milestone 3: security
+    ("security_004", TS + "test_tutorial004.py::test_login", "POST", "/token", F, "username=johndoe&password=secret"),
+    ("security_004", TS + "test_tutorial004.py::test_login_incorrect_password", "POST", "/token", F, "username=johndoe&password=incorrect"),
+    ("security_004", TS + "test_tutorial004.py::test_login_incorrect_username", "POST", "/token", F, "username=foo&password=secret"),
+    ("security_004", TS + "test_tutorial004.py::test_no_token", "GET", "/users/me/", {}, None),
+    ("security_004", TS + "test_tutorial004.py::test_token", "GET", "/users/me/", {"Authorization": "Bearer sub=johndoe"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_incorrect_token", "GET", "/users/me/", {"Authorization": "Bearer nonexistent"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_incorrect_token_type", "GET", "/users/me/", {"Authorization": "Notexistent testtoken"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_token_no_sub", "GET", "/users/me/", {"Authorization": "Bearer data=foo"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_token_no_username", "GET", "/users/me/", {"Authorization": "Bearer sub=foo"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_token_nonexistent_user", "GET", "/users/me/", {"Authorization": "Bearer sub=username:bob"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_token_inactive_user", "POST", "/token", F, "username=alice&password=secretalice"),
+    ("security_004", TS + "test_tutorial004.py::test_token_inactive_user", "GET", "/users/me/", {"Authorization": "Bearer sub=alice"}, None),
+    ("security_004", TS + "test_tutorial004.py::test_read_items", "GET", "/users/me/items/", {"Authorization": "Bearer sub=johndoe"}, None),
     ("security_001", TS + "test_tutorial001.py::test_no_token", "GET", "/items", {}, None),
     ("security_001", TS + "test_tutorial001.py::test_token", "GET", "/items/", {"Authorization": "Bearer testtoken"}, None),
     ("security_001", TS + "test_tutorial001.py::test_incorrect_token", "GET", "/items/", {"Authorization": "Notexistent testtoken"}, None),

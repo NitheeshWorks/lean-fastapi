@@ -10,8 +10,9 @@ import LeanFastapi.RepoImpl.Endpoint
   extraction's errors;
 * `cache_same_key`: a dependency whose key is cached is not called again;
   `cached_stores`: a computed value is cached under its key;
-* `override_replaces`: with an override for a dependency, its own function
-  and arguments play no part;
+* `override_replaces`: with an override in force, the dependant gets the
+  override's value (on the override's arguments), cached under the
+  dependency's key;
 * `cleanup_reverse`: exits run in the reverse of the order they were
   entered;
 * `function_scope_not_outlive`: every function-scoped exit runs before any
@@ -123,15 +124,30 @@ theorem cached_stores (slot : Slot σ α) (useCache : Bool) (compute : SolveM σ
 
 /-! ## Overrides -/
 
-/-- **An override replaces the dependency**: with an override in force for
-its name, a dependency's own function and arguments play no part. -/
-theorem override_replaces {β' : Type} [Dep.OverrideValue α] (key : CacheKey) (slot : Slot σ α)
-    (useCache : Bool) (own : List String) (scheme : Option (String × SecurityScheme))
-    (f : Dep.Invoke β α) (arg : Dep σ β) (f' : Dep.Invoke β' α) (arg' : Dep σ β') (c : Ctx) (o : ErasedRun)
-    (s : SolveState σ) (h : c.overrides.lookup key.call = some o) :
-    (Dep.call key slot useCache own scheme f arg).runAt c s =
-      (Dep.call key slot useCache own scheme f' arg').runAt c s := by
-  simp only [Dep.runAt, Dep.call, SolveM.runAt_bind, SolveM.runAt_read, pure_bind, h]
+/-- With an override in force, a dependency is solved exactly as the
+override on its own arguments would be, under the dependency's own key, cache
+use and scope. -/
+theorem call_override {β' : Type} (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (own : List String)
+    (scheme : Option (String × SecurityScheme)) (f : Dep.Invoke β α) (arg : Dep σ β)
+    (g : Dep.Invoke β' α) (arg' : Dep σ β') :
+    (Dep.call key slot useCache own scheme f arg (some ⟨g, arg'⟩)).run =
+      (Dep.call key slot useCache own scheme g arg').run := rfl
+
+/-- **An override replaces the dependency, and the dependant gets the
+override's value**: when the override's arguments solve to `b` and the
+override, called on `b`, returns `v` (from an empty slot), the dependency's
+value is `v`, cached under the dependency's key. The dependency's own
+function and arguments play no part. -/
+theorem override_replaces {β' : Type} (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (own : List String)
+    (scheme : Option (String × SecurityScheme)) (f : Dep.Invoke β α) (arg : Dep σ β)
+    (g : Dep.Invoke β' α) (arg' : Dep σ β') (c : Ctx) (s s₁ s₂ : SolveState σ) (b : β') (v : α)
+    (ha : arg'.runAt c s = pure (.ok (some b), s₁)) (hs : s₁.cache.get slot = none)
+    (hg : (g.call b).runAt c s₁ = pure (.ok v, s₂)) (h₂ : s₂.cache.get slot = none) :
+    (Dep.call key slot useCache own scheme f arg (some ⟨g, arg'⟩)).runAt c s =
+      pure (.ok (some v), { s₂ with cache := s₂.cache.set slot v }) := by
+  simp only [Dep.runAt, Dep.call, Dep.Override.pick, Option.getD, Dep.Override.solve, SolveM.runAt_bind] at ha ⊢
+  rw [ha, pure_bind]
+  exact cached_stores slot useCache (g.call b) c s₁ s₂ v hs hg h₂
 
 /-! ## Exit stacks -/
 

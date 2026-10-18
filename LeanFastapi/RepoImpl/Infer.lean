@@ -164,11 +164,6 @@ set_option linter.unusedVariables false in
 effects (a class dependency's constructor). -/
 def handlerPure {α : Type} (a : α) : Handler α := pure a
 
-/-- A dependency value as JSON, for overrides and application dependencies
-(by alias, non-finite floats as `Infinity`/`NaN`). -/
-def depToJson {α : Type} [LeanPydantic.ToJson α] (a : α) : LeanJson.Json :=
-  LeanPydantic.toJson { LeanPydantic.DumpOpts.roundTrip with ser_json_inf_nan := .constants } a
-
 /-! ## Documentation strings -/
 
 /-- `inspect.cleandoc(doc).split("\f")[0].strip()`: a function's doc string

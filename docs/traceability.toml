@@ -288,28 +288,36 @@ test = ["tests/apps/DependencyCache.lean", "tests/Conformance.lean::tests/test_d
 [[requirement]]
 id = "deps.overrides"
 upstream = "fastapi/dependencies/utils.py::solve_dependencies (dependency_overrides_provider)"
-title = "app.dependency_overrides replaces a dependency, its sub-tree and its parameters, by the override's"
+title = "app.dependency_overrides: the dependant gets the override's value (any type, the dependency's own), on the override's arguments, under the dependency's cache key and scope; overrides apply inside an override's tree"
 status = "implemented"
-realises = ["LeanFastapi.Dep.ofOverride", "LeanFastapi.FastAPI.overrideDependency", "LeanFastapi.FastAPI.clearOverrides"]
-theorem = ["LeanFastapi.override_replaces"]
-test = ["tests/apps/DependencyOverrides.lean", "tests/Conformance.lean::tests/test_dependency_overrides.py"]
+realises = ["LeanFastapi.Dep.call", "LeanFastapi.Dep.Override", "LeanFastapi.FastAPI.overrideDependency", "LeanFastapi.FastAPI.clearOverrides", "LeanFastapi.Macro.subOf"]
+theorem = ["LeanFastapi.override_replaces", "LeanFastapi.call_override"]
+test = ["tests/apps/DependencyOverrides.lean", "tests/apps/DependencyOverridesTyped.lean", "tests/Conformance.lean::tests/test_dependency_overrides.py"]
 
 [[requirement]]
-id = "deps.overrides-json"
-upstream = "fastapi/dependencies/utils.py::solve_dependencies (dependency_overrides_provider)"
-title = "An override's value reaches the dependant through JSON (FromJson of the dependency's type); a value that does not decode is a DependencyOverrideError 500, where Python passes any object"
+id = "deps.compiled-for-app"
+upstream = "fastapi/routing.py::APIRoute (dependency_overrides_provider, dependencies)"
+title = "Overrides and application dependencies are compiled into the routes when the application collects them: typed, and a route not compiled for the application's overrides answers 500 rather than ignoring them; in Python they can change between requests"
 status = "deviation"
-realises = ["LeanFastapi.Dep.OverrideValue"]
-test = ["tests/apps/DependencyOverrides.lean"]
+realises = ["LeanFastapi.Macro.readApp", "LeanFastapi.Macro.compileRoute", "LeanFastapi.APIRoute.toBaseRoute", "LeanFastapi.signatureOf"]
+test = ["tests/apps/DependencyOverridesTyped.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "deps.app-dependencies"
+upstream = "fastapi/routing.py::APIRouter.add_api_route (dependencies)"
+title = "FastAPI(dependencies=[...]) head every route's tree and share its per-request cache"
+status = "tested"
+realises = ["LeanFastapi.FastAPI.new", "LeanFastapi.Macro.routeTree"]
+test = ["tests/apps/DependencySharedCache.lean", "tests/apps/Dependencies012.lean", "tests/Conformance.lean"]
 
 [[requirement]]
 id = "deps.yield"
 upstream = "fastapi/dependencies/utils.py::solve_dependencies (AsyncExitStack, scope)"
 title = "Exit code of yield dependencies runs in reverse order of entry; function-scoped exits run before the response, request-scoped after; an exception reaches every exit and may be suppressed"
 status = "implemented"
-realises = ["LeanFastapi.closeWith", "LeanFastapi.finishWith", "LeanFastapi.finish", "LeanFastapi.yieldWith", "LeanFastapi.yieldFinally"]
+realises = ["LeanFastapi.closeWith", "LeanFastapi.finishWith", "LeanFastapi.finish", "LeanFastapi.logLate", "LeanFastapi.yieldWith", "LeanFastapi.yieldFinally"]
 theorem = ["LeanFastapi.cleanup_reverse", "LeanFastapi.function_scope_not_outlive", "LeanFastapi.closeWith_run"]
-test = ["tests/apps/DependencyYield.lean", "tests/apps/Dependencies008b.lean", "tests/apps/Dependencies008c.lean", "tests/apps/Dependencies008d.lean", "tests/apps/Dependencies008e.lean", "tests/Conformance.lean"]
+test = ["tests/apps/DependencyYield.lean", "tests/apps/Dependencies007.lean", "tests/apps/Dependencies008.lean", "tests/apps/Dependencies010.lean", "tests/apps/Dependencies008b.lean", "tests/apps/Dependencies008c.lean", "tests/apps/Dependencies008d.lean", "tests/apps/Dependencies008e.lean", "tests/Conformance.lean"]
 
 [[requirement]]
 id = "deps.scope-error"
@@ -360,7 +368,7 @@ upstream = "fastapi/security/oauth2.py::OAuth2PasswordRequestForm"
 title = "OAuth2PasswordRequestForm(Strict) as a class dependency of form fields; scopes split on whitespace"
 status = "tested"
 realises = ["LeanFastapi.OAuth2PasswordRequestForm", "LeanFastapi.OAuth2PasswordRequestFormStrict", "LeanFastapi.OAuth2PasswordRequestForm.scopes"]
-test = ["tests/apps/Security005.lean", "tests/Conformance.lean::tests/test_tutorial/test_security/test_tutorial005.py"]
+test = ["tests/apps/Security004.lean", "tests/apps/Security005.lean", "tests/Conformance.lean::tests/test_tutorial/test_security/test_tutorial005.py"]
 
 [[requirement]]
 id = "security.openapi"
