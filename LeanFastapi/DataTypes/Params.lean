@@ -21,14 +21,14 @@ open LeanJson (Json)
 /-- A JSON object from its members, in order. (Every object this library
 builds goes through `jobj` and every array through `jarr`, so lean-json's
 container representation is a detail of these two definitions.) -/
-def jobj (kvs : List (String × Json)) : Json := .obj kvs
+def jobj (kvs : List (String × Json)) : Json := .obj kvs.toArray
 
 /-- A JSON array from its elements. -/
-def jarr (xs : List Json) : Json := .arr xs
+def jarr (xs : List Json) : Json := .arr xs.toArray
 
 /-- The members of a JSON object. -/
 def jfields? : Json → Option (List (String × Json))
-  | .obj kvs => some kvs
+  | .obj kvs => some kvs.toList
   | _ => none
 
 /-- Where a parameter comes from. -/

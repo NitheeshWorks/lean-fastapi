@@ -146,6 +146,7 @@ def argOr (args : Array (Name × Syntax)) (n : Name) (ty : Expr) (dflt : TermEla
 def knownArgs : List Name :=
   [`response_model, `status_code, `tags, `summary, `description, `response_description, `deprecated,
    `operation_id, `include_in_schema, `name, `response_model_exclude_none, `response_model_exclude_defaults,
+   `response_model_exclude_unset, `response_model_by_alias,
    `response_model_include, `response_model_exclude, `methods]
 
 /-- An argument as the route macro sees it. -/
@@ -228,11 +229,13 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
     let optsE ← do
       let exNone ← argOr args `response_model_exclude_none boolTy (pure (toExpr false))
       let exDef ← argOr args `response_model_exclude_defaults boolTy (pure (toExpr false))
+      let exUnset ← argOr args `response_model_exclude_unset boolTy (pure (toExpr false))
+      let byAlias ← argOr args `response_model_by_alias boolTy (pure (toExpr true))
       let listStr ← mkAppM ``List #[Lean.mkConst ``String]
       let optList ← mkAppM ``Option #[listStr]
       let incl ← argOr args `response_model_include optList (mkAppOptM ``Option.none #[some listStr])
       let excl ← argOr args `response_model_exclude listStr (mkAppOptM ``List.nil #[some (Lean.mkConst ``String)])
-      mkAppM ``LeanPydantic.DumpOpts.mk #[incl, excl, exDef, exNone]
+      mkAppM ``LeanFastapi.responseDumpOpts #[incl, excl, byAlias, exUnset, exDef, exNone]
     let rmE ← match rmTy? with
       | some t => do
         let m ← mkAppOptM ``LeanFastapi.ResponseModel.of #[some t, none, none, none, some optsE]

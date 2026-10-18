@@ -38,6 +38,25 @@ def RequestValidationError (errors : List RequestError) : Exception :=
 def ResponseValidationError (errors : List RequestError) : Exception :=
   .custom "ResponseValidationError" s!"{errors.length} validation error(s)" (errorsJson errors)
 
+mutual
+/-- Non-finite numbers (an `Infinity` or `NaN` a client sent, echoed as an
+error's `input`) written `null`, so a 422 never fails to render. FastAPI
+answers 500 there (`allow_nan=False`, UP-051); this is a recorded deviation. -/
+def finiteOnly : Json → Json
+  | .num n => if n.isFinite then .num n else .null
+  | .arr xs => jarr (finiteOnlyList xs.toList)
+  | .obj kvs => jobj (finiteOnlyFields kvs.toList)
+  | j => j
+
+def finiteOnlyList : List Json → List Json
+  | [] => []
+  | x :: xs => finiteOnly x :: finiteOnlyList xs
+
+def finiteOnlyFields : List (String × Json) → List (String × Json)
+  | [] => []
+  | (k, v) :: kvs => (k, finiteOnly v) :: finiteOnlyFields kvs
+end
+
 /-- The response FastAPI sends for an `HTTPException`. -/
 def httpExceptionResponse (s : Nat) (detail : String) (headers : List (String × String))
     (h : LeanStarlette.StatusCode.Valid s) : Response :=
@@ -53,7 +72,7 @@ def http_exception_handler : ExceptionHandler := fun _ e =>
 
 /-- The 422 response for a list of errors. -/
 def validationErrorResponse (errorsJson : Json) : Response :=
-  LeanStarlette.JSONResponse (jobj [("detail", errorsJson)]) 422
+  LeanStarlette.JSONResponse (jobj [("detail", finiteOnly errorsJson)]) 422
 
 /-- `fastapi.exception_handlers.request_validation_exception_handler`. -/
 def request_validation_exception_handler : ExceptionHandler := fun _ e =>

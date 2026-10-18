@@ -42,8 +42,13 @@ def ofSchema : Schema → OSchema
   | .integer k => .integer k
   | .number k => .number k
   | .string k => .string k
+  | .array i k => .array (ofSchema i) k
+  | .tuple ps => .tuple (ofSchemas ps)
+  | .dict v => .dict (ofSchema v)
+  | .literal vs => .literal vs
   | .anyOf alts => .anyOf (ofSchemas alts)
   | .object t _ _ => .ref t
+  | .ref n _ => .ref n
   | .annotated s t d => .ann (ofSchema s) { title := t, explicitTitle := true, default := d }
 
 def ofSchemas : List Schema → List OSchema
@@ -55,12 +60,22 @@ def ofProps : List (String × Schema) → List (String × OSchema)
   | (k, s) :: ps => (k, ofSchema s) :: ofProps ps
 end
 
+/-- A named schema's component: a model's own object schema, or (an
+enumeration) the schema itself. -/
+def body : Schema → OSchema
+  | .object t props req => .object t (ofProps props) req
+  | s => ofSchema s
+
 mutual
 /-- The components a pydantic schema needs: every model in it, with its own
 schema. -/
 def models : Schema → List (String × OSchema)
+  | .array i _ => models i
+  | .tuple ps => modelsList ps
+  | .dict v => models v
   | .anyOf alts => modelsList alts
   | .object t props req => (t, .object t (ofProps props) req) :: modelsProps props
+  | .ref n t => (n, body t) :: models t
   | .annotated s _ _ => models s
   | _ => []
 
@@ -77,7 +92,9 @@ mutual
 /-- The component names a schema refers to. -/
 def refs : OSchema → List String
   | .anyOf alts => refsList alts
-  | .array i => refs i
+  | .array i _ => refs i
+  | .tuple ps => refsList ps
+  | .dict v => refs v
   | .object _ props _ => refsProps props
   | .ref n => [n]
   | .ann s _ => refs s
@@ -111,12 +128,15 @@ def keywordRank : Keyword → Nat
   | .minLength _ => 5
   | .maxLength _ => 6
   | .pattern _ => 7
+  | .minItems _ => 8
+  | .maxItems _ => 9
 
 /-- The position of a key in FastAPI's `Schema` model. -/
 def keyRank (k : String) : Nat :=
-  match ["$ref", "anyOf", "items", "properties", "type", "multipleOf", "maximum", "exclusiveMaximum",
-      "minimum", "exclusiveMinimum", "maxLength", "minLength", "pattern", "required", "title",
-      "description", "default", "deprecated"].idxOf? k with
+  match ["$ref", "anyOf", "prefixItems", "items", "properties", "additionalProperties", "type", "enum",
+      "const", "multipleOf", "maximum", "exclusiveMaximum", "minimum", "exclusiveMinimum", "maxLength",
+      "minLength", "pattern", "maxItems", "minItems", "required", "title", "description", "default",
+      "deprecated"].idxOf? k with
   | some i => i
   | none => 100
 
@@ -138,8 +158,8 @@ mutual
 /-- `jsonable_encoder(..., exclude_none=True)`: members whose value is `null`
 are dropped, at every depth. -/
 def stripNone : Json → Json
-  | .obj kvs => jobj (stripNoneFields kvs)
-  | .arr xs => jarr (stripNoneList xs)
+  | .obj kvs => jobj (stripNoneFields kvs.toList)
+  | .arr xs => jarr (stripNoneList xs.toList)
   | j => j
 
 def stripNoneList : List Json → List Json
@@ -156,7 +176,7 @@ end
 def keywordMember (m : Mode) (k : Keyword) : String × Json :=
   match m, k.toPair with
   | .model, (n, .num (.int i)) =>
-    if n == "maxLength" || n == "minLength" then (n, .num (.int i))
+    if n == "maxLength" || n == "minLength" || n == "maxItems" || n == "minItems" then (n, .num (.int i))
     else (n, .num (.float (LeanPydantic.Dec.ofInt i)))
   | _, p => p
 
@@ -185,7 +205,14 @@ def members (m : Mode) : OSchema → List (String × Json)
   | .number k => scalar m "number" k
   | .string k => scalar m "string" k
   | .anyOf alts => [("anyOf", jarr (toJsonList m alts))]
-  | .array i => [("items", toJson m i), ("type", .str "array")]
+  | .array i k => [("type", .str "array"), ("items", toJson m i)] ++ (sortBy keywordRank k).map (keywordMember m)
+  | .tuple ps =>
+    [("type", .str "array"), ("prefixItems", jarr (toJsonList m ps)),
+      ("minItems", .num (.int ps.length)), ("maxItems", .num (.int ps.length))]
+  | .dict v => [("type", .str "object"), ("additionalProperties", toJson m v)]
+  | .literal vs =>
+    (match vs with | [v] => [("const", v)] | _ => [("enum", jarr vs)]) ++
+      (match LeanPydantic.literalType vs with | some t => [("type", .str t)] | none => [])
   | .object t props req =>
     [("properties", jobj (toJsonProps m props)), ("type", .str "object")] ++
       (if req.isEmpty then [] else [("required", jarr (req.map .str))]) ++ [("title", .str t)]
@@ -212,7 +239,7 @@ end OSchema
 /-- `validation_error_definition`. -/
 def validationErrorSchema : OSchema :=
   .object "ValidationError"
-    [("loc", .ann (.array (.anyOf [.string [], .integer []])) { title := "Location" }),
+    [("loc", .ann (.array (.anyOf [.string [], .integer []]) []) { title := "Location" }),
      ("msg", .ann (.string []) { title := "Message" }),
      ("type", .ann (.string []) { title := "Error Type" }),
      ("input", .ann .any { title := "Input" }),
@@ -221,7 +248,7 @@ def validationErrorSchema : OSchema :=
 
 /-- `validation_error_response_definition`. -/
 def httpValidationErrorSchema : OSchema :=
-  .object "HTTPValidationError" [("detail", .ann (.array (.ref "ValidationError")) { title := "Detail" })] []
+  .object "HTTPValidationError" [("detail", .ann (.array (.ref "ValidationError") []) { title := "Detail" })] []
 
 def validationDefinitions : List (String × OSchema) :=
   [("ValidationError", validationErrorSchema), ("HTTPValidationError", httpValidationErrorSchema)]
@@ -239,7 +266,8 @@ def methodsWithBody : List String := ["GET", "HEAD", "POST", "PUT", "DELETE", "P
 gives a schema that is not a `$ref`. -/
 def fieldSchema (s : Schema) (a : Annotations) (autoTitle : String) : OSchema :=
   match OSchema.ofSchema s with
-  | .ref n => .ref n
+  | .ref n => if a.default.isNone && a.description.isNone && !a.deprecated then .ref n
+    else .ann (.ref n) { a with title := none }
   | o => .ann o { a with title := some (a.title.getD autoTitle), explicitTitle := a.title.isSome }
 
 /-- A parameter's OpenAPI object. -/

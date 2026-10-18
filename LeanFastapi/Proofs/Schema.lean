@@ -28,10 +28,23 @@ theorem refs_ofSchema : ∀ (s : Schema), ∀ n ∈ (ofSchema s).refs, n ∈ nam
   | .integer _, n, h => by simp [ofSchema, refs] at h
   | .number _, n, h => by simp [ofSchema, refs] at h
   | .string _, n, h => by simp [ofSchema, refs] at h
+  | .literal _, n, h => by simp [ofSchema, refs] at h
+  | .array i _, n, h => by
+    simp only [ofSchema, refs, models] at h ⊢
+    exact refs_ofSchema i n h
+  | .tuple ps, n, h => by
+    simp only [ofSchema, refs, models] at h ⊢
+    exact refsList_ofSchemas ps n h
+  | .dict v, n, h => by
+    simp only [ofSchema, refs, models] at h ⊢
+    exact refs_ofSchema v n h
   | .anyOf alts, n, h => by
     simp only [ofSchema, refs, models] at h ⊢
     exact refsList_ofSchemas alts n h
   | .object t _ _, n, h => by
+    simp only [ofSchema, refs, List.mem_singleton] at h
+    subst h; simp [models]
+  | .ref t _, n, h => by
     simp only [ofSchema, refs, List.mem_singleton] at h
     subst h; simp [models]
   | .annotated s _ _, n, h => by
@@ -55,6 +68,16 @@ theorem refsProps_ofProps : ∀ (ps : List (String × Schema)), ∀ n ∈ refsPr
     · exact .inr (refsProps_ofProps ps n h)
 end
 
+/-- A named schema's component refers only to the schema's models. -/
+theorem refs_body (t : Schema) : ∀ n ∈ (body t).refs, n ∈ names (models t) := by
+  cases t with
+  | object t props req =>
+    intro n hn
+    simp only [body, refs] at hn
+    simp only [models, names, List.map_cons, List.mem_cons]
+    exact .inr (refsProps_ofProps props n hn)
+  | _ => exact refs_ofSchema _
+
 mutual
 /-- **The models of a schema refer only to each other.** -/
 theorem models_closed : ∀ (s : Schema), ∀ c ∈ models s, ∀ n ∈ c.2.refs, n ∈ names (models s)
@@ -64,6 +87,22 @@ theorem models_closed : ∀ (s : Schema), ∀ c ∈ models s, ∀ n ∈ c.2.refs
   | .integer _, c, hc, _, _ => by simp [models] at hc
   | .number _, c, hc, _, _ => by simp [models] at hc
   | .string _, c, hc, _, _ => by simp [models] at hc
+  | .literal _, c, hc, _, _ => by simp [models] at hc
+  | .array i _, c, hc, n, hn => by
+    simp only [models] at hc ⊢
+    exact models_closed i c hc n hn
+  | .tuple ps, c, hc, n, hn => by
+    simp only [models] at hc ⊢
+    exact modelsList_closed ps c hc n hn
+  | .dict v, c, hc, n, hn => by
+    simp only [models] at hc ⊢
+    exact models_closed v c hc n hn
+  | .ref t s, c, hc, n, hn => by
+    simp only [models, List.mem_cons] at hc
+    simp only [models, names, List.map_cons, List.mem_cons]
+    rcases hc with rfl | hc
+    · exact .inr (refs_body s n hn)
+    · exact .inr (models_closed s c hc n hn)
   | .anyOf alts, c, hc, n, hn => by
     simp only [models] at hc ⊢
     exact modelsList_closed alts c hc n hn
@@ -101,7 +140,7 @@ theorem refs_fieldSchema (s : Schema) (a : Annotations) (t : String) :
     (fieldSchema s a t).refs = (ofSchema s).refs := by
   unfold fieldSchema
   split
-  · rename_i n h; rw [h]
+  · rename_i n h; rw [h]; split <;> simp [refs]
   · simp [refs]
 
 end OSchema

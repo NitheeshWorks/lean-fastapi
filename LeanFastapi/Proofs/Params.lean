@@ -93,8 +93,10 @@ theorem serialize_response_conforms (β : Type) [FromJson β] [ToJson β] [JsonS
 /-- **A value of the response model is sent as its dump** (re-validating it
 changes nothing). -/
 theorem serialize_response_dump (β : Type) [FromJson β] [ToJson β] [JsonSchema β] [LawfulJson β] (b : β) :
-    (ResponseModel.of β).serialize (LeanPydantic.toJson {} b) = .ok (LeanPydantic.toJson {} b) := by
-  simp only [ResponseModel.of, LawfulJson.fromJson_toJson]
+    (ResponseModel.of β).serialize (LeanPydantic.toJson LeanPydantic.DumpOpts.roundTrip b) =
+      .ok (LeanPydantic.toJson LeanPydantic.DumpOpts.roundTrip b) := by
+  simp only [ResponseModel.of, responseDumpOpts]
+  rw [show ({ by_alias := true } : LeanPydantic.DumpOpts) = LeanPydantic.DumpOpts.roundTrip from rfl, LawfulJson.fromJson_toJson]
 
 /-! ## Classification and naming -/
 

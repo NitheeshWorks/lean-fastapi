@@ -8,8 +8,7 @@ the supported path operations, as an abstract syntax:
 
 * `OSchema` is a JSON Schema as it appears in the document: pydantic's
   schemas with every model replaced by a `$ref` to `#/components/schemas/`
-  (`OSchema.ref`), plus the two shapes of the validation-error components
-  (`array`, `objectAny`);
+  (`OSchema.ref`), plus `objectAny` for the validation-error components;
 * `Operation`, `Parameter`, `RequestBody`, `ResponseSpec`, `Info` are the
   OpenAPI objects;
 * `Components.schemas` is sorted by name, strictly, so names are unique: the
@@ -46,7 +45,14 @@ inductive OSchema where
   | number (kws : List Keyword)
   | string (kws : List Keyword)
   | anyOf (alts : List OSchema)
-  | array (items : OSchema)
+  /-- `{"type": "array", "items": s}`, with `minItems`/`maxItems`. -/
+  | array (items : OSchema) (kws : List Keyword)
+  /-- `{"type": "array", "prefixItems": [...]}` of a fixed length. -/
+  | tuple (items : List OSchema)
+  /-- `{"type": "object", "additionalProperties": s}`. -/
+  | dict (values : OSchema)
+  /-- `{"const": v}` or `{"enum": [...]}`, with the values' common type. -/
+  | literal (values : List Json)
   /-- A model's own schema (a component's body). -/
   | object (title : String) (props : List (String × OSchema)) (required : List String)
   /-- `{"type": "object"}` -/

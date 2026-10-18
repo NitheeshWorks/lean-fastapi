@@ -33,4 +33,20 @@ def make (item : Public) : Handler Public :=
 def zap (item : Option Public := none) : Handler Json :=
   return json% {"had": item.isSome}
 
+@[get "/multi"]
+def multiGet : Handler Json :=
+  return json% {"m": "get"}
+
+@[post "/multi"]
+def multiPost : Handler Json :=
+  return json% {"m": "post"}
+
+structure Count where
+  n : Int
+  deriving Model
+
+@[post "/counted"]
+def counted (c : Count) : Handler Count :=
+  return c
+
 end Tests.ResponseModel

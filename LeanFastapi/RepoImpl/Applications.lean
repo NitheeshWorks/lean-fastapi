@@ -16,10 +16,9 @@ and its path operations. Like the Python class, which subclasses
   so a `ResponseValidationError` (or any other exception) is a 500.
 
 FastAPI's `APIRoute` answers only its own methods: unlike a Starlette
-`Route`, a `GET` operation does not answer `HEAD`. lean-starlette's route
-type adds `HEAD` to every `GET` route (its `h_head` invariant), so the
-operation's own endpoint answers a `HEAD` it does not declare with the
-`405` FastAPI sends (see `CONTRIBUTING.md`).
+`Route`, a `GET` operation does not answer `HEAD`. Path operations are
+therefore lean-starlette `RouteExact` routes (no automatic `HEAD`), while the
+docs pages are plain `Route`s, as in FastAPI.
 -/
 
 namespace LeanFastapi
@@ -92,13 +91,9 @@ end FastAPI
 
 namespace APIRoute
 
-/-- The route's endpoint, answering a `HEAD` it does not declare with `405`. -/
-def app (r : APIRoute) : App := fun req =>
-  if req.method == "HEAD" && !r.methods.contains "HEAD" then throw (LeanStarlette.methodNotAllowed r.methods)
-  else r.endpoint req
-
-/-- The Starlette route of a path operation. -/
-def toBaseRoute (r : APIRoute) : BaseRoute := LeanStarlette.Route r.path r.app (methods := r.methods) (name := r.name)
+/-- The Starlette route of a path operation: exactly its methods. -/
+def toBaseRoute (r : APIRoute) : BaseRoute :=
+  LeanStarlette.RouteExact r.path r.endpoint (methods := r.methods) (name := r.name)
 
 end APIRoute
 

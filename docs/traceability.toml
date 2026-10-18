@@ -197,12 +197,35 @@ realises = ["LeanFastapi.getSwaggerUiHtml", "LeanFastapi.getRedocHtml", "LeanFas
 test = ["tests/Conformance.lean"]
 
 [[requirement]]
-id = "routing.head-allow"
-upstream = "starlette/routing.py::Route (HEAD added to GET)"
-title = "A 405's Allow header lists HEAD for GET routes, from lean-starlette"
-status = "deviation"
+id = "routing.exact-methods"
+upstream = "fastapi/routing.py::APIRoute (methods as declared)"
+title = "A path operation answers exactly its methods: HEAD on a GET operation is 405 with allow: GET"
+status = "tested"
 realises = ["LeanFastapi.APIRoute.toBaseRoute"]
+test = ["tests/Conformance.lean", "tests/golden/fastapi.json"]
+
+[[requirement]]
+id = "routing.allow-union"
+upstream = "starlette/routing.py::Router.app (first partial match)"
+title = "A 405's Allow is the union of every partially matching route's methods (lean-starlette, UP-027)"
+status = "deviation"
+realises = ["LeanFastapi.FastAPI.application"]
 test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "errors.non-finite-input"
+upstream = "fastapi/exception_handlers.py::request_validation_exception_handler"
+title = "A 422 echoing a non-finite client number writes it null; FastAPI answers 500 (UP-051)"
+status = "deviation"
+realises = ["LeanFastapi.finiteOnly", "LeanFastapi.validationErrorResponse"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "body.float-fields"
+upstream = "docs_src (float fields)"
+title = "Tutorial float fields are Decimal until lean-pydantic has a float-faithful type: inf, overflow and rounding differ"
+status = "deviation"
+test = ["tests/Conformance.lean", "demo/App.lean"]
 
 [[requirement]]
 id = "app.run"

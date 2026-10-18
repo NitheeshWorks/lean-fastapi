@@ -15,6 +15,6 @@ namespace LeanFastapi
 scoped syntax:50 (priority := high) term:51 " ∣ " refinement : term
 
 macro_rules
-  | `($a ∣ $r:refinement) => `(Keel.Refined $a (pyd_refinement% $r))
+  | `($a ∣ $r:refinement) => `(Keel.Refined $a (refinement% $r))
 
 end LeanFastapi

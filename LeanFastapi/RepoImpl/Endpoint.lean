@@ -53,9 +53,19 @@ structure ResponseModel where
   schema : LeanPydantic.Schema
   serialize : Json → Except (List RequestError) Json
 
+/-- The dump options of `response_model_include`, `response_model_exclude`,
+`response_model_by_alias` (FastAPI's default `True`),
+`response_model_exclude_unset`, `response_model_exclude_defaults` and
+`response_model_exclude_none`. -/
+def responseDumpOpts (incl : Option (List String) := none) (excl : List String := [])
+    (by_alias : Bool := true) (exclude_unset exclude_defaults exclude_none : Bool := false) :
+    LeanPydantic.DumpOpts :=
+  { «include» := incl, exclude := excl, by_alias, exclude_unset, exclude_defaults, exclude_none }
+
 /-- The response model for the type `β`, dumped with `opts`
-(`response_model_exclude_none` and the others). -/
-def ResponseModel.of (β : Type) [FromJson β] [ToJson β] [JsonSchema β] (opts : LeanPydantic.DumpOpts := {}) :
+(`response_model_exclude_none` and the others; by alias, as FastAPI). -/
+def ResponseModel.of (β : Type) [FromJson β] [ToJson β] [JsonSchema β]
+    (opts : LeanPydantic.DumpOpts := responseDumpOpts) :
     ResponseModel where
   schema := JsonSchema.schema β
   serialize j :=

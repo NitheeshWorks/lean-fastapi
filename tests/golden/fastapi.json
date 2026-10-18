@@ -4031,6 +4031,390 @@
     ]
    ],
    "response": "{\"had\":true}"
+  },
+  {
+   "fixture": "response_model",
+   "upstream": "tests/test_router_events.py (405 on a partial match)",
+   "method": "PUT",
+   "url": "/multi",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 405,
+   "headers": [
+    [
+     "allow",
+     "GET"
+    ],
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Method Not Allowed\"}"
+  },
+  {
+   "fixture": "response_model",
+   "upstream": "tests/test_router_events.py (405 on a partial match)",
+   "method": "HEAD",
+   "url": "/multi",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 405,
+   "headers": [
+    [
+     "allow",
+     "GET"
+    ],
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "response_model",
+   "upstream": "tests/test_router_events.py (405 on a partial match)",
+   "method": "HEAD",
+   "url": "/public",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 405,
+   "headers": [
+    [
+     "allow",
+     "GET"
+    ],
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "response_model",
+   "upstream": "critic review of b6n01b9wts1z (non-finite input in a 422)",
+   "method": "POST",
+   "url": "/counted",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "15"
+    ]
+   ],
+   "body": "{\"n\": Infinity}",
+   "status": 500,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ]
+   ],
+   "response": "Internal Server Error"
+  },
+  {
+   "fixture": "response_model",
+   "upstream": "critic review of b6n01b9wts1z (non-finite input in a 422)",
+   "method": "POST",
+   "url": "/counted",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "10"
+    ]
+   ],
+   "body": "{\"n\": NaN}",
+   "status": 500,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ]
+   ],
+   "response": "Internal Server Error"
+  },
+  {
+   "fixture": "demo",
+   "upstream": "critic review of b6n01b9wts1z (float price)",
+   "method": "PUT",
+   "url": "/items/1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "29"
+    ]
+   ],
+   "body": "{\"name\":\"x\",\"price\":Infinity}",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "55"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"name\":\"x\",\"description\":null,\"price\":null,\"tax\":null}"
+  },
+  {
+   "fixture": "demo",
+   "upstream": "critic review of b6n01b9wts1z (float price)",
+   "method": "PUT",
+   "url": "/items/1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "26"
+    ]
+   ],
+   "body": "{\"name\":\"x\",\"price\":1e400}",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "55"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"name\":\"x\",\"description\":null,\"price\":null,\"tax\":null}"
+  },
+  {
+   "fixture": "demo",
+   "upstream": "critic review of b6n01b9wts1z (float price)",
+   "method": "PUT",
+   "url": "/items/1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "41"
+    ]
+   ],
+   "body": "{\"name\":\"x\",\"price\":12345678901234567890}",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "73"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"name\":\"x\",\"description\":null,\"price\":1.2345678901234567e+19,\"tax\":null}"
   }
  ],
  "openapi": [
@@ -6301,10 +6685,91 @@
         }
        }
       }
+     },
+     "/multi": {
+      "get": {
+       "summary": "Multi Get",
+       "operationId": "multi_get_multi_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      },
+      "post": {
+       "summary": "Multi Post",
+       "operationId": "multi_post_multi_post",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     },
+     "/counted": {
+      "post": {
+       "summary": "Counted",
+       "operationId": "counted_counted_post",
+       "requestBody": {
+        "content": {
+         "application/json": {
+          "schema": {
+           "$ref": "#/components/schemas/Count"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/Count"
+           }
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
      }
     },
     "components": {
      "schemas": {
+      "Count": {
+       "properties": {
+        "n": {
+         "type": "integer",
+         "title": "N"
+        }
+       },
+       "type": "object",
+       "required": [
+        "n"
+       ],
+       "title": "Count"
+      },
       "HTTPValidationError": {
        "properties": {
         "detail": {

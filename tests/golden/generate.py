@@ -103,6 +103,25 @@ async def zap(item: Public | None = None):
     return {"had": item is not None}
 
 
+@rm.get("/multi")
+async def multi_get():
+    return {"m": "get"}
+
+
+@rm.post("/multi")
+async def multi_post():
+    return {"m": "post"}
+
+
+class Count(BaseModel):
+    n: int
+
+
+@rm.post("/counted")
+async def counted(c: Count) -> Count:
+    return c
+
+
 FIXTURES = {
     "first_steps_001": tutorial("first_steps.tutorial001_py310"),
     "path_params_002": tutorial("path_params.tutorial002_py310"),
@@ -220,13 +239,21 @@ SCENARIOS = [
     ("response_model", "tests/test_response_code_no_body.py::test_get_response", "POST", "/created", J, '{"name": "a", "price": "3"}'),
     ("response_model", "tests/test_response_code_no_body.py::test_get_response", "DELETE", "/zap", {}, None),
     ("response_model", "tests/test_response_code_no_body.py::test_get_response", "DELETE", "/zap", J, '{"name": "a", "price": 3}'),
+    ("response_model", "tests/test_router_events.py (405 on a partial match)", "PUT", "/multi", {}, None),
+    ("response_model", "tests/test_router_events.py (405 on a partial match)", "HEAD", "/multi", {}, None),
+    ("response_model", "tests/test_router_events.py (405 on a partial match)", "HEAD", "/public", {}, None),
+    ("response_model", "critic review of b6n01b9wts1z (non-finite input in a 422)", "POST", "/counted", J, '{"n": Infinity}'),
+    ("response_model", "critic review of b6n01b9wts1z (non-finite input in a 422)", "POST", "/counted", J, '{"n": NaN}'),
+    ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":Infinity}'),
+    ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":1e400}'),
+    ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":12345678901234567890}'),
 ]
 
 
 def exchanges():
     out = []
     for fx, upstream, method, url, headers, body in SCENARIOS:
-        c = TestClient(FIXTURES[fx], follow_redirects=False)
+        c = TestClient(FIXTURES[fx], follow_redirects=False, raise_server_exceptions=False)
         r = c.request(method, url, headers=headers, content=body.encode() if body is not None else None)
         out.append({
             "fixture": fx, "upstream": upstream, "method": method, "url": url,
