@@ -102,6 +102,26 @@ def genIdent (r : Rng) (alphabet : List Char) : String × Rng :=
 
 def check (ok : Bool) (why : String) : Option String := if ok then none else some why
 
+/-- `readBody`'s answer in brief: accepted, a 422 at a position with a
+message, or a 400. -/
+def bodyVerdict : Except BodyError BodyInput → String
+  | .ok _ => "ok"
+  | .error (.invalid e) => s!"422 {e.ctx} {e.toJson.compress}"
+  | .error .unparsable => "400"
+
+/-- The reference order: `json.loads`'s verdict first, then lean-json. -/
+def pythonFirst (b : ByteArray) : String :=
+  match PyJson.checkBytes b with
+  | some (.decode msg pos) => bodyVerdict (.error (.invalid (jsonInvalid msg pos)))
+  | some .other => "400"
+  | none => match LeanJson.parseWith { maxIntLen := none, maxDepth := some maxJsonDepth } (dropBom b) with
+    | .ok _ => "ok"
+    | .error _ => "400"
+
+def jsonRequest (t : String) : LeanStarlette.Request :=
+  { method := "POST", path := "/", query_string := ""
+    headers := LeanStarlette.Headers.ofList [("content-type", "application/json")], bodyBytes := t.toUTF8 }
+
 /-! ## Properties -/
 
 def properties : List Property := [
@@ -116,6 +136,19 @@ def properties : List Property := [
       let py := (PyJson.checkText t.toList.toArray).isNone
       let lj := (LeanJson.parseStr t).toOption.isSome
       (check (py == lj) s!"{t.quote}: json.loads {py}, lean-json {lj}", r) },
+  { name := "readBody (lean-json first) answers as json.loads first would, on edited texts"
+    check := fun r =>
+      let (t, r) := genJson r 3
+      let (t, r) := mutate r t
+      let (k, r) := r.nat 4
+      -- sometimes a digit run past Python's 4300-digit limit, in or out of a string
+      let t := match k with
+        | 0 => "[" ++ String.ofList (List.replicate 4301 '7') ++ "," ++ t ++ "]"
+        | 1 => "[\"" ++ String.ofList (List.replicate 4301 '7') ++ "\"," ++ t ++ "]"
+        | _ => t
+      let got := bodyVerdict (readBody (jsonRequest t))
+      let want := pythonFirst t.toUTF8
+      (check (got == want) s!"{(String.ofList (t.toList.take 80)).quote}: {got} vs {want}", r) },
   { name := "PyJson error positions are within the text"
     check := fun r =>
       let (t, r) := genJson r 3

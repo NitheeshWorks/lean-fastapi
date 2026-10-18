@@ -76,10 +76,12 @@ def wrapperOf (ty : Expr) : Wrapper × Array Expr :=
   | some ``LeanFastapi.Body => (.body, args)
   | _ => (.none, #[ty])
 
-/-- Whether a type is a model, or an optional model. -/
+/-- Whether a type is FastAPI's non-scalar field, read from the body: a
+model, a `Dict` or a `List` (optionally `Option` of one). -/
 def isModelType (ty : Expr) : MetaM Bool := do
   let ty ← instantiateMVars ty
   let base := if ty.isAppOfArity ``Option 1 then ty.appArg! else ty
+  if base.isAppOfArity ``LeanPydantic.Dict 1 || base.isAppOfArity ``List 1 then return true
   return (← synthInstance? (mkApp (Lean.mkConst ``LeanPydantic.Model) base)).isSome
 
 /-- `none : Option String`. -/

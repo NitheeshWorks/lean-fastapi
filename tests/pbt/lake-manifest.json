@@ -43,7 +43,7 @@
    "type": "git",
    "subDir": null,
    "scope": "",
-   "rev": "f3e6c7eac8004447ce90de3b644d2db4685bad04",
+   "rev": "5c71f93100b0bfe5b8d8c8532f2b2f55e9b3d134",
    "name": "LeanPydantic",
    "manifestFile": "lake-manifest.json",
    "inputRev": "main",

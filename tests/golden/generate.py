@@ -24,7 +24,7 @@ HERE = Path(__file__).resolve().parent
 UPSTREAM = HERE.parents[2] / "upstream-spec" / "fastapi"
 sys.path.insert(0, str(UPSTREAM))
 
-from fastapi import FastAPI, HTTPException  # noqa: E402
+from fastapi import FastAPI, Header, HTTPException  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
@@ -123,6 +123,20 @@ async def counted(c: Count) -> Count:
     return c
 
 
+# Timed cases (critic, b6n01b9wts1z), twin of tests/apps/Bench.lean.
+bench_app = FastAPI()
+
+
+@bench_app.get("/header-int")
+async def header_int(x_n: Annotated[int, Header()]):
+    return {"positive": x_n > 0}
+
+
+@bench_app.post("/dict")
+async def dict_body(d: dict[str, int]):
+    return {"keys": len(d)}
+
+
 FIXTURES = {
     "first_steps_001": tutorial("first_steps.tutorial001_py310"),
     "path_params_002": tutorial("path_params.tutorial002_py310"),
@@ -142,6 +156,7 @@ FIXTURES = {
     "cookie_params_001": tutorial("cookie_params.tutorial001_an_py310"),
     "demo": demo,
     "response_model": rm,
+    "bench": bench_app,
 }
 
 J = {"content-type": "application/json"}
@@ -269,15 +284,27 @@ def exchanges():
     return out
 
 
-# Large inputs through the demo, end to end (the lean-starlette bench sizes).
-# Each request is a recipe, url = prefix + repeat * count and an optional
-# wide object body of n keys, so the golden stays small.
+# Large inputs end to end: the lean-starlette bench sizes through the demo,
+# and the critic's two timed cases through `bench`. Each request is a recipe
+# (url = prefix + repeat * count; an optional header of `count` repeated
+# characters; a body recipe), so the golden stays small. `budget_ms` is the
+# Lean bound, set from FastAPI's time for the same request under uvicorn on
+# the development machine: the dict body (FastAPI 55-78 ms, Lean ~87 ms) at
+# about twice that; the 1 MiB header (FastAPI 20 ms, Lean ~52 ms: lean-json's
+# printer echoing the 1 MiB input, ~33 ms, and lean-pydantic's digit scan,
+# ~25 ms) at 100 ms. Doubling either input takes 1.9x (header) and 2.4x
+# (dict) the time.
+# The size cases have 2000 ms, which bounds a quadratic regression.
 BENCH = [
-    ("wide object body, 100000 keys", "PUT", "/items/1", "", 0, 100000),
-    ("10000 keys colliding in Lean's String.hash buckets", "PUT", "/items/1", "", 0, "collide"),
-    ("65000-char non-matching path", "GET", "/", "a", 65000, None),
-    ("65000-digit item_id", "GET", "/items/", "1", 65000, None),
-    ("65000-char str item_id", "GET", "/stock/", "s", 65000, None),
+    {"fixture": "demo", "name": "wide object body, 100000 keys", "method": "PUT", "prefix": "/items/1", "body": "wide:100000"},
+    {"fixture": "demo", "name": "10000 keys colliding in Lean's String.hash buckets", "method": "PUT", "prefix": "/items/1", "body": "collide"},
+    {"fixture": "demo", "name": "65000-char non-matching path", "method": "GET", "prefix": "/", "repeat": "a", "count": 65000},
+    {"fixture": "demo", "name": "65000-digit item_id", "method": "GET", "prefix": "/items/", "repeat": "1", "count": 65000},
+    {"fixture": "demo", "name": "65000-char str item_id", "method": "GET", "prefix": "/stock/", "repeat": "s", "count": 65000},
+    {"fixture": "bench", "name": "1 MiB int header parameter", "method": "GET", "prefix": "/header-int",
+     "header": ["x-n", "1", 1 << 20], "budget_ms": 100},
+    {"fixture": "bench", "name": "dict[str, int] body, 100000 keys", "method": "POST", "prefix": "/dict", "body": "dict:100000",
+     "budget_ms": 150},
 ]
 
 
@@ -286,24 +313,40 @@ BENCH = [
 COLLIDE_KEYS = HERE.parents[1] / ".lake" / "packages" / "LeanJson" / "tests" / "fixtures" / "collide-keys.txt"
 
 
-def wide_body(n):
-    if n == "collide":
+def bench_body(recipe):
+    if recipe is None:
+        return None
+    if recipe == "collide":
         keys = [k for k in COLLIDE_KEYS.read_text().split("\n") if k]
         return '{"name":"x","price":2,' + ",".join(f'"{k}":0' for k in keys) + '}'
-    return '{"name":"x","price":2,' + ",".join(f'"k{i}":{i}' for i in range(n)) + '}'
+    kind, n = recipe.split(":")
+    members = ",".join(f'"k{i}":{i}' for i in range(int(n)))
+    return '{"name":"x","price":2,' + members + '}' if kind == "wide" else '{' + members + '}'
+
+
+REPEAT_MARK = "<<REPEAT>>"
 
 
 def bench():
     out = []
-    c = TestClient(demo, follow_redirects=False, raise_server_exceptions=False)
-    for name, method, prefix, repeat, count, n in BENCH:
-        body = wide_body(n) if n is not None else None
-        r = c.request(method, prefix + repeat * count, content=body.encode() if body else None,
-                      headers=J if body else {})
-        out.append({"name": name, "method": method, "prefix": prefix, "repeat": repeat, "count": count,
-                    "wide": n, "request_headers": [[k.decode(), v.decode()] for k, v in r.request.headers.raw],
-                    "status": r.status_code, "headers": [[k.decode(), v.decode()] for k, v in r.headers.raw],
-                    "response": r.content.decode("utf-8")})
+    for case in BENCH:
+        c = TestClient(FIXTURES[case["fixture"]], follow_redirects=False, raise_server_exceptions=False)
+        body = bench_body(case.get("body"))
+        headers = dict(J) if body else {}
+        if "header" in case:
+            name, ch, count = case["header"]
+            headers[name] = ch * count
+        url = case["prefix"] + case.get("repeat", "") * case.get("count", 0)
+        r = c.request(case["method"], url, content=body.encode() if body else None, headers=headers)
+        run = case["header"][1] * case["header"][2] if "header" in case else case.get("repeat", "") * case.get("count", 0)
+        text = r.content.decode("utf-8")
+        # The generated run, where a response echoes it, is written REPEAT_MARK.
+        text = text.replace(run, REPEAT_MARK) if len(run) > 1000 else text
+        out.append(dict(case, budget_ms=case.get("budget_ms", 2000),
+                        request_headers=[[k.decode(), v.decode()] for k, v in r.request.headers.raw
+                                         if "header" not in case or k.decode() != case["header"][0]],
+                        status=r.status_code, headers=[[k.decode(), v.decode()] for k, v in r.headers.raw],
+                        response=text))
     return out
 
 

@@ -82,16 +82,24 @@ id = "body.json-invalid"
 upstream = "fastapi/routing.py::get_request_handler (json.JSONDecodeError)"
 title = "An unparsable JSON body gives one json_invalid error at [\"body\", pos] with ctx.error equal to CPython's message; tested against CPython on a 4000-text corpus, not proved"
 status = "tested"
-realises = ["LeanFastapi.PyJson.checkText", "LeanFastapi.PyJson.checkBytes", "LeanFastapi.readBody"]
+realises = ["LeanFastapi.PyJson.checkText", "LeanFastapi.PyJson.checkBytes", "LeanFastapi.readBody", "LeanFastapi.hasLongDigitRun"]
 test = ["tests/Conformance.lean", "tests/golden/pyjson.json", "tests/Props.lean", "tests/pbt/Pbt.lean"]
 
 [[requirement]]
 id = "bench.large-inputs"
 upstream = "lean-starlette bench sizes"
-title = "A 100000-key body, a 65000-char path and a 65000-digit item_id through the demo, byte-identical with fastapi and within 2 s"
+title = "Large inputs byte-identical with fastapi and timed: a 100000-key body, 10000 hash-colliding keys, a 65000-char path, a 65000-digit item_id (demo); a 1 MiB int header and a 100000-key dict[str, int] body (bench app, bounded from FastAPI's uvicorn times)"
 status = "tested"
 realises = ["LeanFastapi.FastAPI.call"]
 test = ["tests/Conformance.lean", "tests/golden/bench.json"]
+
+[[requirement]]
+id = "params.non-scalar-body"
+upstream = "fastapi/dependencies/utils.py::analyze_param (field_annotation_is_scalar)"
+title = "A Dict or List argument without a wrapper is read from the body, as FastAPI's non-scalar fields"
+status = "tested"
+realises = ["LeanFastapi.Macro.isModelType"]
+test = ["tests/apps/Bench.lean", "tests/golden/fastapi.json"]
 
 [[requirement]]
 id = "body.content-type"

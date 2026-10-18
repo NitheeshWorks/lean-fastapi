@@ -69,7 +69,10 @@ Listed here with the reason, and in `docs/traceability.toml` with
   message of CPython's C scanner are a property of CPython, not a
   specification; checked on a 4000-text corpus recorded from CPython
   (`tests/golden/pyjson.json`), against lean-json on edited texts
-  (`tests/Props.lean`) and with plausible.
+  (`tests/Props.lean`) and with plausible. `readBody` parses with lean-json
+  first and asks the emulation only where the two can differ (a rejection,
+  or a digit run past Python's 4300-digit limit); a property checks it
+  answers as the Python-first order would.
 * **Byte-level output**: response bodies and headers, `/openapi.json` key
   order and number formatting, and the `/docs`, `/redoc` and oauth2-redirect
   HTML are compared byte for byte with fastapi 0.143.3 (`tests/golden/`,

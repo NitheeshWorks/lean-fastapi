@@ -16,6 +16,7 @@ import tests.apps.HeaderParams001
 import tests.apps.HeaderParams002
 import tests.apps.CookieParams001
 import tests.apps.ResponseModel
+import tests.apps.Bench
 import demo.App
 
 /-!
@@ -74,7 +75,8 @@ def fixtures : List (String × FastAPI) :=
    ("header_params_002", Tests.HeaderParams002.app.complete),
    ("cookie_params_001", Tests.CookieParams001.app.complete),
    ("demo", Demo.app.complete),
-   ("response_model", Tests.ResponseModel.app.complete)]
+   ("response_model", Tests.ResponseModel.app.complete),
+   ("bench", Tests.Bench.app.complete)]
 
 /-- Cases where the port differs from upstream on purpose, by fixture,
 method, URL and request body, with the header that differs (`*`: the whole
@@ -180,48 +182,61 @@ def goldenCases (doc : Json) : List Case :=
 
 /-! ## Large inputs -/
 
-/-- A wide object body of `n` keys, as `wide_body` in `generate.py`. -/
-def wideBody (n : Nat) : String :=
-  "{\"name\":\"x\",\"price\":2," ++ ",".intercalate ((List.range n).map fun i => s!"\"k{i}\":{i}") ++ "}"
+/-- The members `"k0":0,…` of `n` keys. -/
+def members (n : Nat) : String := ",".intercalate ((List.range n).map fun i => s!"\"k{i}\":{i}")
 
 /-- lean-json's keys that share a bucket under Lean's fixed-seed `String.hash`. -/
 def collideKeysPath : System.FilePath := ".lake/packages/LeanJson/tests/fixtures/collide-keys.txt"
 
-/-- The time a large request may take end to end (the inputs are linear; this
-bounds a quadratic regression, not the machine). -/
-def benchBudgetMs : Nat := 2000
+/-- A body recipe of `bench.json`, as `bench_body` in `generate.py`. -/
+def benchBody : Option String → IO String
+  | none => pure ""
+  | some "collide" => do
+    let keys := ((← IO.FS.readFile collideKeysPath).splitOn "\n").filter (· ≠ "")
+    pure ("{\"name\":\"x\",\"price\":2," ++ ",".intercalate (keys.map fun k => s!"\"{k}\":0") ++ "}")
+  | some r => match r.splitOn ":" with
+    | ["wide", n] => pure ("{\"name\":\"x\",\"price\":2," ++ members n.toNat! ++ "}")
+    | ["dict", n] => pure ("{" ++ members n.toNat! ++ "}")
+    | _ => throw (IO.userError s!"unknown body recipe {r}")
 
-/-- The `tests/golden/bench.json` cases: generated requests through the demo,
-byte for byte, each within `benchBudgetMs`. -/
+def natField? (e : Json) (k : String) : Option Nat :=
+  (field? e k).bind fun | .num (.int i) => some i.toNat | _ => none
+
+/-- The `tests/golden/bench.json` cases: generated requests end to end, byte
+for byte, each within its `budget_ms` (about twice FastAPI's time under
+uvicorn for the critic's timed cases; 2000 ms for the size cases, which bound a
+quadratic regression rather than the machine). -/
 def benchCases (bench : Json) : List Case :=
   (((LeanJson.Json.getArr? bench).map Array.toList).getD []).map fun e =>
     let name := (str? e "name").getD ""
-    ⟨"lean-starlette bench sizes (tests/golden/bench.json)", s!"bench demo {name}", do
-      let some app := fixtures.lookup "demo" | throw (IO.userError "no demo fixture")
-      let count := ((field? e "count").bind fun | .num (.int i) => some i.toNat | _ => none).getD 0
-      let url := (str? e "prefix").getD "/" ++ String.ofList (List.replicate count (((str? e "repeat").getD "").toList.headD 'x'))
-      let body ← match field? e "wide" with
-        | some (.num (.int n)) => pure (wideBody n.toNat)
-        | some (.str "collide") => do
-          let keys := ((← IO.FS.readFile collideKeysPath).splitOn "\n").filter (· ≠ "")
-          pure ("{\"name\":\"x\",\"price\":2," ++ ",".intercalate (keys.map fun k => s!"\"{k}\":0") ++ "}")
-        | _ => pure ""
+    let fx := (str? e "fixture").getD "demo"
+    ⟨"tests/golden/bench.json (lean-starlette bench sizes; critic, b6n01b9wts1z)", s!"bench {fx} {name}", do
+      let some app := fixtures.lookup fx | throw (IO.userError s!"no Lean fixture {fx}")
+      let rep (ch : String) (n : Nat) := String.ofList (List.replicate n (ch.toList.headD 'x'))
+      let run := rep ((str? e "repeat").getD "") ((natField? e "count").getD 0)
+      let body ← benchBody (str? e "body")
+      let (extra, run) := match (field? e "header").map (fun h => ((LeanJson.Json.getArr? h).map Array.toList).getD []) with
+        | some [.str n, .str ch, .num (.int c)] => let v := rep ch c.toNat; ([(n, v)], v)
+        | _ => ([], run)
+      let url := (str? e "prefix").getD "/" ++ (if (field? e "header").isSome then "" else run)
       let (path, query_string) := LeanStarlette.splitTarget url
       let req : LeanStarlette.Request :=
         { method := (str? e "method").getD "GET", path, query_string
-          headers := LeanStarlette.Headers.ofList (pairs e "request_headers")
+          headers := LeanStarlette.Headers.ofList (pairs e "request_headers" ++ extra)
           bodyBytes := body.toUTF8, server := some ("testserver", 80) }
+      let budget := (natField? e "budget_ms").getD 2000
       let t0 ← IO.monoMsNow
       let r ← app.call req
       let ms := (← IO.monoMsNow) - t0
-      let wantStatus := (field? e "status").bind (fun | .num (.int i) => some i.toNat | _ => none)
+      let got := if run.length > 1000 then r.text.replace run "<<REPEAT>>" else r.text
+      let wantStatus := natField? e "status"
       let same := some r.status_code == wantStatus && r.headers.raw == pairs e "headers" &&
-        r.text == (str? e "response").getD ""
+        got == (str? e "response").getD ""
       unless same do
         IO.println s!"      want {wantStatus} {(str? e "response").getD "" |>.take 200}"
-        IO.println s!"      got  {r.status_code} {r.text.take 200}"
-      IO.println s!"      {ms} ms (budget {benchBudgetMs})"
-      pure (same && ms ≤ benchBudgetMs)⟩
+        IO.println s!"      got  {r.status_code} {got.take 200}"
+      IO.println s!"      {ms} ms (budget {budget})"
+      pure (same && ms ≤ budget)⟩
 
 def openapiCases (doc : Json) : List Case :=
   (arr? doc "openapi").map fun e =>

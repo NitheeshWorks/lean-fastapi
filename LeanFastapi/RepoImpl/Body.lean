@@ -62,18 +62,32 @@ def jsonInvalid (msg : String) (pos : Nat) : RequestError :=
   { type := "json_invalid", loc := [.key "body", .index pos], msg := "JSON decode error"
     input := jobj [], ctx := [("error", .str msg)] }
 
+/-- Whether the bytes hold a run of more than 4300 ASCII digits: the one
+kind of text lean-json parses and `json.loads` rejects (`int()`'s digit
+limit). One linear pass. -/
+def hasLongDigitRun (b : ByteArray) : Bool :=
+  (b.foldl (fun (acc : Bool × Nat) x =>
+    if acc.1 then acc
+    else if 48 ≤ x && x ≤ 57 then (acc.2 + 1 > 4300, acc.2 + 1) else (false, 0)) (false, 0)).1
+
 /-- Read a request body as FastAPI does for a path operation with a body
-parameter. -/
+parameter. lean-json parses first; `json.loads`'s verdict
+(`PyJson.checkBytes`) is computed only where the two can differ: when
+lean-json rejects (for Python's message and position) or when a digit run
+exceeds Python's limit. Elsewhere they accept the same texts (tested,
+`tests/Props.lean`). -/
 def readBody (req : Request) : Except BodyError BodyInput :=
   if req.bodyBytes.size = 0 then .ok .none
   else if isJsonContentType (req.headers.get? "content-type") then
-    match PyJson.checkBytes req.bodyBytes with
-    | some (.decode msg pos) => .error (.invalid (jsonInvalid msg pos))
-    | some .other => .error .unparsable
-    | none =>
-      match LeanJson.parseWith { maxIntLen := none, maxDepth := some maxJsonDepth } (dropBom req.bodyBytes) with
-      | .ok j => .ok (.json j.val)
-      | .error _ => .error .unparsable
+    -- `json.loads`'s verdict, with what to answer when it accepts.
+    let python (accepted : Except BodyError BodyInput) : Except BodyError BodyInput :=
+      match PyJson.checkBytes req.bodyBytes with
+      | some (.decode msg pos) => .error (.invalid (jsonInvalid msg pos))
+      | some .other => .error .unparsable
+      | none => accepted
+    match LeanJson.parseWith { maxIntLen := none, maxDepth := some maxJsonDepth } (dropBom req.bodyBytes) with
+    | .ok j => if hasLongDigitRun req.bodyBytes then python (.ok (.json j.val)) else .ok (.json j.val)
+    | .error _ => python (.error .unparsable)
   else .ok (.bytes (String.fromUTF8? req.bodyBytes |>.getD (String.ofList (req.bodyBytes.toList.map fun b => Char.ofNat b.toNat))))
 
 /-- The inputs of a request, with an already read body. -/

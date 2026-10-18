@@ -111,10 +111,14 @@ end
 
 /-! ## Printing -/
 
-/-- Schemas inside operations are pydantic's dicts; component schemas are
-dumped through FastAPI's `Schema` model. -/
+/-- Schemas inside operations are pydantic's dicts, written in the order
+pydantic generates them: a parameter's (`raw`, where FastAPI's parameter
+schemas put `type` first) or a body's (`body`, pydantic's own order, e.g.
+`items` before `type`). Component schemas are dumped through FastAPI's
+`Schema` model (`model`). -/
 inductive Mode where
   | raw
+  | body
   | model
   deriving DecidableEq
 
@@ -194,7 +198,7 @@ def annMembers (a : Annotations) : List (String × Json) :=
 
 def arrange (m : Mode) (kvs : List (String × Json)) : List (String × Json) :=
   match m with
-  | .raw => pyDict kvs
+  | .raw | .body => pyDict kvs
   | .model => sortBy (fun p => keyRank p.1) (pyDict kvs)
 
 mutual
@@ -206,11 +210,20 @@ def members (m : Mode) : OSchema → List (String × Json)
   | .number k => scalar m "number" k
   | .string k => scalar m "string" k
   | .anyOf alts => [("anyOf", jarr (toJsonList m alts))]
-  | .array i k => [("type", .str "array"), ("items", toJson m i)] ++ (sortBy keywordRank k).map (keywordMember m)
+  | .array i k =>
+    let kws := (sortBy keywordRank k).map (keywordMember m)
+    if m == .raw then
+      [("type", .str "array")] ++ kws.filter (·.1 == "uniqueItems") ++ [("items", toJson m i)] ++
+        kws.filter (·.1 != "uniqueItems")
+    else [("items", toJson m i), ("type", .str "array")] ++ kws
   | .tuple ps =>
-    [("type", .str "array"), ("prefixItems", jarr (toJsonList m ps)),
-      ("minItems", .num (.int ps.length)), ("maxItems", .num (.int ps.length))]
-  | .dict v => [("type", .str "object"), ("additionalProperties", toJson m v)]
+    let n := Json.num (.int ps.length)
+    if m == .raw then
+      [("type", .str "array"), ("prefixItems", jarr (toJsonList m ps)), ("maxItems", n), ("minItems", n)]
+    else [("prefixItems", jarr (toJsonList m ps)), ("type", .str "array"), ("maxItems", n), ("minItems", n)]
+  | .dict v =>
+    if m == .raw then [("type", .str "object"), ("additionalProperties", toJson m v)]
+    else [("additionalProperties", toJson m v), ("type", .str "object")]
   | .literal vs =>
     (match vs with | [v] => [("const", v)] | _ => [("enum", jarr vs)]) ++
       (match LeanPydantic.literalType vs with | some t => [("type", .str t)] | none => [])
@@ -383,7 +396,7 @@ def getOpenapi (info : Info) (routes : List APIRoute) : OpenAPI where
 namespace OpenAPI
 
 def mediaJson (c : MediaContent) : Json :=
-  jobj [(c.mediaType, jobj [("schema", c.schema.toJson .raw)])]
+  jobj [(c.mediaType, jobj [("schema", c.schema.toJson .body)])]
 
 def parameterJson (p : Parameter) : Json :=
   jobj <| [("name", .str p.name), ("in", .str p.in.value), ("required", .bool p.required),
