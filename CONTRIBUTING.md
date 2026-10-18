@@ -17,7 +17,22 @@ to bytes:
 | `Specifications/` | the properties, in `Prop` | the contract |
 | `Proofs/` | theorems; `Proofs/Verified.lean` bundles one `Verified<Layer>` per layer | yes |
 | `APIs/` | the public surface, returning refinements | by construction |
-| `Transport.lean` (if present) | the only effectful module | no; tested |
+| `APIs/Endpoint.lean` | the `@[get]`/`@[post]`/... attributes: elaborate a path operation into an `APIRoute` | by construction |
+| transport | lean-starlette's server; `FastAPI.run` only calls it | no; tested |
+
+A request flows: lean-starlette routing → `APIRoute.app` → `Inputs.ofRequest`
+(`RepoImpl/Body.lean`, which reads the JSON body and emulates `json.loads`
+errors with `RepoImpl/PyJson.lean`) → `Params.extract` (each `Param` a Keel
+`Validator` at its location, built on lean-pydantic's `FromJson`) → the
+handler → `renderResult` (a `ResponseModel` re-validates and dumps) → the
+exception handlers (`RepoImpl/Exceptions.lean`). `RepoImpl/OpenApi.lean`
+builds the document from the same `APIRoute`s, which is what lets the
+OpenAPI theorems quantify over every app.
+
+The attribute (`APIs/Endpoint.lean`) records each route in an environment
+extension; `FastAPI.run`, `complete`, `openapi` and `TestClient.new` take an
+auto-parameter filled by the `declared_routes` tactic with the routes declared
+in the app's module, so routes may follow the `def app`.
 
 Everything except the transport module is a pure function. This is
 load-bearing: a round-trip property of a function is an equation that
@@ -48,13 +63,42 @@ be a Hoare triple over a heap.
 ### Tested, not proved
 
 Listed here with the reason, and in `docs/traceability.toml` with
-`status = "tested"`. (Nothing yet.)
+`status = "tested"`.
+
+* **`json.loads` error emulation** (`RepoImpl/PyJson.lean`): the position and
+  message of CPython's C scanner are a property of CPython, not a
+  specification; checked on a 4000-text corpus recorded from CPython
+  (`tests/golden/pyjson.json`), against lean-json on edited texts
+  (`tests/Props.lean`) and with plausible.
+* **Byte-level output**: response bodies and headers, `/openapi.json` key
+  order and number formatting, and the `/docs`, `/redoc` and oauth2-redirect
+  HTML are compared byte for byte with fastapi 0.143.3 (`tests/golden/`,
+  regenerated with `tests/golden/generate.py`).
+* **Cookie parsing and the name helpers** (`cookieParser`, `pathFormat`,
+  `snakeCase`, `generateUniqueId`): property tests.
+* **Transport**: lean-starlette's server, exercised by `lake exe example`.
+
+### Deviations from FastAPI
+
+* A 405's `Allow` lists `HEAD` for GET routes (lean-starlette adds HEAD to
+  GET routes); upstream lists only the declared methods.
+* `operationId` is generated per method, so a multi-method route has distinct
+  ids; upstream reuses the first method of a set (UP-046).
+* `\W` in `generate_unique_id` treats every non-ASCII character as a word
+  character.
+* UTF-16 and UTF-32 JSON bodies are not detected (only UTF-8, BOM dropped).
+* JSON bodies nested deeper than 9998 levels are rejected by lean-json's
+  depth limit; Python's limit depends on the interpreter stack.
+* Not yet: several (embedded) body parameters are rejected at elaboration;
+  `root_path` and the `servers` entry are not implemented.
 
 ## Tests
 
 * `tests/Props.lean`: seeded property tests, no dependencies, under a second.
 * `tests/Conformance.lean`: cases re-expressed from the upstream suite; each
-  names the upstream test (`tests/test_x.py::test_y`).
+  names the upstream test (`tests/test_x.py::test_y`). The golden cases
+  replay every exchange recorded in `tests/golden/fastapi.json` against the
+  Lean twin in `tests/apps/` of each upstream tutorial app.
 * `tests/pbt/`: a separate Lake package, the one place an external dependency
   (`plausible`) is taken.
 

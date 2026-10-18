@@ -20,21 +20,98 @@ depends on: [lean-pydantic](https://github.com/NitheeshWorks/lean-pydantic), [le
   [CONTRIBUTING.md](CONTRIBUTING.md#verification) and in
   `docs/traceability.toml`.
 
-## Getting started
+## Quickstart
+
+```lean
+import LeanFastapi
+open LeanFastapi
+
+def app := FastAPI.new
+
+@[get "/items/{item_id}"]
+def readItem (item_id : Int) (q : Option String := none) : Handler Json :=
+  return json% {"item_id": item_id, "q": q}
+
+structure Item where
+  name  : String ∣ maxLength 50
+  price : Decimal ∣ gt 0
+  deriving Model
+
+@[put "/items/{item_id}" (response_model := Item)]
+def updateItem (item_id : Int) (item : Item) : Handler Item :=
+  return item
+
+def main : IO Unit := app.run (port := 8000)
+```
+
+As in FastAPI, a parameter's kind is inferred: a name in the path template is
+a path parameter, a `Model` is the body, anything else is a query parameter.
+`Path`, `Query`, `Header`, `Cookie` and `Body` wrap a type to say so
+explicitly or to carry metadata; constraints are refinement types `α ∣ c`;
+`throw (HTTPException 404 "Item not found")` answers `{"detail": ...}`. No
+proof terms are written by the user. `/openapi.json`, `/docs` and `/redoc`
+are served for every app.
 
 ```
-lake build            # library, proofs, and both test executables
+lake exe example      # demo/App.lean on http://127.0.0.1:8000
+lake build            # library, proofs, tests
 lake exe props        # property tests (seeded; `lake exe props 42`)
-lake exe conformance  # cases re-expressed from the upstream test suite
-scripts/check.sh      # the whole CI gate, locally
+lake exe conformance  # golden cases recorded from fastapi 0.143.3
+scripts/check.sh      # the whole CI gate, locally (--pbt adds plausible)
 ```
 
 Toolchain: `leanprover/lean4:v4.35.0` (pinned in `lean-toolchain`; `elan` installs it).
 
+### The demo against FastAPI
+
+The same requests to `lake exe example` and to the Python twin of the demo
+under uvicorn (fastapi 0.143.3, pydantic 2.14.1) give identical output:
+
+```
+$ curl 127.0.0.1:8000/items/42?q=x
+{"item_id":42,"q":"x"}                                                      [200]
+$ curl 127.0.0.1:8000/items/foo
+{"detail":[{"type":"int_parsing","loc":["path","item_id"],"msg":"Input should be a valid integer, unable to parse string as an integer","input":"foo"}]}   [422]
+$ curl -X PUT 127.0.0.1:8000/items/1 -H 'content-type: application/json' -d '{"price":-1}'
+{"detail":[{"type":"missing","loc":["body","name"],"msg":"Field required","input":{"price":-1}},{"type":"greater_than","loc":["body","price"],"msg":"Input should be greater than 0","input":-1,"ctx":{"gt":0.0}}]}   [422]
+$ curl -X PUT 127.0.0.1:8000/items/1 -H 'content-type: application/json' -d '{"name":'
+{"detail":[{"type":"json_invalid","loc":["body",8],"msg":"JSON decode error","input":{},"ctx":{"error":"Expecting value"}}]}   [422]
+$ curl 127.0.0.1:8000/stock/bar
+{"detail":"Item not found"}                                                 [404]
+$ curl -s 127.0.0.1:8000/openapi.json | sha256sum     # the same on both
+06a6bf49950e9392710a35a0059557389e40ef8ecc0e00336258a134d9408688
+```
+
+## What is proved
+
+For every application (`LeanFastapi/Proofs/Verified.lean` bundles them):
+
+* **Parameters.** Every validation error of a parameter is located under its
+  `(source, alias)` (`params_to_args_loc`); extraction succeeds exactly when
+  every parameter validates (`extract_cons_ok_iff`, `extract_sound`); a
+  failure answers 422 with `{"detail": errors}` (`extract_422`); kind
+  inference follows FastAPI's rule (`infer_param`); header names use hyphens
+  (`header_alias_hyphen`).
+* **Responses.** With a response model the body conforms to the model's
+  schema (`serialize_response_conforms`).
+* **OpenAPI.** Every route and method appears exactly once
+  (`openapi_all_routes`); every `$ref` resolves to a component
+  (`openapi_refs_resolve`); components are sorted
+  (`openapi_components_sorted`); operation ids are unique
+  (`operationId_unique`); a 422 response is documented iff the route has
+  parameters (`openapi_422_iff`); documented parameters are the route's
+  (`openapi_params_match`).
+
+Wire behaviour (byte-identical bodies, headers, `/openapi.json`, `/docs`,
+`/redoc`, CPython's `json.loads` error positions) is tested against recorded
+fastapi output rather than proved; see CONTRIBUTING.md.
+
 ## Status
 
-Milestone 0: skeleton, CI gate, cross-repo pins. See the stack plan in
-lean-fastapi for the milestones that fill this in.
+Milestone 1: path, query, header and cookie parameters, JSON bodies, 422
+errors, response models, HTTPException, OpenAPI and the docs pages, and the
+demo. Dependency injection, forms and files, middleware and streaming are the
+next milestones.
 
 ## License
 

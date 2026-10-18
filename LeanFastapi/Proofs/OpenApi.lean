@@ -43,7 +43,7 @@ theorem keys_upsertOp (acc : List (String × String × Operation)) (e : String �
   · have ha : acc.any (fun x => decide (opKey x = opKey e)) = true := by
       obtain ⟨x, hx, hk⟩ := List.mem_map.1 h
       exact List.any_eq_true.2 ⟨x, hx, by simp [hk]⟩
-    rw [if_pos ha, if_pos h, List.map_map]
+    rw [ite_eq_left ha, ite_eq_left h, List.map_map]
     congr 1; funext x
     simp only [Function.comp]
     split
@@ -53,7 +53,7 @@ theorem keys_upsertOp (acc : List (String × String × Operation)) (e : String �
       intro ha
       obtain ⟨x, hx, hk⟩ := List.any_eq_true.1 ha
       exact h (List.mem_map.2 ⟨x, hx, of_decide_eq_true hk⟩)
-    rw [if_neg ha, if_neg h]; simp
+    rw [ite_eq_right ha, ite_eq_right h]; simp
 
 theorem mem_upsertOp (acc : List (String × String × Operation)) (e y : String × String × Operation) :
     y ∈ upsertOp acc e → y = e ∨ y ∈ acc := by
@@ -84,7 +84,7 @@ theorem mem_keys_foldl_upsert (l acc : List (String × String × Operation)) (k 
         · exact .inl h'
         · exact .inl h
         · exact .inr h'
-    · simp only [List.map_append, List.map_cons, List.map_nil, List.mem_append, List.mem_cons,
+    · simp only [List.map_cons, List.mem_append, List.mem_cons,
         List.not_mem_nil, or_false, or_assoc]
 
 theorem nodup_keys_foldl_upsert (l acc : List (String × String × Operation)) (h : (acc.map opKey).Nodup) :
@@ -176,7 +176,7 @@ theorem openapi_all_routes (info : Info) (routes : List APIRoute) (p m : String)
     · simp at he
   · rintro ⟨r, hr, hi, hp, m', hm', rfl⟩
     refine ⟨(pathFormat r.path, m'.toLower, r.operation m'), ⟨r, hr, ?_⟩, by simp [opKey, hp]⟩
-    simp only [APIRoute.operations, hi, if_true, List.mem_map]
+    simp only [APIRoute.operations, hi, ite_true, List.mem_map]
     exact ⟨m', hm', rfl⟩
 
 /-- Each `(path, method)` occurs once in the document. -/
@@ -265,7 +265,7 @@ route validates input (has a parameter or a body) or its own status code is
 theorem openapi_422_iff (r : APIRoute) (m : String) :
     "422" ∈ (r.operation m).responses.map Prod.fst ↔ r.params ≠ [] ∨ r.statusKey = "422" := by
   simp only [APIRoute.operation, APIRoute.validates]
-  by_cases hs : r.statusKey = "422" <;> by_cases hp : r.params = [] <;> simp [hs, hp, List.isEmpty_iff]
+  by_cases hs : r.statusKey = "422" <;> by_cases hp : r.params = [] <;> simp [hs, hp]
   all_goals exact fun h => hs h.symm
 
 /-- **Parameters match**: an operation documents the parameter `(in, name)`
@@ -300,7 +300,7 @@ theorem validation_mem_definitions (routes : List APIRoute) (r : APIRoute) (hr :
   unfold openapiDefinitions
   have : (routes.filter (·.include_in_schema)).any APIRoute.validates = true :=
     List.any_eq_true.2 ⟨r, List.mem_filter.2 ⟨hr, hi⟩, hv⟩
-  simp only [this, if_true]
+  simp only [this, ite_true]
   exact List.mem_append_right _ hc
 
 /-- A schema of an included route refers only to definitions. -/
@@ -400,7 +400,7 @@ theorem refs_definition (routes : List APIRoute) (c : String × OSchema) (hc : c
       · simp only [httpValidationErrorSchema, OSchema.refs, OSchema.refsProps, List.mem_append, List.mem_singleton,
           List.not_mem_nil, or_false] at hn
         subst hn
-        simp only [hv, if_true]
+        simp only [hv, ite_true]
         exact List.mem_map.2 ⟨("ValidationError", validationErrorSchema), List.mem_append_right _ (by simp [validationDefinitions]), rfl⟩
     · simp at hc
 

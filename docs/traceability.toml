@@ -24,3 +24,203 @@ upstream_license = "MIT"
 # realises = ["LeanFastapi.Foo.bar"]
 # theorem = ["LeanFastapi.Foo.bar_spec"]
 # test = ["tests/Conformance.lean::name"]
+
+[[requirement]]
+id = "params.inference"
+upstream = "fastapi/dependencies/utils.py::analyze_param"
+title = "A name in the path template is a path parameter, a model is the body, anything else is a query parameter; Path/Query/Header/Cookie/Body override"
+status = "implemented"
+realises = ["LeanFastapi.inferParam", "LeanFastapi.Path", "LeanFastapi.Query", "LeanFastapi.Header", "LeanFastapi.Cookie", "LeanFastapi.Body"]
+theorem = ["LeanFastapi.infer_param", "LeanFastapi.infer_param_explicit"]
+test = ["tests/Conformance.lean", "tests/apps/QueryParams001.lean"]
+
+[[requirement]]
+id = "params.header-alias"
+upstream = "fastapi/params.py::Header (convert_underscores)"
+title = "A header parameter is read under its name with underscores written as hyphens"
+status = "implemented"
+realises = ["LeanFastapi.headerAlias", "LeanFastapi.headerParamAlias"]
+theorem = ["LeanFastapi.header_alias_hyphen"]
+test = ["tests/apps/HeaderParams001.lean", "tests/apps/HeaderParams002.lean", "tests/Props.lean"]
+
+[[requirement]]
+id = "params.locations"
+upstream = "fastapi/dependencies/utils.py::request_params_to_args"
+title = "Every validation error of a parameter is located under (source, alias)"
+status = "implemented"
+realises = ["LeanFastapi.Param.validator", "LeanFastapi.Params.cons"]
+theorem = ["LeanFastapi.params_to_args_loc", "LeanFastapi.extract_sound", "LeanFastapi.extract_cons_ok_iff"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "params.422"
+upstream = "fastapi/exception_handlers.py::request_validation_exception_handler"
+title = "Failed extraction answers 422 with {\"detail\": errors}, errors grouped path, query, header, cookie, body"
+status = "implemented"
+realises = ["LeanFastapi.request_validation_exception_handler", "LeanFastapi.RequestValidationError"]
+theorem = ["LeanFastapi.extract_422", "LeanFastapi.endpoint_app_error"]
+test = ["tests/Conformance.lean", "tests/apps/Qpsv003.lean", "tests/apps/Ppnv006.lean"]
+
+[[requirement]]
+id = "params.model-attributes-type"
+upstream = "fastapi/_compat (validate_python with from_attributes=True)"
+title = "A body model given a non-object reports model_attributes_type, not model_type"
+status = "implemented"
+realises = ["LeanFastapi.RequestError.ofDetails"]
+test = ["tests/apps/Body001.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "params.cookies"
+upstream = "starlette/requests.py::cookie_parser"
+title = "Cookie header parsing: chunks on ';', stripped, unquoted, later names win"
+status = "tested"
+realises = ["LeanFastapi.cookieParser", "LeanFastapi.cookieUnquote"]
+test = ["tests/apps/CookieParams001.lean", "tests/Props.lean", "tests/pbt/Pbt.lean"]
+
+[[requirement]]
+id = "body.json-invalid"
+upstream = "fastapi/routing.py::get_request_handler (json.JSONDecodeError)"
+title = "An unparsable JSON body gives one json_invalid error at [\"body\", pos] with ctx.error equal to CPython's message; tested against CPython on a 4000-text corpus, not proved"
+status = "tested"
+realises = ["LeanFastapi.PyJson.checkText", "LeanFastapi.PyJson.checkBytes", "LeanFastapi.readBody"]
+test = ["tests/Conformance.lean", "tests/golden/pyjson.json", "tests/Props.lean", "tests/pbt/Pbt.lean"]
+
+[[requirement]]
+id = "body.content-type"
+upstream = "fastapi/routing.py::get_request_handler (json content type check)"
+title = "A body is parsed as JSON only for application/json or */*+json; otherwise it stays bytes"
+status = "tested"
+realises = ["LeanFastapi.isJsonContentType", "LeanFastapi.contentType"]
+test = ["tests/Props.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "body.utf16"
+upstream = "json.detect_encoding"
+title = "UTF-16 and UTF-32 bodies are not detected; a UTF-8 BOM is dropped"
+status = "deviation"
+realises = ["LeanFastapi.PyJson.checkBytes"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "body.nesting-limit"
+upstream = "json.loads (recursion limit)"
+title = "Bodies nested deeper than 9998 are rejected by lean-json's depth limit, where Python's limit depends on the interpreter stack"
+status = "deviation"
+realises = ["LeanFastapi.maxJsonDepth"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "response.model"
+upstream = "fastapi/routing.py::serialize_response"
+title = "With a response model the return value is re-validated and dumped; the result conforms to the model's schema"
+status = "implemented"
+realises = ["LeanFastapi.ResponseModel.of"]
+theorem = ["LeanFastapi.serialize_response_conforms", "LeanFastapi.serialize_response_dump"]
+test = ["tests/apps/ResponseModel.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "errors.http-exception"
+upstream = "fastapi/exception_handlers.py::http_exception_handler"
+title = "HTTPException answers {\"detail\": ...} with its status and headers; no body for 204/304"
+status = "implemented"
+realises = ["LeanFastapi.http_exception_handler", "LeanFastapi.isBodyAllowedForStatusCode"]
+test = ["tests/apps/HandlingErrors001.lean", "tests/apps/HandlingErrors002.lean"]
+
+[[requirement]]
+id = "openapi.all-routes"
+upstream = "fastapi/openapi/utils.py::get_openapi"
+title = "Every included route and method appears in /openapi.json exactly once"
+status = "implemented"
+realises = ["LeanFastapi.getOpenapi"]
+theorem = ["LeanFastapi.openapi_all_routes", "LeanFastapi.openapi_operation_of_route", "LeanFastapi.openapi_keys_nodup"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "openapi.refs-resolve"
+upstream = "fastapi/openapi/utils.py::get_openapi (components.schemas)"
+title = "Every $ref in the document names a component schema"
+status = "implemented"
+realises = ["LeanFastapi.getOpenapi"]
+theorem = ["LeanFastapi.openapi_refs_resolve", "LeanFastapi.OSchema.refs_ofSchema", "LeanFastapi.OSchema.models_closed"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "openapi.components-sorted"
+upstream = "fastapi/openapi/utils.py::get_openapi (sorted definitions)"
+title = "components.schemas keys are strictly sorted"
+status = "implemented"
+realises = ["LeanFastapi.Components"]
+theorem = ["LeanFastapi.openapi_components_sorted"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "openapi.operation-id-per-method"
+upstream = "fastapi/utils.py::generate_unique_id"
+title = "operationId is generated per method, so a multi-method route has distinct ids (upstream reuses list(methods)[0], UP-046)"
+status = "deviation"
+realises = ["LeanFastapi.generateUniqueId"]
+theorem = ["LeanFastapi.operationId_unique"]
+test = ["tests/Conformance.lean", "tests/Props.lean"]
+
+[[requirement]]
+id = "openapi.422-response"
+upstream = "fastapi/openapi/utils.py::get_openapi_path (422 response)"
+title = "An operation documents a 422 response iff its route has parameters (and no explicit 422)"
+status = "implemented"
+realises = ["LeanFastapi.APIRoute.operation"]
+theorem = ["LeanFastapi.openapi_422_iff"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "openapi.params-match"
+upstream = "fastapi/openapi/utils.py::_get_openapi_operation_parameters"
+title = "Documented parameters are exactly the route's non-body parameters, one per (in, name)"
+status = "implemented"
+realises = ["LeanFastapi.dedupParams"]
+theorem = ["LeanFastapi.openapi_params_match", "LeanFastapi.mem_dedupParams"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "openapi.bytes"
+upstream = "fastapi/applications.py::openapi"
+title = "/openapi.json is byte-identical to fastapi 0.143.3 for the tutorial apps (key order, floats, exclude_none)"
+status = "tested"
+realises = ["LeanFastapi.OpenAPI.toJson"]
+test = ["tests/Conformance.lean", "tests/golden/fastapi.json"]
+
+[[requirement]]
+id = "docs.pages"
+upstream = "fastapi/openapi/docs.py"
+title = "/docs, /redoc and /docs/oauth2-redirect HTML byte-identical to upstream"
+status = "tested"
+realises = ["LeanFastapi.getSwaggerUiHtml", "LeanFastapi.getRedocHtml", "LeanFastapi.swaggerUiOauth2RedirectHtml"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "routing.head-allow"
+upstream = "starlette/routing.py::Route (HEAD added to GET)"
+title = "A 405's Allow header lists HEAD for GET routes, from lean-starlette"
+status = "deviation"
+realises = ["LeanFastapi.APIRoute.toBaseRoute"]
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "app.run"
+upstream = "docs/en/docs/tutorial/first-steps.md"
+title = "FastAPI.new, path operation attributes and app.run serve the demo on 127.0.0.1:8000"
+status = "tested"
+realises = ["LeanFastapi.FastAPI.new", "LeanFastapi.FastAPI.run"]
+test = ["demo/App.lean", "demo/Example.lean"]
+
+[[requirement]]
+id = "body.embed-multiple"
+upstream = "fastapi/dependencies/utils.py::get_body_field (several body params)"
+title = "More than one body parameter (embedded bodies) is rejected at elaboration for now"
+status = "excluded"
+test = ["tests/Conformance.lean"]
+
+[[requirement]]
+id = "app.root-path"
+upstream = "fastapi/applications.py::openapi (root_path servers)"
+title = "root_path and the servers entry are not implemented yet"
+status = "excluded"
