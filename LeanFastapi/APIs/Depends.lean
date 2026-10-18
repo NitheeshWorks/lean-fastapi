@@ -277,22 +277,17 @@ def markOf? (ty : Expr) : MetaM (Option Mark) := do
     match (← whnfD e) with
     | .lit (.strVal s) => pure s
     | _ => throwError "a scope must be a string literal, not `{e}`"
-  let rec evalStrs (fuel : Nat) (e : Expr) : MetaM (List String) := do
-    match fuel with
-    | 0 => throwError "too many scopes"
-    | fuel + 1 =>
-      let e ← whnfD e
-      if e.isAppOfArity ``List.nil 1 then pure []
-      else if e.isAppOfArity ``List.cons 3 then
-        pure ((← evalStr e.appFn!.appArg!) :: (← evalStrs fuel e.appArg!))
-      else throwError "scopes must be a list literal, not `{e}`"
+  let evalStrs (e : Expr) : MetaM (List String) := do
+    match (← reduce e).listLit? with
+    | some (_, xs) => xs.mapM evalStr
+    | none => throwError "scopes must be a list literal, not `{e}`"
   if ty.isAppOfArity ``DependsT 5 then
     let a := ty.getAppArgs
     return some { dependency := a[1]!, useCache := ← evalBool a[3]!, scope := ← evalStr a[4]!, own := [] }
   if ty.isAppOfArity ``SecurityT 5 then
     let a := ty.getAppArgs
     return some { dependency := a[1]!, useCache := ← evalBool a[4]!, scope := "",
-                  own := ← evalStrs 1000 a[3]! }
+                  own := ← evalStrs a[3]! }
   return none
 
 /-- How deep a dependency tree may be. -/

@@ -423,6 +423,43 @@ def notCompiledCase : Case :=
                        bodyBytes := .empty }
     pure (r.status_code == 500)⟩
 
+/-- The status and body of `GET path` through a test client. -/
+def getVia (c : TestClient) (path : String) : IO (Nat × String) := do
+  let r ← c.get path
+  pure (r.status_code, r.text)
+
+/-- An application bound by a local `let` keeps its routes, with the
+overrides set on it (never 404 on every route). -/
+def letBoundCase : Case :=
+  ⟨"tests/test_dependency_overrides.py (the application under a local name)",
+   "a let-bound application with overrides serves its routes, overridden", do
+    let a := Tests.DependencyOverridesTyped.app.overrideDependency (Depends Tests.DependencyOverridesTyped.getDb)
+      (Depends Tests.DependencyOverridesTyped.getTestDb)
+    let c := TestClient.new a
+    let r ← getVia c "/db"
+    pure (r == (200, "{\"db\":\"test\"}"))⟩
+
+/-- `let a := app` keeps the routes. -/
+def letPlainCase : Case :=
+  ⟨"tests/test_dependency_overrides.py (the application under a local name)",
+   "a let-bound application serves its routes", do
+    let a := Tests.DependencyOverridesTyped.app
+    let c := TestClient.new a
+    let r ← getVia c "/db"
+    pure (r == (200, "{\"db\":\"prod\"}"))⟩
+
+/-- Overrides set on a completed application are compiled in when it is
+served (never 500 on every route): the Python workflow of setting
+`app.dependency_overrides` on a finished app. -/
+def afterCompleteCase : Case :=
+  ⟨"tests/test_dependency_overrides.py (overrides set on the finished application)",
+   "overrides set after `complete` are served", do
+    let c := TestClient.new (Tests.DependencyOverridesTyped.app.complete.overrideDependency
+      (Depends Tests.DependencyOverridesTyped.getDb) (Depends Tests.DependencyOverridesTyped.getTestDb))
+    let r ← getVia c "/db"
+    let n ← getVia c "/name"
+    pure (r == (200, "{\"db\":\"test\"}") && n == (200, "{\"name\":\"orig\"}"))⟩
+
 /-- An exception of a request-scoped exit after the response is reported
 (uvicorn logs it), and the response stands. -/
 def lateExitCase : Case :=
@@ -435,7 +472,7 @@ def lateExitCase : Case :=
     pure ((match out with | .ok r => r.status_code == 200 | .error _ => false) && logged == [toString boom])⟩
 
 def unitCases : List Case :=
-  [notCompiledCase, lateExitCase,
+  [notCompiledCase, letBoundCase, letPlainCase, afterCompleteCase, lateExitCase,
    ⟨"tests/test_tutorial/test_header_params/test_tutorial002.py::test", "header alias user_agent is user-agent",
      pure (headerParamAlias "user_agent" none true == "user-agent")⟩,
    ⟨"tests/test_tutorial/test_path_params/test_tutorial004.py::test_file_path", "path format drops convertors",

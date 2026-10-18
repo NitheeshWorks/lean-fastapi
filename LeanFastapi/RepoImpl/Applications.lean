@@ -64,6 +64,13 @@ and overrides.) -/
 def withRoutes (app : FastAPI) (routes : List APIRoute) : FastAPI :=
   { app with routes := app.routes ++ routes }
 
+/-- The application serving exactly its declared path operations, compiled
+for its current dependencies and overrides (what `declared_routes` gives);
+routes it was given before are replaced, so an application completed and
+then overridden is compiled again. -/
+def withDeclared (app : FastAPI) (routes : List APIRoute) : FastAPI :=
+  { app with routes }
+
 /-- `app.dependency_overrides[original] = override`: requests solve
 `override` wherever `original` is declared, its value going where
 `original`'s went, so both have the same value type. -/

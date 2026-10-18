@@ -297,9 +297,9 @@ test = ["tests/apps/DependencyOverrides.lean", "tests/apps/DependencyOverridesTy
 [[requirement]]
 id = "deps.compiled-for-app"
 upstream = "fastapi/routing.py::APIRoute (dependency_overrides_provider, dependencies)"
-title = "Overrides and application dependencies are compiled into the routes when the application collects them: typed, and a route not compiled for the application's overrides answers 500 rather than ignoring them; in Python they can change between requests"
+title = "Overrides and application dependencies are compiled into the routes when the application collects them (TestClient.new, run, openapi, complete), typed. Work: the app inline, a top-level def, a local let (seen through), overrides set after complete (routes recompiled). Compile errors: an app not known there (function parameter, run-time if) and an expression with no app declaration (TestClient.new FastAPI.new). A route added by hand with withRoutes and not compiled for the overrides answers 500. In Python they can change between requests"
 status = "deviation"
-realises = ["LeanFastapi.Macro.readApp", "LeanFastapi.Macro.compileRoute", "LeanFastapi.APIRoute.toBaseRoute", "LeanFastapi.signatureOf"]
+realises = ["LeanFastapi.Macro.readApp", "LeanFastapi.Macro.compileRoute", "LeanFastapi.APIRoute.toBaseRoute", "LeanFastapi.signatureOf", "LeanFastapi.FastAPI.withDeclared"]
 test = ["tests/apps/DependencyOverridesTyped.lean", "tests/Conformance.lean"]
 
 [[requirement]]

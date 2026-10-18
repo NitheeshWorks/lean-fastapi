@@ -357,7 +357,10 @@ application, in declaration order. The application is the first named
 elab "declared_routes" : tactic => Tactic.withMainContext do
   let goal ← Tactic.getMainGoal
   let ty ← instantiateMVars (← goal.getType)
-  let app := ty.appArg!
+  -- local `let`s are seen through: `let a := app.overrideDependency ...`
+  let app ← zetaReduce ty.appArg!
+  if app.hasFVar || app.hasMVar then
+    throwError "the dependencies and overrides of the application `{app}` must be known when its routes are compiled"
   let env ← getEnv
   -- the application is the first `FastAPI` constant in the expression
   -- (`app`, or `app.overrideDependency ...`)
@@ -366,12 +369,12 @@ elab "declared_routes" : tactic => Tactic.withMainContext do
     match env.find? c with
     | some ci => ci.type == fastapi
     | none => false
-  let records : Array RouteRecord := match appConst? with
-    | some c =>
-      match env.getModuleIdxFor? c with
-      | some idx => routeExt.getModuleEntries env idx
-      | none => routeExt.getState env
-    | none => #[]
+  let some c := appConst?
+    | throwError "no application declaration in `{app}`: the routes collected are those of the module that declares the application (`def app := FastAPI.new`)"
+  let records : Array RouteRecord :=
+    match env.getModuleIdxFor? c with
+    | some idx => routeExt.getModuleEntries env idx
+    | none => routeExt.getState env
   let (deps, ovs) ← Macro.readApp 1000 app
   let routes ← if deps.isEmpty && ovs.isEmpty then pure (records.toList.map fun r => Lean.mkConst r.route)
     else records.toList.mapM fun r => Macro.compileRoute r deps ovs

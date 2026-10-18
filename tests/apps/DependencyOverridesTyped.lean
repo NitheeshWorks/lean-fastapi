@@ -51,3 +51,26 @@ in the application
 example : FastAPI := app.overrideDependency (Depends getDb) (Depends getName)
 
 end Tests.DependencyOverridesTyped
+
+namespace Tests.DependencyOverridesTyped
+
+-- An application that is not known where its routes are compiled (a function
+-- parameter) is a compile error, never an application without routes.
+/--
+error: could not synthesize default value for parameter 'routes' using tactics
+---
+error: the dependencies and overrides of the application `a` must be known when its routes are compiled
+-/
+#guard_msgs in
+example (a : FastAPI) : TestClient := TestClient.new a
+
+-- Neither is an expression with no application declaration in it.
+/--
+error: could not synthesize default value for parameter 'routes' using tactics
+---
+error: no application declaration in `FastAPI.new`: the routes collected are those of the module that declares the application (`def app := FastAPI.new`)
+-/
+#guard_msgs in
+example : TestClient := TestClient.new FastAPI.new
+
+end Tests.DependencyOverridesTyped

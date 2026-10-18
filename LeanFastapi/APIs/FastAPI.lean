@@ -46,16 +46,16 @@ def new (debug : Bool := false) (title : String := "FastAPI") (summary : Option 
 
 /-- The application with its declared path operations. -/
 def complete (app : FastAPI) (routes : DeclaredRoutes app := by declared_routes) : FastAPI :=
-  app.withRoutes routes
+  app.withDeclared routes
 
 /-- `app.openapi()`: the OpenAPI document, as JSON. -/
 def openapi (app : FastAPI) (routes : DeclaredRoutes app := by declared_routes) : Json :=
-  (app.withRoutes routes).openapiJson
+  (app.withDeclared routes).openapiJson
 
 /-- `uvicorn.run(app, host=..., port=...)`. -/
 def run (app : FastAPI) (host : String := "127.0.0.1") (port : Nat := 8000)
     (routes : DeclaredRoutes app := by declared_routes) : IO Unit :=
-  (app.withRoutes routes).application.run host port
+  (app.withDeclared routes).application.run host port
 
 end FastAPI
 
@@ -66,7 +66,7 @@ structure TestClient where
 
 /-- `TestClient(app)`. -/
 def TestClient.new (app : FastAPI) (routes : DeclaredRoutes app := by declared_routes) : TestClient :=
-  ⟨app.withRoutes routes⟩
+  ⟨app.withDeclared routes⟩
 
 namespace TestClient
 

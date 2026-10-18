@@ -121,9 +121,15 @@ Listed here with the reason, and in `docs/traceability.toml` with
   `app.run`, `TestClient.new`, `app.openapi` and `app.complete`) reads them
   off the application's definition and compiles every route with them, so
   overrides are typed (an override of another value type does not compile)
-  and the application's dependencies share the route's cache. An
-  application whose overrides cannot be read at compile time (built by a
-  run-time `if`, say) is a compile error; a route added by hand to an
+  and the application's dependencies share the route's cache. Forms that
+  work: the application inline (`TestClient.new (app.overrideDependency A B)`),
+  a top-level `def` of it, a local `let` of it (seen through), and overrides
+  set on a completed application (`app.complete.overrideDependency A B`:
+  every collector replaces the routes with the declared ones compiled for
+  the current overrides). Compile errors, never an application without
+  routes: an application not known at that point (a function parameter, a
+  run-time `if`), and an expression with no application declaration in it
+  (`TestClient.new FastAPI.new`). A route added by hand with `withRoutes` to an
   application it was not compiled for answers 500 (`FastAPIError`), so an
   override is never silently ignored. In Python both can change between
   requests; in Lean an application with other overrides is another value.
