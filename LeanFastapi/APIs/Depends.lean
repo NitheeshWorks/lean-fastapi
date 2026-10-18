@@ -309,7 +309,8 @@ def argsOf (fuel : Nat) (pathNames : List String) (current : List String) (name 
         if ty.hasFVar then throwError "the type of `{argName}` depends on another argument"
         if let some m ← markOf? ty then
           if isYieldRequest && m.scope == "function" then
-            throwError "The dependency \"{name}\" has a scope of \"request\", it cannot depend on dependencies with scope \"function\"."
+            -- `call_name` is the function's own name, without its namespace
+            throwError "The dependency \"{(name.splitOn ".").getLastD name}\" has a scope of \"request\", it cannot depend on dependencies with scope \"function\"."
           nodes := nodes ++ [← subOf fuel pathNames current m]
           continue
         let base0 := ty

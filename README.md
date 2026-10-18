@@ -52,6 +52,31 @@ explicitly or to carry metadata; constraints are refinement types `α ∣ c`;
 proof terms are written by the user. `/openapi.json`, `/docs` and `/redoc`
 are served for every app.
 
+Dependencies and security read as in the tutorial (`tests/apps/` has every
+ported tutorial app):
+
+```lean
+def commonParameters (q : Option String := none) (skip : Int := 0) (limit : Int := 100) : Handler Json :=
+  return json% {"q": q, "skip": skip, "limit": limit}
+
+@[get "/users/"]
+def readUsers (commons : Depends commonParameters) : Handler Json :=
+  return commons
+
+def oauth2Scheme := OAuth2PasswordBearer (tokenUrl := "token")
+
+def getDb : Yield Db := yieldWith openDb fun _ => closeDb   -- exit code after the response
+
+@[get "/items/"]
+def readItems (token : Depends oauth2Scheme) (db : Depends getDb) : Handler Json :=
+  return json% {"token": token}
+```
+
+`Security oauth2Scheme ["items"]` and a `SecurityScopes` parameter carry
+OAuth2 scopes; `app.dependency_overrides` (`app.overrideDependency`)
+replaces a dependency in tests:
+`app.overrideDependency (Depends commonParameters) (Depends overrider)`.
+
 ```
 lake exe example      # demo/App.lean on http://127.0.0.1:8000
 lake build            # library, proofs, tests
@@ -102,16 +127,31 @@ For every application (`LeanFastapi/Proofs/Verified.lean` bundles them):
   parameters (`openapi_422_iff`); documented parameters are the route's
   (`openapi_params_match`).
 
+* **Dependencies.** Sub-dependencies run in declaration order, before the
+  dependant (`solve_order`), and the errors of a tree are its nodes' errors
+  in that order (`params_errors`); two uses under one cache key share a value
+  within a request (`cache_same_key`); an override replaces the dependency
+  and its sub-tree (`override_replaces`); exit code runs in reverse order of
+  entry (`cleanup_reverse`), and function-scoped exits finish before the
+  response (`function_scope_not_outlive`); `SecurityScopes` holds the scopes
+  of every `Security` on the way to it (`security_scopes_accumulate`).
+* **Security.** An `Authorization` header splits into scheme and credentials
+  at the first space (`bearer_parse`); HTTP Basic credentials decode back to
+  what the client encoded (`basic_base64_roundtrip`); an API key is read
+  only from its declared location (`apikey_sources`).
+
 Wire behaviour (byte-identical bodies, headers, `/openapi.json`, `/docs`,
 `/redoc`, CPython's `json.loads` error positions) is tested against recorded
 fastapi output rather than proved; see CONTRIBUTING.md.
 
 ## Status
 
-Milestone 1: path, query, header and cookie parameters, JSON bodies, 422
-errors, response models, HTTPException, OpenAPI and the docs pages, and the
-demo. Dependency injection, forms and files, middleware and streaming are the
-next milestones.
+Milestones 1 and 3: path, query, header and cookie parameters, JSON and
+urlencoded form bodies, 422 errors, response models, HTTPException, OpenAPI
+and the docs pages, the demo; `Depends` with caching, overrides and `yield`
+dependencies, `Security` and `SecurityScopes`, API keys, HTTP Basic, Bearer
+and Digest, OAuth2 password and authorization code, and OpenID Connect.
+Multipart forms and files, middleware and streaming are the next milestones.
 
 ## License
 

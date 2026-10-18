@@ -37,6 +37,7 @@ import tests.apps.DependencyCache
 import tests.apps.DependencyDuplicates
 import tests.apps.DependencyYield
 import tests.apps.DependencyOverrides
+import tests.apps.DependencyScopeError
 import tests.apps.SecurityApiKeyQuery
 import tests.apps.SecurityApiKeyHeaderOptional
 import tests.apps.SecurityApiKeyCookie
@@ -335,6 +336,67 @@ def pyjsonCase (corpus : List Json) : Case :=
         if bad ≤ 5 then IO.println s!"      {repr text}: want {repr want}, got {repr got}"
     pure (bad == 0)⟩
 
+/-! ## Golden base64 and form corpora -/
+
+/-- A string, or a long one stored as `{"fill": c, "count": n}`. -/
+def recipeStr? (j : Json) : Option String :=
+  match LeanJson.Json.getStr? j, str? j "fill", field? j "count" with
+  | some t, _, _ => some t
+  | none, some c, some (.num (.int n)) => some (String.ofList (List.replicate n.toNat (c.toList.headD ' ')))
+  | _, _, _ => none
+
+/-- A `[a, b]` pair of strings. -/
+def strPair? (j : Json) : Option (String × String) :=
+  match (LeanJson.Json.getArr? j).map Array.toList with
+  | some [a, b] => do pure ((← LeanJson.Json.getStr? a), (← recipeStr? b))
+  | _ => none
+
+def b64Case (corpus : List Json) : Case :=
+  ⟨"tests/test_security_http_basic_optional.py::test_security_http_basic_invalid_credentials",
+   s!"base64.b64decode and HTTPBasic credentials on {corpus.length} texts (tests/golden/b64.json)", do
+    let mut bad := 0
+    for e in corpus do
+      let text := (str? e "text").getD ""
+      let wantBytes : Option (List Nat) := match field? e "bytes" with
+        | some (.arr a) => some (a.toList.filterMap fun
+            | .num (.int n) => some n.toNat
+            | _ => none)
+        | _ => none
+      let wantCreds := (field? e "creds").bind strPair?
+      let gotCreds := (basicCredentials text).map fun c => (c.username, c.password)
+      let got := b64decode text.toList
+      if got != wantBytes || gotCreds != wantCreds then
+        bad := bad + 1
+        if bad ≤ 5 then
+          IO.println s!"      {repr text}: want {repr wantBytes} {repr wantCreds}, got {repr got} {repr gotCreds}"
+    pure (bad == 0)⟩
+
+def formCase (corpus : List Json) : Case :=
+  ⟨"tests/test_tutorial/test_request_forms/test_tutorial001.py::test_post_body_form",
+   s!"Request.form() on {corpus.length} urlencoded bodies (tests/golden/form.json)", do
+    let mut bad := 0
+    for e in corpus do
+      let body := match str? e "body", str? e "prefix" with
+        | some b, _ => b
+        | none, some p => p ++ (recipeStr? e).getD ""
+        | none, none => ""
+      let req : LeanStarlette.Request :=
+        { method := "POST", path := "/", query_string := ""
+          headers := LeanStarlette.Headers.ofList [("content-type", "application/x-www-form-urlencoded")]
+          bodyBytes := ⟨(body.toList.map fun c => c.toNat.toUInt8).toArray⟩ }
+      -- the error detail, or the fields
+      let want : String ⊕ List (String × String) := match str? e "error" with
+        | some m => .inl m
+        | none => .inr ((arr? e "fields").filterMap strPair?)
+      let got : String ⊕ List (String × String) := match readForm req with
+        | .ok (.form fs) => .inr fs
+        | .error (.badForm m) => .inl m
+        | _ => .inl "unexpected"
+      if got != want then
+        bad := bad + 1
+        if bad ≤ 5 then IO.println s!"      {repr (String.ofList (body.toList.take 40))}: want {repr want}, got {repr got}"
+    pure (bad == 0)⟩
+
 /-! ## Unit cases -/
 
 def unitCases : List Case :=
@@ -354,8 +416,13 @@ def main : IO UInt32 := do
   let .ok corpus := LeanJson.parseStr pyj | throw (IO.userError "tests/golden/pyjson.json does not parse")
   let benchText ← IO.FS.readFile "tests/golden/bench.json"
   let .ok bench := LeanJson.parseStr benchText | throw (IO.userError "tests/golden/bench.json does not parse")
+  let b64Text ← IO.FS.readFile "tests/golden/b64.json"
+  let .ok b64 := LeanJson.parseStr b64Text | throw (IO.userError "tests/golden/b64.json does not parse")
+  let formText ← IO.FS.readFile "tests/golden/form.json"
+  let .ok forms := LeanJson.parseStr formText | throw (IO.userError "tests/golden/form.json does not parse")
+  let list (j : Json) : List Json := ((LeanJson.Json.getArr? j).map Array.toList).getD []
   let cases := unitCases ++ goldenCases doc.val ++ openapiCases doc.val ++ benchCases bench.val ++
-    [pyjsonCase (((LeanJson.Json.getArr? corpus.val).map Array.toList).getD [])]
+    [pyjsonCase (list corpus.val), b64Case (list b64.val), formCase (list forms.val)]
   let mut failures := 0
   for c in cases do
     let ok ← try c.run catch e => do IO.println s!"      {e}"; pure false

@@ -255,12 +255,131 @@ test = ["demo/App.lean", "demo/Example.lean"]
 [[requirement]]
 id = "body.embed-multiple"
 upstream = "fastapi/dependencies/utils.py::get_body_field (several body params)"
-title = "More than one body parameter (embedded bodies) is rejected at elaboration for now"
-status = "excluded"
-test = ["tests/Conformance.lean"]
+title = "Several distinct body parameters, across the endpoint and its dependencies, are embedded under their names in one Body_<operation_id> model"
+status = "tested"
+realises = ["LeanFastapi.APIRoute.bodyParams", "LeanFastapi.APIRoute.embedsBody", "LeanFastapi.APIRoute.bodyModelName", "LeanFastapi.APIRoute.bodyModel"]
+theorem = ["LeanFastapi.body_mem_definitions"]
+test = ["tests/apps/DependencyDuplicates.lean", "tests/Conformance.lean", "tests/golden/fastapi.json"]
 
 [[requirement]]
 id = "app.root-path"
 upstream = "fastapi/applications.py::openapi (root_path servers)"
 title = "root_path and the servers entry are not implemented yet"
+status = "excluded"
+
+[[requirement]]
+id = "deps.solve-order"
+upstream = "fastapi/dependencies/utils.py::solve_dependencies"
+title = "Sub-dependencies run in declaration order before the dependant; the errors of a tree are its nodes' errors in that order"
+status = "implemented"
+realises = ["LeanFastapi.Dep.both", "LeanFastapi.Dep.params", "LeanFastapi.Dep.call"]
+theorem = ["LeanFastapi.solve_order", "LeanFastapi.params_errors"]
+test = ["tests/apps/Dependencies001.lean", "tests/apps/Dependencies005.lean", "tests/apps/DependencyDuplicates.lean", "tests/Conformance.lean::tests/test_dependency_duplicates.py"]
+
+[[requirement]]
+id = "deps.cache"
+upstream = "fastapi/dependencies/utils.py::solve_dependencies (dependency_cache, use_cache)"
+title = "Within one request a dependency with the same cache key (call, sorted scopes, scope) runs once; use_cache=False runs it again"
+status = "implemented"
+realises = ["LeanFastapi.Dep.cached", "LeanFastapi.CacheKey", "LeanFastapi.Cache.get", "LeanFastapi.Cache.set"]
+theorem = ["LeanFastapi.cache_same_key", "LeanFastapi.cached_stores", "LeanFastapi.Cache.get_set_same"]
+test = ["tests/apps/DependencyCache.lean", "tests/Conformance.lean::tests/test_dependency_cache.py"]
+
+[[requirement]]
+id = "deps.overrides"
+upstream = "fastapi/dependencies/utils.py::solve_dependencies (dependency_overrides_provider)"
+title = "app.dependency_overrides replaces a dependency, its sub-tree and its parameters, by the override's"
+status = "implemented"
+realises = ["LeanFastapi.Dep.ofOverride", "LeanFastapi.FastAPI.overrideDependency", "LeanFastapi.FastAPI.clearOverrides"]
+theorem = ["LeanFastapi.override_replaces"]
+test = ["tests/apps/DependencyOverrides.lean", "tests/Conformance.lean::tests/test_dependency_overrides.py"]
+
+[[requirement]]
+id = "deps.overrides-json"
+upstream = "fastapi/dependencies/utils.py::solve_dependencies (dependency_overrides_provider)"
+title = "An override's value reaches the dependant through JSON (FromJson of the dependency's type); a value that does not decode is a DependencyOverrideError 500, where Python passes any object"
+status = "deviation"
+realises = ["LeanFastapi.Dep.OverrideValue"]
+test = ["tests/apps/DependencyOverrides.lean"]
+
+[[requirement]]
+id = "deps.yield"
+upstream = "fastapi/dependencies/utils.py::solve_dependencies (AsyncExitStack, scope)"
+title = "Exit code of yield dependencies runs in reverse order of entry; function-scoped exits run before the response, request-scoped after; an exception reaches every exit and may be suppressed"
+status = "implemented"
+realises = ["LeanFastapi.closeWith", "LeanFastapi.finishWith", "LeanFastapi.finish", "LeanFastapi.yieldWith", "LeanFastapi.yieldFinally"]
+theorem = ["LeanFastapi.cleanup_reverse", "LeanFastapi.function_scope_not_outlive", "LeanFastapi.closeWith_run"]
+test = ["tests/apps/DependencyYield.lean", "tests/apps/Dependencies008b.lean", "tests/apps/Dependencies008c.lean", "tests/apps/Dependencies008d.lean", "tests/apps/Dependencies008e.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "deps.scope-error"
+upstream = "fastapi/dependencies/utils.py::get_dependant (DependencyScopeError)"
+title = "A function-scoped dependency that depends on a request-scoped one is rejected; in Lean at elaboration time, not at route creation"
+status = "deviation"
+test = ["tests/apps/DependencyScopeError.lean"]
+
+[[requirement]]
+id = "security.scopes"
+upstream = "fastapi/dependencies/utils.py::get_dependant (security_scopes)"
+title = "SecurityScopes receives the scopes of every Security on the way from the endpoint, outermost first, each once; OpenAPI security requirements carry them"
+status = "implemented"
+realises = ["LeanFastapi.SecurityScopes", "LeanFastapi.mergeScopes", "LeanFastapi.Dep.scopes", "LeanFastapi.APIRoute.mergeSecurity"]
+theorem = ["LeanFastapi.security_scopes_accumulate", "LeanFastapi.mergeScopes_mem"]
+test = ["tests/apps/Security005.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "security.bearer"
+upstream = "fastapi/security/utils.py::get_authorization_scheme_param"
+title = "An Authorization header splits at the first space into scheme and credentials; HTTPBearer, OAuth2 and OpenIdConnect read it, a missing or other scheme is 401 or None"
+status = "implemented"
+realises = ["LeanFastapi.authorizationSchemeParam", "LeanFastapi.HTTPScheme.call", "LeanFastapi.OAuth2Bearer.call", "LeanFastapi.AuthorizationHeader.call"]
+theorem = ["LeanFastapi.bearer_parse"]
+test = ["tests/apps/SecurityHttpBearerOptional.lean", "tests/apps/SecurityHttpDigest.lean", "tests/apps/SecurityHttpBase.lean", "tests/apps/SecurityOpenIdConnectOptional.lean", "tests/apps/SecurityOAuth2AuthorizationCodeBearer.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "security.basic"
+upstream = "fastapi/security/http.py::HTTPBasic.__call__"
+title = "HTTPBasic base64-decodes the credentials (binascii's non-strict decoder), requires ASCII and splits at the first ':'; what a client encodes decodes back"
+status = "implemented"
+realises = ["LeanFastapi.b64decode", "LeanFastapi.b64encode", "LeanFastapi.basicCredentials", "LeanFastapi.HTTPBasicScheme.call"]
+theorem = ["LeanFastapi.basic_base64_roundtrip", "LeanFastapi.b64decode_encode"]
+test = ["tests/apps/Security006.lean", "tests/apps/SecurityHttpBasicRealm.lean", "tests/golden/b64.json", "tests/Conformance.lean::tests/test_security_http_basic_optional.py"]
+
+[[requirement]]
+id = "security.apikey"
+upstream = "fastapi/security/api_key.py"
+title = "APIKeyQuery, APIKeyHeader and APIKeyCookie read the key from their location only; missing is 401 or None"
+status = "implemented"
+realises = ["LeanFastapi.apiKeyValue", "LeanFastapi.APIKey.call", "LeanFastapi.APIKeyQuery", "LeanFastapi.APIKeyHeader", "LeanFastapi.APIKeyCookie"]
+theorem = ["LeanFastapi.apikey_sources"]
+test = ["tests/apps/SecurityApiKeyQuery.lean", "tests/apps/SecurityApiKeyHeaderOptional.lean", "tests/apps/SecurityApiKeyCookie.lean", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "security.oauth2-form"
+upstream = "fastapi/security/oauth2.py::OAuth2PasswordRequestForm"
+title = "OAuth2PasswordRequestForm(Strict) as a class dependency of form fields; scopes split on whitespace"
+status = "tested"
+realises = ["LeanFastapi.OAuth2PasswordRequestForm", "LeanFastapi.OAuth2PasswordRequestFormStrict", "LeanFastapi.OAuth2PasswordRequestForm.scopes"]
+test = ["tests/apps/Security005.lean", "tests/Conformance.lean::tests/test_tutorial/test_security/test_tutorial005.py"]
+
+[[requirement]]
+id = "security.openapi"
+upstream = "fastapi/openapi/utils.py::get_openapi (securitySchemes, operation security)"
+title = "components.securitySchemes and each operation's security list every scheme in the dependency tree, with merged scopes"
+status = "tested"
+realises = ["LeanFastapi.openapiSecuritySchemes", "LeanFastapi.OpenAPI.securitySchemeJson", "LeanFastapi.APIRoute.mergeSecurity"]
+test = ["tests/golden/fastapi.json", "tests/Conformance.lean"]
+
+[[requirement]]
+id = "forms.urlencoded"
+upstream = "starlette/formparsers.py::FormParser"
+title = "An application/x-www-form-urlencoded body is read as Request.form(): fields split at '&', unquote_plus from Latin-1, at most 1000 fields of at most 1 MiB, else 400; an empty field is absent"
+status = "tested"
+realises = ["LeanFastapi.readForm", "LeanFastapi.Form"]
+test = ["tests/golden/form.json", "tests/Conformance.lean::tests/test_tutorial/test_request_forms/test_tutorial001.py", "tests/apps/Security005.lean"]
+
+[[requirement]]
+id = "forms.multipart"
+upstream = "starlette/formparsers.py::MultiPartParser"
+title = "multipart/form-data bodies and File/UploadFile are milestone 4"
 status = "excluded"

@@ -6,7 +6,9 @@ Run locally (never in CI) with the upstream-spec venv:
 
 It writes tests/golden/fastapi.json (HTTP exchanges and app.openapi() per
 fixture), tests/golden/bench.json (large inputs through the demo) and
-tests/golden/pyjson.json (json.loads errors on a corpus).
+tests/golden/pyjson.json (json.loads errors on a corpus), tests/golden/b64.json
+(base64.b64decode and HTTPBasic's credentials) and tests/golden/form.json
+(Request.form() on urlencoded bodies).
 
 Each fixture is an upstream tutorial app (imported from
 upstream-spec/fastapi/docs_src, the real code) or an app defined below; its
@@ -772,7 +774,89 @@ def pyjson_corpus():
     return out
 
 
+def b64_corpus():
+    """base64.b64decode (what HTTPBasic runs) on handwritten and random texts:
+    the bytes, or null where it raises; and the credentials HTTPBasic takes
+    from them (ASCII, split at the first ':'), or null for its 401."""
+    import base64, binascii
+    texts = ["", "=", "==", "A", "AA", "AA=", "AA==", "AAA", "AAA=", "AAAA", "AA==AA==", "AA=A", "A===",
+             "dXNlcjpwYXNz", "dXNlcjpwYXNz=", "dXNlcjpwYXNz==", "dXNl cjpw YXNz", "dXNlcjpwYXN", "dXNlcjpwYXNzZA",
+             "dXNlcjpwYXNzZA==", "dXNlcjpwYXNzZA==ZA==", "dXNl-cjpwYXNz", "dXNlcjpwYXNz!", "dXNlcjpwYXNzé",
+             "OnBhc3M=", "dXNlcjo=", "dXNlcg==", "w6k6eA==", "/w==", "-_8=", "dXNlcjpwYXNz\n", "\tdXNlcjpwYXNz"]
+    rng = random.Random(4096)
+    alphabet = list("ABCdz09+/=") + [" ", "-", "_", "\n", "!", "é", ":"]
+    for _ in range(1500):
+        texts.append("".join(rng.choice(alphabet) for _ in range(rng.randint(0, 14))))
+    for _ in range(1500):
+        raw = bytes(rng.choice([rng.randrange(32, 127), rng.randrange(256), 58]) for _ in range(rng.randint(0, 10)))
+        t = base64.b64encode(raw).decode()
+        if t and rng.random() < 0.5:
+            i = rng.randrange(len(t))
+            t = t[:i] + rng.choice(alphabet) + t[i + rng.randint(0, 2):]
+        texts.append(t)
+    out = []
+    for t in texts:
+        try:
+            data = base64.b64decode(t)
+        except (ValueError, binascii.Error):
+            out.append({"text": t, "bytes": None, "creds": None})
+            continue
+        try:
+            u, sep, pw = data.decode("ascii").partition(":")
+            creds = [u, pw] if sep else None
+        except UnicodeDecodeError:
+            creds = None
+        out.append({"text": t, "bytes": list(data), "creds": creds})
+    return out
+
+
+def form_corpus():
+    """await request.form() on application/x-www-form-urlencoded bodies:
+    the fields in order, or the 400 detail Starlette raises."""
+    import asyncio
+    from starlette.requests import Request
+    from starlette.formparsers import MultiPartException
+    bodies = [b"", b"a=1", b"a=1&b=2", b"a=1&a=2", b"a", b"a=", b"=1", b"&&a=1&&", b"a=1;b=2", b"a+b=c+d",
+              b"a%20b=%41%42", b"a=%C3%A9", b"a=%E9", b"a=\xe9", b"a=%", b"a=%4", b"a=%zz", b"a==b", b"%26=%3D",
+              b"x=" + b"y" * (1024 * 1024), b"x=" + b"y" * (1024 * 1024 - 1), b"&".join(b"f=1" for _ in range(1000)),
+              b"&".join(b"f=1" for _ in range(1001)), b"a=1&" * 3, b" a = 1 "]
+    rng = random.Random(1024)
+    alphabet = [b"a", b"b", b"=", b"&", b";", b"+", b"%", b"2", b"0", b"4", b"1", b"C3", b"A9", b"\xe9", b" "]
+    for _ in range(1500):
+        bodies.append(b"".join(rng.choice(alphabet) for _ in range(rng.randint(0, 12))))
+
+    async def form(body):
+        sent = False
+        async def receive():
+            nonlocal sent
+            if sent:
+                return {"type": "http.disconnect"}
+            sent = True
+            return {"type": "http.request", "body": body, "more_body": False}
+        scope = {"type": "http", "method": "POST", "path": "/", "query_string": b"",
+                 "headers": [(b"content-type", b"application/x-www-form-urlencoded")]}
+        try:
+            async with Request(scope, receive).form() as f:
+                return {"fields": [[k, v] for k, v in f.multi_items()]}
+        except MultiPartException as e:  # Starlette's 400 inside an app
+            return {"error": e.message}
+    out = []
+    for b in bodies:
+        r = asyncio.run(form(b))
+        if len(b) > 65536:  # stored as a recipe: "x=" then count copies of "y"
+            r.update(prefix=b[:2].decode(), fill=b[2:3].decode(), count=len(b) - 2)
+            assert b == b[:2] + b[2:3] * (len(b) - 2)
+            if "fields" in r:
+                r["fields"] = [[k, {"fill": v[:1], "count": len(v)}] for k, v in r["fields"]]
+        else:
+            r["body"] = b.decode("latin-1")
+        out.append(r)
+    return out
+
+
 if __name__ == "__main__":
     (HERE / "fastapi.json").write_text(json.dumps({"exchanges": exchanges(), "openapi": openapis()}, indent=1, ensure_ascii=False) + "\n")
     (HERE / "bench.json").write_text(json.dumps(bench(), indent=1, ensure_ascii=False) + "\n")
     (HERE / "pyjson.json").write_text(json.dumps(pyjson_corpus(), indent=0, ensure_ascii=False) + "\n")
+    (HERE / "b64.json").write_text(json.dumps(b64_corpus(), indent=0, ensure_ascii=False) + "\n")
+    (HERE / "form.json").write_text(json.dumps(form_corpus(), indent=0, ensure_ascii=False) + "\n")

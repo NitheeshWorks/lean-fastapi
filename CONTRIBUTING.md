@@ -80,6 +80,21 @@ Listed here with the reason, and in `docs/traceability.toml` with
 * **Cookie parsing and the name helpers** (`cookieParser`, `pathFormat`,
   `snakeCase`, `generateUniqueId`): property tests.
 * **Transport**: lean-starlette's server, exercised by `lake exe example`.
+* **Base64 in `HTTPBasic`** (`b64decode`, `basicCredentials`): the round
+  trip is proved (`basic_base64_roundtrip`); the rejections of malformed
+  input follow CPython's non-strict `binascii.a2b_base64` and are checked on
+  a 3000-text corpus recorded from it (`tests/golden/b64.json`).
+* **Urlencoded forms** (`readForm`): Starlette's `FormParser` limits and
+  python-multipart's splitting, checked on a 1500-body corpus recorded from
+  `Request.form()` (`tests/golden/form.json`).
+* **Security schemes and OAuth2PasswordRequestForm**: their 401s, headers
+  and OpenAPI objects are compared with fastapi's on the security tutorials
+  and tests; what is proved is the parsing underneath (`bearer_parse`,
+  `apikey_sources`) and the scope bookkeeping (`security_scopes_accumulate`).
+* **The `Depends` macro** (`APIs/Depends.lean`): it builds the `Dep` tree at
+  elaboration; the tree's laws are proved (`solve_order`, `cache_same_key`,
+  `override_replaces`, `cleanup_reverse`, `function_scope_not_outlive`), the
+  macro's translation is tested by the tutorial twins.
 
 ### Deviations from FastAPI
 
@@ -101,8 +116,27 @@ Listed here with the reason, and in `docs/traceability.toml` with
 * UTF-16 and UTF-32 JSON bodies are not detected (only UTF-8, BOM dropped).
 * JSON bodies nested deeper than 9998 levels are rejected by lean-json's
   depth limit; Python's limit depends on the interpreter stack.
-* Not yet: several (embedded) body parameters are rejected at elaboration;
-  `root_path` and the `servers` entry are not implemented.
+* An override's value reaches the dependant through JSON (`FromJson` of the
+  dependency's type, or `Json` itself); a value that does not decode is a
+  500 `DependencyOverrideError`. Python passes any object.
+* The dependencies of an override are not themselves overridden; FastAPI
+  applies `dependency_overrides` again inside the override's tree.
+* App and router `dependencies=[...]` run with their own per-request cache,
+  so a dependency used both there and in the path operation runs twice;
+  FastAPI shares one cache.
+* An exception raised by request-scoped exit code after the response has
+  been sent is dropped; under uvicorn FastAPI logs it.
+* `DependencyScopeError` (a request-scoped `yield` dependency depending on a
+  function-scoped one) is an elaboration error, not a runtime error when the
+  route is added.
+* The same parameter declared by the path operation and a dependency reports
+  its validation error once per declaration, as FastAPI does (UP-060).
+* Security tutorials 004 (argon2 and PyJWT) is not twinned; 005 is, with a
+  fake hash and token in place of those libraries. Dependencies tutorials
+  007, 008, 010, 013 and 014 are fragments or need sqlmodel and are not
+  twinned.
+* Not yet: `multipart/form-data` and `File` (milestone 4); `root_path` and
+  the `servers` entry.
 
 ## Tests
 
