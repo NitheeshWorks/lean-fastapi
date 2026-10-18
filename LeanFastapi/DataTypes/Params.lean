@@ -94,6 +94,8 @@ structure ParamInfo where
   include_in_schema : Bool := true
   /-- The request media type of a body parameter (`Body(media_type=...)`). -/
   media_type : String := "application/json"
+  /-- Where its errors are located (`[source, alias]`, or `["body"]`). -/
+  loc : Keel.Loc := []
   deriving Inhabited
 
 /-- A request body as FastAPI hands it to validation: absent (an empty body),

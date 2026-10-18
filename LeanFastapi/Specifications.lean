@@ -1,1 +1,1 @@
-import LeanFastapi.RepoImpl
+import LeanFastapi.Specifications.FastAPI

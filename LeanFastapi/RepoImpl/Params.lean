@@ -173,24 +173,46 @@ def info [ToJson α] [JsonSchema α] (p : Param α) : ParamInfo where
   deprecated := p.deprecated
   include_in_schema := p.include_in_schema
   media_type := p.media_type
+  loc := p.loc
+
+/-- Every error of a parameter's validator is located under its `loc`. -/
+theorem validator_loc [FromJson α] (p : Param α) (inp : Inputs) (es : List RequestError)
+    (h : p.validator inp = .error es) : ∀ e ∈ es, p.loc <+: e.loc :=
+  Keel.Validator.prefix_loc_atPath p.loc p.read inp es h
 
 end Param
 
 /-- A product of declared parameters: their OpenAPI descriptions and their
-joint validator. -/
+joint validator, which locates every error under one of the parameters
+(`extract_loc`, kept by `nil` and `cons`). -/
 structure Params (β : Type) where
   infos : List ParamInfo
   extract : Keel.Validator RequestError Inputs β
+  extract_loc : ∀ inp es, extract inp = .error es → ∀ e ∈ es, ∃ i ∈ infos, i.loc <+: e.loc
 
 namespace Params
 
 /-- No parameters. -/
-def nil : Params Unit := ⟨[], fun _ => .ok ()⟩
+def nil : Params Unit := ⟨[], fun _ => .ok (), fun _ _ h => by cases h⟩
 
 /-- The parameter `p` before the parameters `rest`. -/
 def cons {α β : Type} [FromJson α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β) :
-    Params (α × β) :=
-  ⟨p.info :: rest.infos, p.validator.both rest.extract⟩
+    Params (α × β) where
+  infos := p.info :: rest.infos
+  extract := p.validator.both rest.extract
+  extract_loc inp es h := by
+    rw [Keel.Validator.both_error _ _ _ _ h]
+    intro e he
+    rcases List.mem_append.1 he with he | he
+    · split at he
+      · rename_i es' hv
+        exact ⟨p.info, List.mem_cons_self, p.validator_loc inp es' hv e he⟩
+      · simp at he
+    · split at he
+      · rename_i es' hr
+        obtain ⟨i, hi, hl⟩ := rest.extract_loc inp es' hr e he
+        exact ⟨i, List.mem_cons_of_mem _ hi, hl⟩
+      · simp at he
 
 end Params
 
