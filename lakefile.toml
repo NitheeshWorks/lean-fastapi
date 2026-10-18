@@ -48,6 +48,14 @@ name = "LeanClick"
 git = "https://github.com/NitheeshWorks/lean-click"
 rev = "main"
 
+# The verification gate (scripts/Axioms.lean), compiled: `lake exe axioms
+# LeanFastapi`. Run compiled rather than with `lean --run`, which loads Lean's
+# own environment for the script next to the one it checks (3.9 GB peak).
+[[lean_exe]]
+name = "axioms"
+root = "scripts.Axioms"
+supportInterpreter = true
+
 # The milestone 1 demo on 127.0.0.1:8000: `lake exe example`.
 [[lean_exe]]
 name = "example"
