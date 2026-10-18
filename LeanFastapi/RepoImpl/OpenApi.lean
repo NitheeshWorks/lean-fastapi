@@ -362,19 +362,33 @@ def parameterJson (p : Parameter) : Json :=
     (match p.description with | some d => [("description", .str d)] | none => []) ++
     (if p.deprecated then [("deprecated", .bool true)] else [])
 
-def operationJson (o : Operation) : Json :=
+/-- An operation. Under a path item FastAPI's `OpenAPI` model accepts
+(`raw = false`), keys follow the `Operation` and `RequestBody` models; a path
+item with a parameter anywhere is kept as the dict FastAPI built
+(`raw = true`, confirmed on fastapi 0.143.3), whose keys are in insertion
+order: `deprecated` after `operationId`, `required` before `content`. -/
+def operationJson (raw : Bool) (o : Operation) : Json :=
+  let deprecated := if o.deprecated then [("deprecated", .bool true)] else []
+  let body := match o.requestBody with
+    | some b =>
+      let req := if b.required then [("required", .bool true)] else []
+      [("requestBody", jobj (if raw then req ++ [("content", mediaJson b.content)]
+        else [("content", mediaJson b.content)] ++ req))]
+    | none => []
   jobj <| (if o.tags.isEmpty then [] else [("tags", jarr (o.tags.map .str))]) ++
     [("summary", .str o.summary)] ++
     (match o.description with | some d => if d.isEmpty then [] else [("description", .str d)] | none => []) ++
-    [("operationId", .str o.operationId)] ++
+    [("operationId", .str o.operationId)] ++ (if raw then deprecated else []) ++
     (if o.parameters.isEmpty then [] else [("parameters", jarr (o.parameters.map parameterJson))]) ++
-    (match o.requestBody with
-      | some b => [("requestBody", jobj ([("content", mediaJson b.content)] ++
-          (if b.required then [("required", .bool true)] else [])))]
-      | none => []) ++
+    body ++
     [("responses", jobj (o.responses.map fun (k, r) => (k, jobj ([("description", .str r.description)] ++
         (match r.content with | some c => [("content", mediaJson c)] | none => [])))))] ++
-    (if o.deprecated then [("deprecated", .bool true)] else [])
+    (if raw then [] else deprecated)
+
+/-- A path item's operations, as JSON. -/
+def pathItemJson (ms : List (String × Operation)) : Json :=
+  let raw := ms.any fun (_, o) => !o.parameters.isEmpty
+  jobj (ms.map fun (m, o) => (m, operationJson raw o))
 
 /-- The operations grouped by path, paths in first-seen order. -/
 def groupPaths (ops : List (String × String × Operation)) : List (String × List (String × Operation)) :=
@@ -391,7 +405,7 @@ def infoJson (i : Info) : Json :=
 /-- The document as `app.openapi()` returns it. -/
 def toJson (d : OpenAPI) : Json :=
   jobj <| [("openapi", .str d.openapi), ("info", infoJson d.info),
-    ("paths", jobj ((groupPaths d.paths).map fun (p, ms) => (p, jobj (ms.map fun (m, o) => (m, operationJson o)))))] ++
+    ("paths", jobj ((groupPaths d.paths).map fun (p, ms) => (p, pathItemJson ms)))] ++
     (if d.components.schemas.isEmpty then []
      else [("components", jobj [("schemas", jobj (d.components.schemas.map fun (k, s) => (k, s.toJson .model)))])])
 

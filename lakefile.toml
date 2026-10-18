@@ -1,6 +1,6 @@
     name = "LeanFastapi"
     version = "0.1.0"
-    defaultTargets = ["LeanFastapi", "props", "conformance"]
+    defaultTargets = ["LeanFastapi", "props", "conformance", "example"]
 
     # The verified library. Everything under LeanFastapi/ except Transport.lean is a
     # total function and the proof surface; see CONTRIBUTING.md.
@@ -33,3 +33,15 @@ rev = "main"
 name = "LeanClick"
 git = "https://github.com/NitheeshWorks/lean-click"
 rev = "main"
+
+# The milestone 1 demo on 127.0.0.1:8000: `lake exe example`.
+[[lean_exe]]
+name = "example"
+root = "demo.Example"
+
+# The Lean twins of the conformance fixtures (upstream tutorial apps) and the
+# demo application, built as a library so the test runner and the demo
+# executable import them.
+[[lean_lib]]
+name = "Fixtures"
+globs = ["tests.apps.+", "demo.App"]

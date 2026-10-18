@@ -31,7 +31,9 @@ Named arguments, as `@app.get(...)` takes them: `response_model`,
 `response_description`, `deprecated`, `operation_id`, `include_in_schema`,
 `name` (else the function's name in snake case),
 `response_model_exclude_none`, `response_model_exclude_defaults`,
-`response_model_include`, `response_model_exclude`. `@[api_route "/p"
+`response_model_include`, `response_model_exclude`. `(response_model := none)`
+keeps the return type out of validation and of the schema, as
+`response_model=None` does. `@[api_route "/p"
 (methods := ["GET", "POST"])]` takes several methods.
 
 Everything here is total, like the rest of the library: the attribute is a
@@ -212,7 +214,9 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
     let jsonTy := Lean.mkConst ``LeanJson.Json
     let respTy := Lean.mkConst ``LeanStarlette.Response
     let rmTy? ← match args.find? (·.1 == `response_model) with
-      | some (_, s) => some <$> elabType s
+      | some (_, s) =>
+        -- `response_model=None` turns the return type's model off, as in FastAPI
+        if s.isIdent && s.getId.eraseMacroScopes == `none then pure none else some <$> elabType s
       | none =>
         if γ.isConstOf ``LeanJson.Json || γ.isConstOf ``LeanStarlette.Response then pure none
         else do
@@ -286,6 +290,23 @@ initialize
       descr := s!"FastAPI `@app.{attr}(path)`: declare a path operation"
       applicationTime := .afterCompilation
       add := fun decl stx _ => Macro.addRoute decl methods stx }
+
+/-- The attribute kinds of path operations. -/
+def routeAttrKinds : List Name :=
+  [``Attr.get, ``Attr.put, ``Attr.post, ``Attr.delete, ``Attr.patch, ``Attr.options, ``Attr.head,
+   ``Attr.trace, ``Attr.api_route]
+
+/-- A path operation's arguments are read by FastAPI even when the function
+body ignores them (a path parameter only validated, as in
+`update_item(item_id, item)`), so the unused-variable linter leaves the
+explicit arguments of a declaration carrying a path operation attribute
+alone. -/
+@[unused_variables_ignore_fn]
+def ignorePathOperationArgs : Lean.Linter.IgnoreFunction := fun _ stack _ =>
+  stack.any (fun (s, _) => s.isOfKind ``Lean.Parser.Term.explicitBinder) &&
+  stack.any fun (s, _) =>
+    s.isOfKind ``Lean.Parser.Command.declaration &&
+      (s[0].find? fun a => routeAttrKinds.contains a.getKind).isSome
 
 /-! ## The routes of an application -/
 
