@@ -34,6 +34,8 @@ structure Annotations where
   description : Option String := none
   deprecated : Bool := false
   default : Option Json := none
+  /-- `json_schema_extra`. -/
+  extra : List (String × Json) := []
 
 /-- A JSON Schema inside an OpenAPI document. -/
 inductive OSchema where

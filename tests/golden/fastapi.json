@@ -4464,6 +4464,6296 @@
     ]
    ],
    "response": "{\"name\":\"x\",\"description\":null,\"price\":1.2345678901234567e+19,\"tax\":null}"
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial001_tutorial001_02.py::test_get",
+   "method": "GET",
+   "url": "/items",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial001_tutorial001_02.py::test_get",
+   "method": "GET",
+   "url": "/items?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=foo"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial001_tutorial001_02.py::test_get",
+   "method": "GET",
+   "url": "/items?q=foo&skip=5",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=foo&skip=5"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial001_tutorial001_02.py::test_get",
+   "method": "GET",
+   "url": "/items?q=foo&skip=5&limit=30",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=foo&skip=5&limit=30"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial001_tutorial001_02.py::test_get",
+   "method": "GET",
+   "url": "/users",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/users/"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_dependency_class.py (errors of a dependency's parameters)",
+   "method": "GET",
+   "url": "/items/?skip=x&limit=y",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "285"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"query\",\"skip\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"x\"},{\"type\":\"int_parsing\",\"loc\":[\"query\",\"limit\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"y\"}]}"
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=foo"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items?q=foo&skip=1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=foo&skip=1"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items?q=bar&limit=2",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=bar&limit=2"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items?q=bar&skip=1&limit=1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?q=bar&skip=1&limit=1"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items?limit=1&q=bar&skip=1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/?limit=1&q=bar&skip=1"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_004",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial002_tutorial003_tutorial004.py::test_get",
+   "method": "GET",
+   "url": "/items/?q=bar&skip=1&limit=1",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "41"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"q\":\"bar\",\"items\":[{\"item_name\":\"Bar\"}]}"
+  },
+  {
+   "fixture": "dependencies_005",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial005.py::test_get",
+   "method": "GET",
+   "url": "/items",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "dependencies_005",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial005.py::test_get",
+   "method": "GET",
+   "url": "/items/?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"q_or_cookie\":\"foo\"}"
+  },
+  {
+   "fixture": "dependencies_005",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial005.py::test_get",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "cookie",
+     "last_query=cookiequery"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "29"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"q_or_cookie\":\"cookiequery\"}"
+  },
+  {
+   "fixture": "dependencies_005",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial005.py::test_get",
+   "method": "GET",
+   "url": "/items/?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "cookie",
+     "last_query=cookiequery"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"q_or_cookie\":\"foo\"}"
+  },
+  {
+   "fixture": "dependencies_006",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial006.py::test_get_no_headers",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "174"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"header\",\"x-token\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"header\",\"x-key\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependencies_006",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial006.py::test_get_invalid_one_header",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "invalid"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "35"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"X-Token header invalid\"}"
+  },
+  {
+   "fixture": "dependencies_006",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial006.py::test_get_invalid_second_header",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "fake-super-secret-token"
+    ],
+    [
+     "X-Key",
+     "invalid"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"X-Key header invalid\"}"
+  },
+  {
+   "fixture": "dependencies_006",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial006.py::test_get_valid_headers",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "fake-super-secret-token"
+    ],
+    [
+     "X-Key",
+     "fake-super-secret-key"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"item\":\"Foo\"},{\"item\":\"Bar\"}]"
+  },
+  {
+   "fixture": "dependencies_008b",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008b.py::test_get_no_item",
+   "method": "GET",
+   "url": "/items/foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 404,
+   "headers": [
+    [
+     "content-length",
+     "27"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Item not found\"}"
+  },
+  {
+   "fixture": "dependencies_008b",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008b.py::test_owner_error",
+   "method": "GET",
+   "url": "/items/plumbus",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Owner error: Rick\"}"
+  },
+  {
+   "fixture": "dependencies_008b",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008b.py::test_get_item",
+   "method": "GET",
+   "url": "/items/portal-gun",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "54"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"description\":\"Gun to create portals\",\"owner\":\"Rick\"}"
+  },
+  {
+   "fixture": "dependencies_008c",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008c.py::test_get_no_item",
+   "method": "GET",
+   "url": "/items/foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 404,
+   "headers": [
+    [
+     "content-length",
+     "56"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Item not found, there's only a plumbus here\"}"
+  },
+  {
+   "fixture": "dependencies_008c",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008c.py::test_get",
+   "method": "GET",
+   "url": "/items/plumbus",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "9"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "\"plumbus\""
+  },
+  {
+   "fixture": "dependencies_008c",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008c.py::test_fastapi_error",
+   "method": "GET",
+   "url": "/items/portal-gun",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 500,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ]
+   ],
+   "response": "Internal Server Error"
+  },
+  {
+   "fixture": "dependencies_008d",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008d.py::test_get_no_item",
+   "method": "GET",
+   "url": "/items/foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 404,
+   "headers": [
+    [
+     "content-length",
+     "56"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Item not found, there's only a plumbus here\"}"
+  },
+  {
+   "fixture": "dependencies_008d",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008d.py::test_get",
+   "method": "GET",
+   "url": "/items/plumbus",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "9"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "\"plumbus\""
+  },
+  {
+   "fixture": "dependencies_008d",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008d.py::test_internal_error",
+   "method": "GET",
+   "url": "/items/portal-gun",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 500,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "text/plain; charset=utf-8"
+    ]
+   ],
+   "response": "Internal Server Error"
+  },
+  {
+   "fixture": "dependencies_008e",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial008e.py::test_get_users_me",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "6"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "\"Rick\""
+  },
+  {
+   "fixture": "dependencies_011",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial011.py::test_get",
+   "method": "GET",
+   "url": "/query-checker/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"fixed_content_in_query\":false}"
+  },
+  {
+   "fixture": "dependencies_011",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial011.py::test_get",
+   "method": "GET",
+   "url": "/query-checker/?q=qwerty",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"fixed_content_in_query\":false}"
+  },
+  {
+   "fixture": "dependencies_011",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial011.py::test_get",
+   "method": "GET",
+   "url": "/query-checker/?q=foobar",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "31"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"fixed_content_in_query\":true}"
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial012.py::test_get_no_headers_items",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "174"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"header\",\"x-token\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"header\",\"x-key\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial012.py::test_get_no_headers_users",
+   "method": "GET",
+   "url": "/users/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "174"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"header\",\"x-token\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"header\",\"x-key\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial012.py::test_get_invalid_one_header_items",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "invalid"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "35"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"X-Token header invalid\"}"
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial012.py::test_get_invalid_second_header_users",
+   "method": "GET",
+   "url": "/users/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "fake-super-secret-token"
+    ],
+    [
+     "X-Key",
+     "invalid"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"X-Key header invalid\"}"
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial012.py::test_get_valid_headers_items",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "fake-super-secret-token"
+    ],
+    [
+     "X-Key",
+     "fake-super-secret-key"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "42"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"item\":\"Portal Gun\"},{\"item\":\"Plumbus\"}]"
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_tutorial/test_dependencies/test_tutorial012.py::test_get_valid_headers_users",
+   "method": "GET",
+   "url": "/users/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "X-Token",
+     "fake-super-secret-token"
+    ],
+    [
+     "X-Key",
+     "fake-super-secret-key"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "42"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"username\":\"Rick\"},{\"username\":\"Morty\"}]"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_normal_counter",
+   "method": "POST",
+   "url": "/reset",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "4"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "null"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_normal_counter",
+   "method": "GET",
+   "url": "/counter/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "13"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":1}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_normal_counter",
+   "method": "GET",
+   "url": "/counter/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "13"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":2}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_sub_counter",
+   "method": "POST",
+   "url": "/reset",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "4"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "null"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_sub_counter",
+   "method": "GET",
+   "url": "/sub-counter/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "28"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":1,\"subcounter\":1}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_sub_counter",
+   "method": "GET",
+   "url": "/sub-counter/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "28"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":2,\"subcounter\":2}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_sub_counter_no_cache",
+   "method": "POST",
+   "url": "/reset",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "4"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "null"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_sub_counter_no_cache",
+   "method": "GET",
+   "url": "/sub-counter-no-cache/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "28"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":2,\"subcounter\":1}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_sub_counter_no_cache",
+   "method": "GET",
+   "url": "/sub-counter-no-cache/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "28"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":4,\"subcounter\":3}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_security_cache",
+   "method": "POST",
+   "url": "/reset",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Content-Length",
+     "0"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "4"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "null"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_security_cache",
+   "method": "GET",
+   "url": "/scope-counter",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "53"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":1,\"scope_counter_1\":2,\"scope_counter_2\":2}"
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_dependency_cache.py::test_security_cache",
+   "method": "GET",
+   "url": "/scope-counter",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "53"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"counter\":3,\"scope_counter_1\":4,\"scope_counter_2\":4}"
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_dependency_duplicates.py::test_no_duplicates_invalid",
+   "method": "POST",
+   "url": "/no-duplicates",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "28"
+    ]
+   ],
+   "body": "{\"item\": {\"data\": \"myitem\"}}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "90"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"item2\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_dependency_duplicates.py::test_no_duplicates",
+   "method": "POST",
+   "url": "/no-duplicates",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "58"
+    ]
+   ],
+   "body": "{\"item\": {\"data\": \"myitem\"}, \"item2\": {\"data\": \"myitem2\"}}",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "38"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"data\":\"myitem\"},{\"data\":\"myitem2\"}]"
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_dependency_duplicates.py::test_duplicates",
+   "method": "POST",
+   "url": "/with-duplicates",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "18"
+    ]
+   ],
+   "body": "{\"data\": \"myitem\"}",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "37"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"data\":\"myitem\"},{\"data\":\"myitem\"}]"
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_dependency_duplicates.py::test_sub_duplicates",
+   "method": "POST",
+   "url": "/with-duplicates-sub",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "18"
+    ]
+   ],
+   "body": "{\"data\": \"myitem\"}",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "57"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"data\":\"myitem\"},[{\"data\":\"myitem\"},{\"data\":\"myitem\"}]]"
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_dependency_duplicates.py (errors of both uses)",
+   "method": "POST",
+   "url": "/with-duplicates",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "2"
+    ]
+   ],
+   "body": "{}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "162"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"data\"],\"msg\":\"Field required\",\"input\":{}},{\"type\":\"missing\",\"loc\":[\"body\",\"data\"],\"msg\":\"Field required\",\"input\":{}}]}"
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_dependency_duplicates.py (errors of both uses)",
+   "method": "POST",
+   "url": "/no-duplicates",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ],
+    [
+     "Content-Length",
+     "2"
+    ]
+   ],
+   "body": "{}",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "167"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"item2\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"item\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_dependency_yield_scope.py (exit order)",
+   "method": "GET",
+   "url": "/run",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "18"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"b\":\"ab\",\"f\":\"f\"}"
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_dependency_yield_scope.py (exit order)",
+   "method": "GET",
+   "url": "/events",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "78"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[\"a enter\",\"b enter\",\"f enter\",\"endpoint\",\"f exit ok\",\"b exit ok\",\"a exit ok\"]"
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_dependency_contextmanager.py (an exception reaches every exit)",
+   "method": "GET",
+   "url": "/fail",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 418,
+   "headers": [
+    [
+     "content-length",
+     "19"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"teapot\"}"
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_dependency_contextmanager.py (an exception reaches every exit)",
+   "method": "GET",
+   "url": "/events",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "92"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[\"a enter\",\"b enter\",\"f enter\",\"endpoint ab f\",\"f exit error\",\"b exit error\",\"a exit error\"]"
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_dependency_contextmanager.py (a validation error reaches every exit)",
+   "method": "GET",
+   "url": "/invalid?n=x",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "145"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"query\",\"n\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"x\"}]}"
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_dependency_contextmanager.py (a validation error reaches every exit)",
+   "method": "GET",
+   "url": "/events",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "51"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[\"a enter\",\"b enter\",\"b exit error\",\"a exit error\"]"
+  },
+  {
+   "fixture": "dependency_overrides",
+   "upstream": "tests/test_dependency_overrides.py::test_main_depends",
+   "method": "GET",
+   "url": "/main-depends/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "87"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"q\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependency_overrides",
+   "upstream": "tests/test_dependency_overrides.py::test_main_depends_q_foo",
+   "method": "GET",
+   "url": "/main-depends/?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "63"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"main-depends\",\"params\":{\"q\":\"foo\",\"skip\":0,\"limit\":100}}"
+  },
+  {
+   "fixture": "dependency_overrides",
+   "upstream": "tests/test_dependency_overrides.py::test_main_depends_q_foo_skip_100_limit_200",
+   "method": "GET",
+   "url": "/main-depends/?q=foo&skip=100&limit=200",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "65"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"main-depends\",\"params\":{\"q\":\"foo\",\"skip\":100,\"limit\":200}}"
+  },
+  {
+   "fixture": "dependency_overrides",
+   "upstream": "tests/test_dependency_overrides.py::test_decorator_depends",
+   "method": "GET",
+   "url": "/decorator-depends/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "87"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"q\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependency_overrides",
+   "upstream": "tests/test_dependency_overrides.py::test_decorator_depends_q_foo",
+   "method": "GET",
+   "url": "/decorator-depends/?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "26"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"decorator-depends\"}"
+  },
+  {
+   "fixture": "dependency_overrides_simple",
+   "upstream": "tests/test_dependency_overrides.py::test_override_simple",
+   "method": "GET",
+   "url": "/main-depends/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "61"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"main-depends\",\"params\":{\"q\":null,\"skip\":5,\"limit\":10}}"
+  },
+  {
+   "fixture": "dependency_overrides_simple",
+   "upstream": "tests/test_dependency_overrides.py::test_override_simple",
+   "method": "GET",
+   "url": "/main-depends/?q=foo",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "62"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"main-depends\",\"params\":{\"q\":\"foo\",\"skip\":5,\"limit\":10}}"
+  },
+  {
+   "fixture": "dependency_overrides_simple",
+   "upstream": "tests/test_dependency_overrides.py::test_override_simple",
+   "method": "GET",
+   "url": "/decorator-depends/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "26"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"decorator-depends\"}"
+  },
+  {
+   "fixture": "dependency_overrides_with_sub",
+   "upstream": "tests/test_dependency_overrides.py::test_override_with_sub_main_depends",
+   "method": "GET",
+   "url": "/main-depends/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "87"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"k\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "dependency_overrides_with_sub",
+   "upstream": "tests/test_dependency_overrides.py::test_override_with_sub_main_depends_k_bar",
+   "method": "GET",
+   "url": "/main-depends/?k=bar",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "42"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"main-depends\",\"params\":{\"k\":\"bar\"}}"
+  },
+  {
+   "fixture": "dependency_overrides_with_sub",
+   "upstream": "tests/test_dependency_overrides.py::test_override_with_sub_decorator_depends",
+   "method": "GET",
+   "url": "/decorator-depends/?k=bar",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "26"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"in\":\"decorator-depends\"}"
+  },
+  {
+   "fixture": "security_001",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial001.py::test_no_token",
+   "method": "GET",
+   "url": "/items",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "security_001",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial001.py::test_token",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer testtoken"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"token\":\"testtoken\"}"
+  },
+  {
+   "fixture": "security_001",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial001.py::test_incorrect_token",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Notexistent testtoken"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_002",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial002.py::test_no_token",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_002",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial002.py::test_token",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer testtoken"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "101"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"testtokenfakedecoded\",\"email\":\"john@example.com\",\"full_name\":\"John Doe\",\"disabled\":null}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_login",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "32"
+    ]
+   ],
+   "body": "username=johndoe&password=secret",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "48"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"access_token\":\"johndoe\",\"token_type\":\"bearer\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_login_incorrect_password",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "35"
+    ]
+   ],
+   "body": "username=johndoe&password=incorrect",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_login_incorrect_username",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "28"
+    ]
+   ],
+   "body": "username=foo&password=secret",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py (missing form fields)",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "23"
+    ]
+   ],
+   "body": "grant_type=wrong&scope=",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "333"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"string_pattern_mismatch\",\"loc\":[\"body\",\"grant_type\"],\"msg\":\"String should match pattern '^password$'\",\"input\":\"wrong\",\"ctx\":{\"pattern\":\"^password$\"}},{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py (form without its content type)",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Content-Length",
+     "32"
+    ]
+   ],
+   "body": "username=johndoe&password=secret",
+   "status": 422,
+   "headers": [
+    [
+     "content-length",
+     "174"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"username\"],\"msg\":\"Field required\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"password\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py (percent-encoded form)",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "38"
+    ]
+   ],
+   "body": "username=john%64oe&password=se+cret&&x",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py (percent-encoded form)",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "47"
+    ]
+   ],
+   "body": "username=johndoe&password=secret&username=alice",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_no_token",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_token",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer johndoe"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "129"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"johndoe\",\"email\":\"johndoe@example.com\",\"full_name\":\"John Doe\",\"disabled\":false,\"hashed_password\":\"fakehashedsecret\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_incorrect_token",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer nonexistent"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_incorrect_token_type",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Notexistent testtoken"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial003.py::test_inactive_user",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer alice"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "26"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Inactive user\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_login",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "47"
+    ]
+   ],
+   "body": "username=johndoe&password=secret&scope=me items",
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "57"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"access_token\":\"johndoe|me items\",\"token_type\":\"bearer\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_login_incorrect_password",
+   "method": "POST",
+   "url": "/token",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "content-type",
+     "application/x-www-form-urlencoded"
+    ],
+    [
+     "Content-Length",
+     "35"
+    ]
+   ],
+   "body": "username=johndoe&password=incorrect",
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_no_token",
+   "method": "GET",
+   "url": "/users/me/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_token",
+   "method": "GET",
+   "url": "/users/me/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer johndoe|me items"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "92"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"johndoe\",\"email\":\"johndoe@example.com\",\"full_name\":\"John Doe\",\"disabled\":false}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_incorrect_token",
+   "method": "GET",
+   "url": "/users/me/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer nonexistent"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer scope=\"me\""
+    ],
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Could not validate credentials\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_token_no_scope",
+   "method": "GET",
+   "url": "/users/me/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer johndoe|"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer scope=\"me\""
+    ],
+    [
+     "content-length",
+     "35"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not enough permissions\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_token_inexistent_user",
+   "method": "GET",
+   "url": "/users/me/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer bob|me"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer scope=\"me\""
+    ],
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Could not validate credentials\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_token_inactive_user",
+   "method": "GET",
+   "url": "/users/me/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer alice|me"
+    ]
+   ],
+   "body": null,
+   "status": 400,
+   "headers": [
+    [
+     "content-length",
+     "26"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Inactive user\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_read_items",
+   "method": "GET",
+   "url": "/users/me/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer johndoe|me items"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "37"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "[{\"item_id\":\"Foo\",\"owner\":\"johndoe\"}]"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_read_items",
+   "method": "GET",
+   "url": "/users/me/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer johndoe|me"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer scope=\"items me\""
+    ],
+    [
+     "content-length",
+     "35"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not enough permissions\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_read_system_status",
+   "method": "GET",
+   "url": "/status/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer johndoe|"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "15"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"status\":\"ok\"}"
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial005.py::test_read_system_status_no_token",
+   "method": "GET",
+   "url": "/status/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py::test_security_http_basic",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic am9objpzZWNyZXQ="
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "39"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"john\",\"password\":\"secret\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py::test_security_http_basic_no_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py::test_security_http_basic_invalid_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic notabase64token"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py::test_security_http_basic_non_basic_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic am9obnNlY3JldA=="
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py (padding and stray characters)",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic am9o*bjpz ZWNyZXQ"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py (padding ends the data)",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic YTpi==Yzpk"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "34"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"a\",\"password\":\"bc:d\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py (non-ASCII credentials)",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic w6k6dg=="
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial006.py (scheme in another case)",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "bAsIc am9objpzZWNyZXQ="
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "39"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"john\",\"password\":\"secret\"}"
+  },
+  {
+   "fixture": "security_007",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial007.py::test_security_http_basic",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic c3RhbmxleWpvYnNvbjpzd29yZGZpc2g="
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "28"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"stanleyjobson\"}"
+  },
+  {
+   "fixture": "security_007",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial007.py::test_security_http_basic_invalid_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic notabase64token"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_007",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial007.py::test_security_http_basic_non_basic_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic am9obnNlY3JldA=="
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_007",
+   "upstream": "tests/test_tutorial/test_security/test_tutorial007.py::test_security_http_basic_invalid_username",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic YWxpY2U6c3dvcmRmaXNo"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic"
+    ],
+    [
+     "content-length",
+     "43"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+   "fixture": "security_api_key_query",
+   "upstream": "tests/test_security_api_key_query.py::test_security_api_key",
+   "method": "GET",
+   "url": "/users/me?key=secret",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"secret\"}"
+  },
+  {
+   "fixture": "security_api_key_query",
+   "upstream": "tests/test_security_api_key_query.py::test_security_api_key_no_key",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "APIKey"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_api_key_query",
+   "upstream": "tests/test_security_api_key_query.py (empty key)",
+   "method": "GET",
+   "url": "/users/me?key=",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "APIKey"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_api_key_header_optional",
+   "upstream": "tests/test_security_api_key_header_optional.py::test_security_api_key",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "key",
+     "secret"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"secret\"}"
+  },
+  {
+   "fixture": "security_api_key_header_optional",
+   "upstream": "tests/test_security_api_key_header_optional.py::test_security_api_key_no_key",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"msg\":\"Create an account first\"}"
+  },
+  {
+   "fixture": "security_api_key_cookie",
+   "upstream": "tests/test_security_api_key_cookie.py::test_security_api_key",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "cookie",
+     "key=secret"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"secret\"}"
+  },
+  {
+   "fixture": "security_api_key_cookie",
+   "upstream": "tests/test_security_api_key_cookie.py::test_security_api_key_no_key",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "APIKey"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_http_base",
+   "upstream": "tests/test_security_http_base.py::test_security_http_base",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Other foobar"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "41"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"scheme\":\"Other\",\"credentials\":\"foobar\"}"
+  },
+  {
+   "fixture": "security_http_base",
+   "upstream": "tests/test_security_http_base.py::test_security_http_base_no_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Other"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_http_base",
+   "upstream": "tests/test_security_http_base.py (another scheme is accepted)",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer  foobar "
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "42"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"scheme\":\"Bearer\",\"credentials\":\"foobar\"}"
+  },
+  {
+   "fixture": "security_http_base",
+   "upstream": "tests/test_security_http_base.py (no credentials after the scheme)",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Other"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Other"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_http_bearer_optional",
+   "upstream": "tests/test_security_http_bearer_optional.py::test_security_http_bearer",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer foobar"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "42"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"scheme\":\"Bearer\",\"credentials\":\"foobar\"}"
+  },
+  {
+   "fixture": "security_http_bearer_optional",
+   "upstream": "tests/test_security_http_bearer_optional.py::test_security_http_bearer_no_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"msg\":\"Create an account first\"}"
+  },
+  {
+   "fixture": "security_http_bearer_optional",
+   "upstream": "tests/test_security_http_bearer_optional.py::test_security_http_bearer_incorrect_scheme_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic notreally"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"msg\":\"Create an account first\"}"
+  },
+  {
+   "fixture": "security_http_digest",
+   "upstream": "tests/test_security_http_digest.py::test_security_http_digest",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Digest foobar"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "42"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"scheme\":\"Digest\",\"credentials\":\"foobar\"}"
+  },
+  {
+   "fixture": "security_http_digest",
+   "upstream": "tests/test_security_http_digest.py::test_security_http_digest_no_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Digest"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_http_digest",
+   "upstream": "tests/test_security_http_digest.py::test_security_http_digest_incorrect_scheme_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Other invalidauthorization"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Digest"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_http_basic_realm",
+   "upstream": "tests/test_security_http_basic_realm.py::test_security_http_basic",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic am9objpzZWNyZXQ="
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "39"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"john\",\"password\":\"secret\"}"
+  },
+  {
+   "fixture": "security_http_basic_realm",
+   "upstream": "tests/test_security_http_basic_realm.py::test_security_http_basic_no_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic realm=\"simple\""
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_http_basic_realm",
+   "upstream": "tests/test_security_http_basic_realm.py::test_security_http_basic_invalid_credentials",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Basic notabase64token"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Basic realm=\"simple\""
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_openid_connect_optional",
+   "upstream": "tests/test_security_openid_connect_optional.py::test_security_oauth2",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer footokenbar"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"Bearer footokenbar\"}"
+  },
+  {
+   "fixture": "security_openid_connect_optional",
+   "upstream": "tests/test_security_openid_connect_optional.py::test_security_oauth2_password_other_header",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Other footokenbar"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "32"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"username\":\"Other footokenbar\"}"
+  },
+  {
+   "fixture": "security_openid_connect_optional",
+   "upstream": "tests/test_security_openid_connect_optional.py::test_security_oauth2_password_bearer_no_header",
+   "method": "GET",
+   "url": "/users/me",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "33"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"msg\":\"Create an account first\"}"
+  },
+  {
+   "fixture": "security_oauth2_authorization_code_bearer",
+   "upstream": "tests/test_security_oauth2_authorization_code_bearer.py::test_no_token",
+   "method": "GET",
+   "url": "/items",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ]
+   ],
+   "body": null,
+   "status": 307,
+   "headers": [
+    [
+     "content-length",
+     "0"
+    ],
+    [
+     "location",
+     "http://testserver/items/"
+    ]
+   ],
+   "response": ""
+  },
+  {
+   "fixture": "security_oauth2_authorization_code_bearer",
+   "upstream": "tests/test_security_oauth2_authorization_code_bearer.py::test_incorrect_token",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Non-existent testtoken"
+    ]
+   ],
+   "body": null,
+   "status": 401,
+   "headers": [
+    [
+     "www-authenticate",
+     "Bearer"
+    ],
+    [
+     "content-length",
+     "30"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"detail\":\"Not authenticated\"}"
+  },
+  {
+   "fixture": "security_oauth2_authorization_code_bearer",
+   "upstream": "tests/test_security_oauth2_authorization_code_bearer.py::test_token",
+   "method": "GET",
+   "url": "/items/",
+   "request_headers": [
+    [
+     "Host",
+     "testserver"
+    ],
+    [
+     "Accept",
+     "*/*"
+    ],
+    [
+     "Accept-Encoding",
+     "gzip, deflate"
+    ],
+    [
+     "Connection",
+     "keep-alive"
+    ],
+    [
+     "user-agent",
+     "testclient"
+    ],
+    [
+     "Authorization",
+     "Bearer testtoken"
+    ]
+   ],
+   "body": null,
+   "status": 200,
+   "headers": [
+    [
+     "content-length",
+     "21"
+    ],
+    [
+     "content-type",
+     "application/json"
+    ]
+   ],
+   "response": "{\"token\":\"testtoken\"}"
   }
  ],
  "openapi": [
@@ -7036,6 +13326,3406 @@
         "type"
        ],
        "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_001",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "null"
+           }
+          ],
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/users/": {
+      "get": {
+       "summary": "Read Users",
+       "operationId": "read_users_users__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "null"
+           }
+          ],
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_002",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "null"
+           }
+          ],
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_004",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "null"
+           }
+          ],
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_005",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Query",
+       "operationId": "read_query_items__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "null"
+           }
+          ],
+          "title": "Q"
+         }
+        },
+        {
+         "name": "last_query",
+         "in": "cookie",
+         "required": false,
+         "schema": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "null"
+           }
+          ],
+          "title": "Last Query"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_006",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "parameters": [
+        {
+         "name": "x-token",
+         "in": "header",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "X-Token"
+         }
+        },
+        {
+         "name": "x-key",
+         "in": "header",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "X-Key"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_008b",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/{item_id}": {
+      "get": {
+       "summary": "Get Item",
+       "operationId": "get_item_items__item_id__get",
+       "parameters": [
+        {
+         "name": "item_id",
+         "in": "path",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Item Id"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_008c",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/{item_id}": {
+      "get": {
+       "summary": "Get Item",
+       "operationId": "get_item_items__item_id__get",
+       "parameters": [
+        {
+         "name": "item_id",
+         "in": "path",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Item Id"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_008d",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/{item_id}": {
+      "get": {
+       "summary": "Get Item",
+       "operationId": "get_item_items__item_id__get",
+       "parameters": [
+        {
+         "name": "item_id",
+         "in": "path",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Item Id"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_008e",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Get User Me",
+       "operationId": "get_user_me_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_011",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/query-checker/": {
+      "get": {
+       "summary": "Read Query Check",
+       "operationId": "read_query_check_query_checker__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "string",
+          "default": "",
+          "title": "Q"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependencies_012",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "parameters": [
+        {
+         "name": "x-token",
+         "in": "header",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "X-Token"
+         }
+        },
+        {
+         "name": "x-key",
+         "in": "header",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "X-Key"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/users/": {
+      "get": {
+       "summary": "Read Users",
+       "operationId": "read_users_users__get",
+       "parameters": [
+        {
+         "name": "x-token",
+         "in": "header",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "X-Token"
+         }
+        },
+        {
+         "name": "x-key",
+         "in": "header",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "X-Key"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_001",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2PasswordBearer": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "OAuth2PasswordBearer": {
+       "type": "oauth2",
+       "flows": {
+        "password": {
+         "scopes": {},
+         "tokenUrl": "token"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_002",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Users Me",
+       "operationId": "read_users_me_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2PasswordBearer": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "OAuth2PasswordBearer": {
+       "type": "oauth2",
+       "flows": {
+        "password": {
+         "scopes": {},
+         "tokenUrl": "token"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_003",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/token": {
+      "post": {
+       "summary": "Login",
+       "operationId": "login_token_post",
+       "requestBody": {
+        "content": {
+         "application/x-www-form-urlencoded": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_login_token_post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/users/me": {
+      "get": {
+       "summary": "Read Users Me",
+       "operationId": "read_users_me_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2PasswordBearer": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_login_token_post": {
+       "properties": {
+        "grant_type": {
+         "anyOf": [
+          {
+           "type": "string",
+           "pattern": "^password$"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Grant Type"
+        },
+        "username": {
+         "type": "string",
+         "title": "Username"
+        },
+        "password": {
+         "type": "string",
+         "format": "password",
+         "title": "Password"
+        },
+        "scope": {
+         "type": "string",
+         "title": "Scope",
+         "default": ""
+        },
+        "client_id": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Client Id"
+        },
+        "client_secret": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "format": "password",
+         "title": "Client Secret"
+        }
+       },
+       "type": "object",
+       "required": [
+        "username",
+        "password"
+       ],
+       "title": "Body_login_token_post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     },
+     "securitySchemes": {
+      "OAuth2PasswordBearer": {
+       "type": "oauth2",
+       "flows": {
+        "password": {
+         "scopes": {},
+         "tokenUrl": "token"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_005",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/token": {
+      "post": {
+       "summary": "Login For Access Token",
+       "operationId": "login_for_access_token_token_post",
+       "requestBody": {
+        "content": {
+         "application/x-www-form-urlencoded": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_login_for_access_token_token_post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/Token"
+           }
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/users/me/": {
+      "get": {
+       "summary": "Read Users Me",
+       "operationId": "read_users_me_users_me__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/User"
+           }
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2PasswordBearer": [
+          "me"
+         ]
+        }
+       ]
+      }
+     },
+     "/users/me/items/": {
+      "get": {
+       "summary": "Read Own Items",
+       "operationId": "read_own_items_users_me_items__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2PasswordBearer": [
+          "items",
+          "me"
+         ]
+        }
+       ]
+      }
+     },
+     "/status/": {
+      "get": {
+       "summary": "Read System Status",
+       "operationId": "read_system_status_status__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2PasswordBearer": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_login_for_access_token_token_post": {
+       "properties": {
+        "grant_type": {
+         "anyOf": [
+          {
+           "type": "string",
+           "pattern": "^password$"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Grant Type"
+        },
+        "username": {
+         "type": "string",
+         "title": "Username"
+        },
+        "password": {
+         "type": "string",
+         "format": "password",
+         "title": "Password"
+        },
+        "scope": {
+         "type": "string",
+         "title": "Scope",
+         "default": ""
+        },
+        "client_id": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Client Id"
+        },
+        "client_secret": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "format": "password",
+         "title": "Client Secret"
+        }
+       },
+       "type": "object",
+       "required": [
+        "username",
+        "password"
+       ],
+       "title": "Body_login_for_access_token_token_post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "Token": {
+       "properties": {
+        "access_token": {
+         "type": "string",
+         "title": "Access Token"
+        },
+        "token_type": {
+         "type": "string",
+         "title": "Token Type"
+        }
+       },
+       "type": "object",
+       "required": [
+        "access_token",
+        "token_type"
+       ],
+       "title": "Token"
+      },
+      "User": {
+       "properties": {
+        "username": {
+         "type": "string",
+         "title": "Username"
+        },
+        "email": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Email"
+        },
+        "full_name": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Full Name"
+        },
+        "disabled": {
+         "anyOf": [
+          {
+           "type": "boolean"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Disabled"
+        }
+       },
+       "type": "object",
+       "required": [
+        "username"
+       ],
+       "title": "User"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     },
+     "securitySchemes": {
+      "OAuth2PasswordBearer": {
+       "type": "oauth2",
+       "flows": {
+        "password": {
+         "scopes": {
+          "me": "Read information about the current user.",
+          "items": "Read items."
+         },
+         "tokenUrl": "token"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_006",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "HTTPBasic": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "HTTPBasic": {
+       "type": "http",
+       "scheme": "basic"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_007",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "HTTPBasic": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "HTTPBasic": {
+       "type": "http",
+       "scheme": "basic"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependency_cache",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/counter/": {
+      "get": {
+       "summary": "Get Counter",
+       "operationId": "get_counter_counter__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     },
+     "/sub-counter/": {
+      "get": {
+       "summary": "Get Sub Counter",
+       "operationId": "get_sub_counter_sub_counter__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     },
+     "/sub-counter-no-cache/": {
+      "get": {
+       "summary": "Get Sub Counter No Cache",
+       "operationId": "get_sub_counter_no_cache_sub_counter_no_cache__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     },
+     "/scope-counter": {
+      "get": {
+       "summary": "Get Scope Counter",
+       "operationId": "get_scope_counter_scope_counter_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependency_duplicates",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/with-duplicates": {
+      "post": {
+       "summary": "With Duplicates",
+       "operationId": "with_duplicates_with_duplicates_post",
+       "requestBody": {
+        "content": {
+         "application/json": {
+          "schema": {
+           "$ref": "#/components/schemas/Item"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/no-duplicates": {
+      "post": {
+       "summary": "No Duplicates",
+       "operationId": "no_duplicates_no_duplicates_post",
+       "requestBody": {
+        "content": {
+         "application/json": {
+          "schema": {
+           "$ref": "#/components/schemas/Body_no_duplicates_no_duplicates_post"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/with-duplicates-sub": {
+      "post": {
+       "summary": "No Duplicates Sub",
+       "operationId": "no_duplicates_sub_with_duplicates_sub_post",
+       "requestBody": {
+        "content": {
+         "application/json": {
+          "schema": {
+           "$ref": "#/components/schemas/Item"
+          }
+         }
+        },
+        "required": true
+       },
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "Body_no_duplicates_no_duplicates_post": {
+       "properties": {
+        "item": {
+         "$ref": "#/components/schemas/Item"
+        },
+        "item2": {
+         "$ref": "#/components/schemas/Item"
+        }
+       },
+       "type": "object",
+       "required": [
+        "item",
+        "item2"
+       ],
+       "title": "Body_no_duplicates_no_duplicates_post"
+      },
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "Item": {
+       "properties": {
+        "data": {
+         "type": "string",
+         "title": "Data"
+        }
+       },
+       "type": "object",
+       "required": [
+        "data"
+       ],
+       "title": "Item"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependency_yield",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/run": {
+      "get": {
+       "summary": "Run",
+       "operationId": "run_run_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     },
+     "/fail": {
+      "get": {
+       "summary": "Fail",
+       "operationId": "fail_fail_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     },
+     "/invalid": {
+      "get": {
+       "summary": "Invalid",
+       "operationId": "invalid_invalid_get",
+       "parameters": [
+        {
+         "name": "n",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "integer",
+          "title": "N"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/events": {
+      "get": {
+       "summary": "Get Events",
+       "operationId": "get_events_events_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependency_overrides",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/main-depends/": {
+      "get": {
+       "summary": "Main Depends",
+       "operationId": "main_depends_main_depends__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/decorator-depends/": {
+      "get": {
+       "summary": "Decorator Depends",
+       "operationId": "decorator_depends_decorator_depends__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependency_overrides_simple",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/main-depends/": {
+      "get": {
+       "summary": "Main Depends",
+       "operationId": "main_depends_main_depends__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/decorator-depends/": {
+      "get": {
+       "summary": "Decorator Depends",
+       "operationId": "decorator_depends_decorator_depends__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "dependency_overrides_with_sub",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/main-depends/": {
+      "get": {
+       "summary": "Main Depends",
+       "operationId": "main_depends_main_depends__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "/decorator-depends/": {
+      "get": {
+       "summary": "Decorator Depends",
+       "operationId": "decorator_depends_decorator_depends__get",
+       "parameters": [
+        {
+         "name": "q",
+         "in": "query",
+         "required": true,
+         "schema": {
+          "type": "string",
+          "title": "Q"
+         }
+        },
+        {
+         "name": "skip",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 0,
+          "title": "Skip"
+         }
+        },
+        {
+         "name": "limit",
+         "in": "query",
+         "required": false,
+         "schema": {
+          "type": "integer",
+          "default": 100,
+          "title": "Limit"
+         }
+        }
+       ],
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        },
+        "422": {
+         "description": "Validation Error",
+         "content": {
+          "application/json": {
+           "schema": {
+            "$ref": "#/components/schemas/HTTPValidationError"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "components": {
+     "schemas": {
+      "HTTPValidationError": {
+       "properties": {
+        "detail": {
+         "items": {
+          "$ref": "#/components/schemas/ValidationError"
+         },
+         "type": "array",
+         "title": "Detail"
+        }
+       },
+       "type": "object",
+       "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+       "properties": {
+        "loc": {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           }
+          ]
+         },
+         "type": "array",
+         "title": "Location"
+        },
+        "msg": {
+         "type": "string",
+         "title": "Message"
+        },
+        "type": {
+         "type": "string",
+         "title": "Error Type"
+        },
+        "input": {
+         "title": "Input"
+        },
+        "ctx": {
+         "type": "object",
+         "title": "Context"
+        }
+       },
+       "type": "object",
+       "required": [
+        "loc",
+        "msg",
+        "type"
+       ],
+       "title": "ValidationError"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_api_key_query",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "APIKeyQuery": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "APIKeyQuery": {
+       "type": "apiKey",
+       "in": "query",
+       "name": "key"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_api_key_header_optional",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "APIKeyHeader": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "APIKeyHeader": {
+       "type": "apiKey",
+       "in": "header",
+       "name": "key"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_api_key_cookie",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "APIKeyCookie": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "APIKeyCookie": {
+       "type": "apiKey",
+       "in": "cookie",
+       "name": "key"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_http_base",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "HTTPBase": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "HTTPBase": {
+       "type": "http",
+       "scheme": "Other"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_http_bearer_optional",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "HTTPBearer": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "HTTPBearer": {
+       "type": "http",
+       "scheme": "bearer"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_http_digest",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "HTTPDigest": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "HTTPDigest": {
+       "type": "http",
+       "scheme": "digest"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_http_basic_realm",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "HTTPBasic": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "HTTPBasic": {
+       "type": "http",
+       "scheme": "basic"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_openid_connect_optional",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/users/me": {
+      "get": {
+       "summary": "Read Current User",
+       "operationId": "read_current_user_users_me_get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OpenIdConnect": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "OpenIdConnect": {
+       "type": "openIdConnect",
+       "openIdConnectUrl": "/openid"
+      }
+     }
+    }
+   }
+  },
+  {
+   "fixture": "security_oauth2_authorization_code_bearer",
+   "upstream": "tests/test_openapi_examples.py (app.openapi())",
+   "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+     "title": "FastAPI",
+     "version": "0.1.0"
+    },
+    "paths": {
+     "/items/": {
+      "get": {
+       "summary": "Read Items",
+       "operationId": "read_items_items__get",
+       "responses": {
+        "200": {
+         "description": "Successful Response",
+         "content": {
+          "application/json": {
+           "schema": {}
+          }
+         }
+        }
+       },
+       "security": [
+        {
+         "OAuth2AuthorizationCodeBearer": []
+        }
+       ]
+      }
+     }
+    },
+    "components": {
+     "securitySchemes": {
+      "OAuth2AuthorizationCodeBearer": {
+       "type": "oauth2",
+       "flows": {
+        "authorizationCode": {
+         "scopes": {},
+         "authorizationUrl": "authorize",
+         "tokenUrl": "token"
+        }
+       }
       }
      }
     }

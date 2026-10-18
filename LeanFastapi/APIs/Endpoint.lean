@@ -120,8 +120,9 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
   let routeDeps ← routeDependencies args pathNames
   let fnArgs ← argsOf maxDepth pathNames [] decl.toString false { fn := fnE, name := decl.toString }
   let all := routeDeps ++ fnArgs
-  if Node.bodiesList all > 1 then
-    throwError "more than one body parameter: embedded bodies are not supported yet"
+  -- `_should_embed_body_fields`: several body parameters (by name) are read
+  -- from members of the body
+  let all := if (Node.bodyNamesList all).eraseDups.length > 1 then Node.embedBodiesList all else all
   let slots := keysOfList all []
   let σ ← cacheTypes slots
   let (depE, β, project) ← genArgs maxDepth σ slots all

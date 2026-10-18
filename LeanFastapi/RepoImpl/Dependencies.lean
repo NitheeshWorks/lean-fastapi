@@ -255,9 +255,17 @@ def both (a : Dep σ α) (b : Dep σ β) : Dep σ (α × β) where
     let y ← b.run
     Pure.pure (do Pure.pure (← x, ← y))
 
+/-- How a dependency's value is read back from an override's JSON:
+`fromJson` (lax, as a parameter), or the JSON itself. -/
+class OverrideValue (α : Type) where
+  decode : Json → Except (List LeanPydantic.ErrorDetails) α
+
+instance (priority := low) {α : Type} [FromJson α] : OverrideValue α := ⟨LeanPydantic.fromJson fastapiCfg⟩
+instance : OverrideValue Json := ⟨.ok⟩
+
 /-- The value under an override's JSON, as the dependant's type. -/
-def ofOverride [FromJson α] (key : CacheKey) (j : Json) : SolveM σ α :=
-  match LeanPydantic.fromJson (α := α) fastapiCfg j with
+def ofOverride [OverrideValue α] (key : CacheKey) (j : Json) : SolveM σ α :=
+  match OverrideValue.decode (α := α) j with
   | .ok v => Pure.pure v
   | .error _ => throw (.custom "DependencyOverrideError"
       s!"the override of {key.call} returned a value of another shape" j)
@@ -291,7 +299,7 @@ def cached (slot : Slot σ α) (useCache : Bool) (compute : SolveM σ α) : Solv
 override's arguments are solved and the override is called; otherwise its own
 arguments `arg` are solved and `f` is called. Either way, nothing is called
 after argument errors, and a cached value is reused when `useCache`. -/
-def call [FromJson α] (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (ownScopes : List String)
+def call [OverrideValue α] (key : CacheKey) (slot : Slot σ α) (useCache : Bool) (ownScopes : List String)
     (scheme : Option (String × SecurityScheme)) (f : Invoke β α) (arg : Dep σ β) : Dep σ α where
   info := [.sub key ownScopes scheme arg.info]
   run := do

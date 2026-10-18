@@ -94,6 +94,10 @@ structure ParamInfo where
   include_in_schema : Bool := true
   /-- The request media type of a body parameter (`Body(media_type=...)`). -/
   media_type : String := "application/json"
+  /-- A body parameter read from a member of the body. -/
+  embed : Bool := false
+  /-- `json_schema_extra`: members added to the parameter's schema. -/
+  extra : List (String × Json) := []
   /-- Where its errors are located (`[source, alias]`, or `["body"]`). -/
   loc : Keel.Loc := []
   deriving Inhabited
@@ -105,6 +109,9 @@ inductive BodyInput where
   | none
   | json (j : Json)
   | bytes (text : String)
+  /-- A parsed form (`application/x-www-form-urlencoded`): its fields in
+  order. -/
+  | form (fields : List (String × String))
   deriving Inhabited
 
 /-- What parameters are read from: the request's converted path parameters,

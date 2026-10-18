@@ -140,7 +140,7 @@ def keywordRank : Keyword → Nat
 def keyRank (k : String) : Nat :=
   match ["$ref", "anyOf", "prefixItems", "items", "properties", "additionalProperties", "type", "enum",
       "const", "multipleOf", "maximum", "exclusiveMaximum", "minimum", "exclusiveMinimum", "maxLength",
-      "minLength", "pattern", "maxItems", "minItems", "uniqueItems", "required", "title", "description", "default",
+      "minLength", "pattern", "maxItems", "minItems", "uniqueItems", "format", "required", "title", "description", "default",
       "deprecated"].idxOf? k with
   | some i => i
   | none => 100
@@ -190,7 +190,7 @@ def scalar (m : Mode) (ty : String) (kws : List Keyword) : List (String × Json)
 
 def annMembers (a : Annotations) : List (String × Json) :=
   let title := match a.title with | some t => [("title", .str t)] | none => []
-  (if a.explicitTitle then title else []) ++
+  a.extra ++ (if a.explicitTitle then title else []) ++
   (match a.description with | some d => [("description", .str d)] | none => []) ++
   (if a.deprecated then [("deprecated", .bool true)] else []) ++
   (match a.default with | some .null | none => [] | some d => [("default", stripNone d)]) ++
@@ -323,17 +323,53 @@ def validates (r : APIRoute) : Bool := !r.params.isEmpty && r.statusKey != "422"
 def parameters (r : APIRoute) : List Parameter :=
   dedupParams ((r.params.filter fun p => p.source != .body && p.include_in_schema).map ParamInfo.toParameter)
 
+/-- The body parameters, each name once (`flat_dependant.body_params`, as
+the body model's fields). -/
+def bodyParams (r : APIRoute) : List ParamInfo :=
+  (r.params.filter (·.source == .body)).foldl (fun acc p => if acc.any (·.name == p.name) then acc else acc ++ [p]) []
+
+/-- Whether the body is read by members (`embed_body_fields`), and so has a
+model of its own. -/
+def embedsBody (r : APIRoute) : Bool := r.bodyParams.any (·.embed)
+
+/-- `Body_<unique_id>`: the body model's name. -/
+def bodyModelName (r : APIRoute) : String := "Body_" ++ r.operationId (r.methods.headD "GET")
+
+/-- The body's media type: the one its parameters share, else the form or
+JSON default. -/
+def bodyMediaType (r : APIRoute) : String :=
+  match (r.bodyParams.map (·.media_type)).eraseDups with
+  | [m] => m
+  | _ => if r.bodyParams.any (isFormMediaType ·.media_type) then "application/x-www-form-urlencoded"
+    else "application/json"
+
+/-- The body model (`create_model("Body_...", **fields)`): each body parameter
+a property under its alias, with its own title and default. -/
+def bodyModel (r : APIRoute) : OSchema :=
+  .object r.bodyModelName
+    (r.bodyParams.map fun p => (p.alias, fieldSchema p.schema
+      { title := p.title, description := p.description, default := p.default, extra := p.extra } (fieldTitle p.alias)))
+    ((r.bodyParams.filter (·.required)).map (·.alias))
+
 /-- The request body, for a method that has one. -/
 def requestBody (r : APIRoute) (method : String) : Option RequestBody :=
   if methodsWithBody.contains method then
-    match r.params.filter (·.source == .body) with
+    match r.bodyParams with
     | b :: _ =>
-      some { required := b.required
-             content := { mediaType := b.media_type
-                          schema := fieldSchema b.schema { title := b.title, description := b.description }
-                            (fieldTitle b.alias) } }
+      if r.embedsBody then
+        some { required := r.bodyParams.any (·.required)
+               content := { mediaType := r.bodyMediaType, schema := .ref r.bodyModelName } }
+      else
+        some { required := b.required
+               content := { mediaType := b.media_type
+                            schema := fieldSchema b.schema { title := b.title, description := b.description, extra := b.extra }
+                              (fieldTitle b.alias) } }
     | [] => none
   else none
+
+/-- The body model's definition, for a route whose body is embedded. -/
+def bodyDefinitions (r : APIRoute) : List (String × OSchema) :=
+  if r.embedsBody then [(r.bodyModelName, r.bodyModel)] else []
 
 /-- The main response's schema: the response model's, or `{}`. -/
 def responseSchema (r : APIRoute) (method : String) : OSchema :=
@@ -389,7 +425,7 @@ def openapiPaths (routes : List APIRoute) : List (String × String × Operation)
 sorting. -/
 def openapiDefinitions (routes : List APIRoute) : List (String × OSchema) :=
   let included := routes.filter (·.include_in_schema)
-  included.flatMap (fun r => r.schemas.flatMap OSchema.models) ++
+  included.flatMap (fun r => r.schemas.flatMap OSchema.models ++ r.bodyDefinitions) ++
     (if included.any APIRoute.validates then validationDefinitions else [])
 
 /-- `components.securitySchemes`: every scheme the included routes use, by

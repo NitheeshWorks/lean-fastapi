@@ -30,6 +30,7 @@ inductive Wrapper where
   | header
   | cookie
   | body
+  | form
   deriving DecidableEq, Repr, Inhabited
 
 /-- What `analyze_param` looks at. -/
@@ -57,7 +58,7 @@ def Wrapper.source : Wrapper → Source
   | .path => .path
   | .header => .header
   | .cookie => .cookie
-  | .body => .body
+  | .body | .form => .body
 
 /-- The Python class name of a wrapper, for messages. -/
 def Wrapper.className : Wrapper → String
@@ -67,6 +68,7 @@ def Wrapper.className : Wrapper → String
   | .header => "Header"
   | .cookie => "Cookie"
   | .body => "Body"
+  | .form => "Form"
 
 /-- **`analyze_param`'s rule.** -/
 def inferParam (s : ParamShape) : ParamKind :=
@@ -116,13 +118,21 @@ set_option linter.unusedVariables false in
     (alias : Option String := none) (title : Option String := none) (description : Option String := none) :
     Type := α
 
+set_option linter.unusedVariables false in
+/-- `Annotated[α, Form(...)]`: a field of an `application/x-www-form-urlencoded`
+body. `json_schema_extra` adds members to its schema. -/
+@[reducible] def Form (α : Type) (alias : Option String := none) (title : Option String := none)
+    (description : Option String := none) (media_type : String := "application/x-www-form-urlencoded")
+    (json_schema_extra : List (String × LeanJson.Json) := []) : Type := α
+
 /-! ## The parameter of a wrapper -/
 
 /-- The `Param` of an argument, from its source and its wrapper's metadata. -/
 def mkParam {α : Type} (source : Source) (name : String) (default : Option α) (alias : Option String := none)
     (convert_underscores : Bool := true) (title : Option String := none) (description : Option String := none)
     (deprecated : Bool := false) (include_in_schema : Bool := true) (embed : Bool := false)
-    (media_type : String := "application/json") : Param α where
+    (media_type : String := "application/json") (json_schema_extra : List (String × LeanJson.Json) := []) :
+    Param α where
   source
   name
   alias := if source = .header then headerParamAlias name alias convert_underscores else alias.getD name
@@ -133,6 +143,7 @@ def mkParam {α : Type} (source : Source) (name : String) (default : Option α) 
   deprecated
   include_in_schema
   media_type
+  extra := json_schema_extra
 
 /-! ## Dependencies -/
 

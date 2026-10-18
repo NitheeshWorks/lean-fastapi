@@ -15,7 +15,7 @@ tests/Conformance.lean (`fixtures`). Every request is replayed in Lean with
 the exact headers TestClient sent, and the status, the response headers and
 the body are compared byte for byte.
 """
-import importlib, json, random, sys, warnings
+import importlib, json, random, sys, types, warnings
 from pathlib import Path
 from typing import Annotated
 
@@ -24,13 +24,22 @@ HERE = Path(__file__).resolve().parent
 UPSTREAM = HERE.parents[2] / "upstream-spec" / "fastapi"
 sys.path.insert(0, str(UPSTREAM))
 
-from fastapi import FastAPI, Header, HTTPException  # noqa: E402
+from fastapi import Depends, FastAPI, Header, HTTPException, Security  # noqa: E402
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
+
+# The upstream test modules import inline_snapshot, which only their asserts use.
+sys.modules.setdefault("inline_snapshot", types.SimpleNamespace(snapshot=lambda x=None: x))
 
 
 def tutorial(path):
     return importlib.import_module("docs_src." + path).app
+
+
+def upstream_test(name):
+    """The app an upstream test module defines (tests/<name>.py)."""
+    return importlib.import_module("tests." + name).app
 
 
 # The milestone 1 demo, twin of demo/Example.lean.
@@ -137,6 +146,208 @@ async def dict_body(d: dict[str, int]):
     return {"keys": len(d)}
 
 
+# Exit order of yield dependencies, twin of tests/apps/DependencyYield.lean.
+deps_yield = FastAPI()
+events = []
+
+
+def dep_a():
+    events.append("a enter")
+    try:
+        yield "a"
+    except Exception:
+        events.append("a exit error")
+        raise
+    else:
+        events.append("a exit ok")
+
+
+def dep_b(a: Annotated[str, Depends(dep_a)]):
+    events.append("b enter")
+    try:
+        yield a + "b"
+    except Exception:
+        events.append("b exit error")
+        raise
+    else:
+        events.append("b exit ok")
+
+
+def dep_f():
+    events.append("f enter")
+    try:
+        yield "f"
+    except Exception:
+        events.append("f exit error")
+        raise
+    else:
+        events.append("f exit ok")
+
+
+@deps_yield.get("/run")
+def run(b: Annotated[str, Depends(dep_b)], f: Annotated[str, Depends(dep_f, scope="function")]):
+    events.append("endpoint")
+    return {"b": b, "f": f}
+
+
+@deps_yield.get("/fail")
+def fail(b: Annotated[str, Depends(dep_b)], f: Annotated[str, Depends(dep_f, scope="function")]):
+    events.append(f"endpoint {b} {f}")
+    raise HTTPException(status_code=418, detail="teapot")
+
+
+@deps_yield.get("/invalid")
+def invalid(b: Annotated[str, Depends(dep_b)], n: int):
+    events.append(f"endpoint {b} {n}")
+    return {"n": n}
+
+
+@deps_yield.get("/events")
+def get_events():
+    out = list(events)
+    events.clear()
+    return out
+
+
+# tests/test_dependency_overrides.py without its APIRouter, twin of
+# tests/apps/DependencyOverrides.lean; two apps, one per override.
+def overrides_app(override):
+    app = FastAPI()
+
+    async def common_parameters(q: str, skip: int = 0, limit: int = 100):
+        return {"q": q, "skip": skip, "limit": limit}
+
+    @app.get("/main-depends/")
+    async def main_depends(commons: dict = Depends(common_parameters)):
+        return {"in": "main-depends", "params": commons}
+
+    @app.get("/decorator-depends/", dependencies=[Depends(common_parameters)])
+    async def decorator_depends():
+        return {"in": "decorator-depends"}
+
+    async def overrider_dependency_simple(q: str | None = None):
+        return {"q": q, "skip": 5, "limit": 10}
+
+    async def overrider_sub_dependency(k: str):
+        return {"k": k}
+
+    async def overrider_dependency_with_sub(msg: dict = Depends(overrider_sub_dependency)):
+        return msg
+
+    if override:
+        app.dependency_overrides[common_parameters] = {
+            "simple": overrider_dependency_simple, "with_sub": overrider_dependency_with_sub}[override]
+    return app
+
+
+# docs_src/security/tutorial005_an_py310.py with its argon2 hash and its JWT
+# replaced by fakes, twin of tests/apps/Security005.lean.
+security_005 = FastAPI()
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class User(BaseModel):
+    username: str
+    email: str | None = None
+    full_name: str | None = None
+    disabled: bool | None = None
+
+
+class UserInDB(User):
+    hashed_password: str
+
+
+fake_users_db_005 = {
+    "johndoe": {"username": "johndoe", "full_name": "John Doe", "email": "johndoe@example.com",
+                "hashed_password": "fakehashedsecret", "disabled": False},
+    "alice": {"username": "alice", "full_name": "Alice Chains", "email": "alicechains@example.com",
+              "hashed_password": "fakehashedsecret2", "disabled": True},
+}
+
+oauth2_scheme_005 = OAuth2PasswordBearer(
+    tokenUrl="token",
+    scopes={"me": "Read information about the current user.", "items": "Read items."},
+)
+
+
+def get_user_005(db, username: str):
+    if username in db:
+        return UserInDB(**db[username])
+
+
+def authenticate_user_005(db, username, password):
+    user = get_user_005(db, username)
+    if not user or "fakehashed" + password != user.hashed_password:
+        return False
+    return user
+
+
+async def get_current_user_005(security_scopes: SecurityScopes, token: Annotated[str, Depends(oauth2_scheme_005)]):
+    if security_scopes.scopes:
+        authenticate_value = f'Bearer scope="{security_scopes.scope_str}"'
+    else:
+        authenticate_value = "Bearer"
+    credentials_exception = HTTPException(
+        status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": authenticate_value})
+    parts = token.split("|")
+    if len(parts) != 2:
+        raise credentials_exception
+    username, scope = parts
+    token_scopes = scope.split(" ")
+    user = get_user_005(fake_users_db_005, username=username)
+    if user is None:
+        raise credentials_exception
+    for scope in security_scopes.scopes:
+        if scope not in token_scopes:
+            raise HTTPException(status_code=401, detail="Not enough permissions",
+                                headers={"WWW-Authenticate": authenticate_value})
+    return user
+
+
+async def get_current_active_user_005(current_user: Annotated[User, Security(get_current_user_005, scopes=["me"])]):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@security_005.post("/token")
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+    user = authenticate_user_005(fake_users_db_005, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    return Token(access_token=user.username + "|" + " ".join(form_data.scopes), token_type="bearer")
+
+
+@security_005.get("/users/me/")
+async def read_users_me(current_user: Annotated[User, Depends(get_current_active_user_005)]) -> User:
+    return current_user
+
+
+@security_005.get("/users/me/items/")
+async def read_own_items(current_user: Annotated[User, Security(get_current_active_user_005, scopes=["items"])]):
+    return [{"item_id": "Foo", "owner": current_user.username}]
+
+
+@security_005.get("/status/")
+async def read_system_status(current_user: Annotated[User, Depends(get_current_user_005)]):
+    return {"status": "ok"}
+
+
+# tests/test_dependency_cache.py resets its counter in each test; here a
+# request does, outside the schema (twin: the Lean app's /reset).
+dependency_cache = upstream_test("test_dependency_cache")
+_cache_module = sys.modules["tests.test_dependency_cache"]
+
+
+@dependency_cache.post("/reset", include_in_schema=False)
+def reset_counter():
+    _cache_module.counter_holder["counter"] = 0
+
+
 FIXTURES = {
     "first_steps_001": tutorial("first_steps.tutorial001_py310"),
     "path_params_002": tutorial("path_params.tutorial002_py310"),
@@ -157,10 +368,46 @@ FIXTURES = {
     "demo": demo,
     "response_model": rm,
     "bench": bench_app,
+    "dependencies_001": tutorial("dependencies.tutorial001_an_py310"),
+    "dependencies_002": tutorial("dependencies.tutorial002_an_py310"),
+    "dependencies_004": tutorial("dependencies.tutorial004_an_py310"),
+    "dependencies_005": tutorial("dependencies.tutorial005_an_py310"),
+    "dependencies_006": tutorial("dependencies.tutorial006_an_py310"),
+    "dependencies_008b": tutorial("dependencies.tutorial008b_an_py310"),
+    "dependencies_008c": tutorial("dependencies.tutorial008c_an_py310"),
+    "dependencies_008d": tutorial("dependencies.tutorial008d_an_py310"),
+    "dependencies_008e": tutorial("dependencies.tutorial008e_an_py310"),
+    "dependencies_011": tutorial("dependencies.tutorial011_an_py310"),
+    "dependencies_012": tutorial("dependencies.tutorial012_an_py310"),
+    "security_001": tutorial("security.tutorial001_an_py310"),
+    "security_002": tutorial("security.tutorial002_an_py310"),
+    "security_003": tutorial("security.tutorial003_an_py310"),
+    "security_005": security_005,
+    "security_006": tutorial("security.tutorial006_an_py310"),
+    "security_007": tutorial("security.tutorial007_an_py310"),
+    "dependency_cache": dependency_cache,
+    "dependency_duplicates": upstream_test("test_dependency_duplicates"),
+    "dependency_yield": deps_yield,
+    "dependency_overrides": overrides_app(None),
+    "dependency_overrides_simple": overrides_app("simple"),
+    "dependency_overrides_with_sub": overrides_app("with_sub"),
+    "security_api_key_query": upstream_test("test_security_api_key_query"),
+    "security_api_key_header_optional": upstream_test("test_security_api_key_header_optional"),
+    "security_api_key_cookie": upstream_test("test_security_api_key_cookie"),
+    "security_http_base": upstream_test("test_security_http_base"),
+    "security_http_bearer_optional": upstream_test("test_security_http_bearer_optional"),
+    "security_http_digest": upstream_test("test_security_http_digest"),
+    "security_http_basic_realm": upstream_test("test_security_http_basic_realm"),
+    "security_openid_connect_optional": upstream_test("test_security_openid_connect_optional"),
+    "security_oauth2_authorization_code_bearer": upstream_test("test_security_oauth2_authorization_code_bearer"),
 }
 
 J = {"content-type": "application/json"}
+F = {"content-type": "application/x-www-form-urlencoded"}
 T = "tests/test_tutorial/"
+TD = T + "test_dependencies/"
+TS = T + "test_security/"
+BASIC = "Basic am9objpzZWNyZXQ="  # john:secret
 # (fixture, upstream test, method, url, extra headers, body)
 SCENARIOS = [
     ("first_steps_001", T + "test_first_steps/test_tutorial001_tutorial002_tutorial003.py::test_get_path", "GET", "/", {}, None),
@@ -265,6 +512,150 @@ SCENARIOS = [
     ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":Infinity}'),
     ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":1e400}'),
     ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":12345678901234567890}'),
+    # milestone 3: dependencies
+    ("dependencies_001", TD + "test_tutorial001_tutorial001_02.py::test_get", "GET", "/items", {}, None),
+    ("dependencies_001", TD + "test_tutorial001_tutorial001_02.py::test_get", "GET", "/items?q=foo", {}, None),
+    ("dependencies_001", TD + "test_tutorial001_tutorial001_02.py::test_get", "GET", "/items?q=foo&skip=5", {}, None),
+    ("dependencies_001", TD + "test_tutorial001_tutorial001_02.py::test_get", "GET", "/items?q=foo&skip=5&limit=30", {}, None),
+    ("dependencies_001", TD + "test_tutorial001_tutorial001_02.py::test_get", "GET", "/users", {}, None),
+    ("dependencies_001", "tests/test_dependency_class.py (errors of a dependency's parameters)", "GET", "/items/?skip=x&limit=y", {}, None),
+    ("dependencies_002", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items", {}, None),
+    ("dependencies_002", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items?q=foo", {}, None),
+    ("dependencies_002", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items?q=foo&skip=1", {}, None),
+    ("dependencies_002", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items?q=bar&limit=2", {}, None),
+    ("dependencies_002", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items?q=bar&skip=1&limit=1", {}, None),
+    ("dependencies_002", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items?limit=1&q=bar&skip=1", {}, None),
+    ("dependencies_004", TD + "test_tutorial002_tutorial003_tutorial004.py::test_get", "GET", "/items/?q=bar&skip=1&limit=1", {}, None),
+    ("dependencies_005", TD + "test_tutorial005.py::test_get", "GET", "/items", {}, None),
+    ("dependencies_005", TD + "test_tutorial005.py::test_get", "GET", "/items/?q=foo", {}, None),
+    ("dependencies_005", TD + "test_tutorial005.py::test_get", "GET", "/items/", {"cookie": "last_query=cookiequery"}, None),
+    ("dependencies_005", TD + "test_tutorial005.py::test_get", "GET", "/items/?q=foo", {"cookie": "last_query=cookiequery"}, None),
+    ("dependencies_006", TD + "test_tutorial006.py::test_get_no_headers", "GET", "/items/", {}, None),
+    ("dependencies_006", TD + "test_tutorial006.py::test_get_invalid_one_header", "GET", "/items/", {"X-Token": "invalid"}, None),
+    ("dependencies_006", TD + "test_tutorial006.py::test_get_invalid_second_header", "GET", "/items/", {"X-Token": "fake-super-secret-token", "X-Key": "invalid"}, None),
+    ("dependencies_006", TD + "test_tutorial006.py::test_get_valid_headers", "GET", "/items/", {"X-Token": "fake-super-secret-token", "X-Key": "fake-super-secret-key"}, None),
+    ("dependencies_008b", TD + "test_tutorial008b.py::test_get_no_item", "GET", "/items/foo", {}, None),
+    ("dependencies_008b", TD + "test_tutorial008b.py::test_owner_error", "GET", "/items/plumbus", {}, None),
+    ("dependencies_008b", TD + "test_tutorial008b.py::test_get_item", "GET", "/items/portal-gun", {}, None),
+    ("dependencies_008c", TD + "test_tutorial008c.py::test_get_no_item", "GET", "/items/foo", {}, None),
+    ("dependencies_008c", TD + "test_tutorial008c.py::test_get", "GET", "/items/plumbus", {}, None),
+    ("dependencies_008c", TD + "test_tutorial008c.py::test_fastapi_error", "GET", "/items/portal-gun", {}, None),
+    ("dependencies_008d", TD + "test_tutorial008d.py::test_get_no_item", "GET", "/items/foo", {}, None),
+    ("dependencies_008d", TD + "test_tutorial008d.py::test_get", "GET", "/items/plumbus", {}, None),
+    ("dependencies_008d", TD + "test_tutorial008d.py::test_internal_error", "GET", "/items/portal-gun", {}, None),
+    ("dependencies_008e", TD + "test_tutorial008e.py::test_get_users_me", "GET", "/users/me", {}, None),
+    ("dependencies_011", TD + "test_tutorial011.py::test_get", "GET", "/query-checker/", {}, None),
+    ("dependencies_011", TD + "test_tutorial011.py::test_get", "GET", "/query-checker/?q=qwerty", {}, None),
+    ("dependencies_011", TD + "test_tutorial011.py::test_get", "GET", "/query-checker/?q=foobar", {}, None),
+    ("dependencies_012", TD + "test_tutorial012.py::test_get_no_headers_items", "GET", "/items/", {}, None),
+    ("dependencies_012", TD + "test_tutorial012.py::test_get_no_headers_users", "GET", "/users/", {}, None),
+    ("dependencies_012", TD + "test_tutorial012.py::test_get_invalid_one_header_items", "GET", "/items/", {"X-Token": "invalid"}, None),
+    ("dependencies_012", TD + "test_tutorial012.py::test_get_invalid_second_header_users", "GET", "/users/", {"X-Token": "fake-super-secret-token", "X-Key": "invalid"}, None),
+    ("dependencies_012", TD + "test_tutorial012.py::test_get_valid_headers_items", "GET", "/items/", {"X-Token": "fake-super-secret-token", "X-Key": "fake-super-secret-key"}, None),
+    ("dependencies_012", TD + "test_tutorial012.py::test_get_valid_headers_users", "GET", "/users/", {"X-Token": "fake-super-secret-token", "X-Key": "fake-super-secret-key"}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_normal_counter", "POST", "/reset", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_normal_counter", "GET", "/counter/", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_normal_counter", "GET", "/counter/", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_sub_counter", "POST", "/reset", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_sub_counter", "GET", "/sub-counter/", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_sub_counter", "GET", "/sub-counter/", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_sub_counter_no_cache", "POST", "/reset", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_sub_counter_no_cache", "GET", "/sub-counter-no-cache/", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_sub_counter_no_cache", "GET", "/sub-counter-no-cache/", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_security_cache", "POST", "/reset", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_security_cache", "GET", "/scope-counter", {}, None),
+    ("dependency_cache", "tests/test_dependency_cache.py::test_security_cache", "GET", "/scope-counter", {}, None),
+    ("dependency_duplicates", "tests/test_dependency_duplicates.py::test_no_duplicates_invalid", "POST", "/no-duplicates", J, '{"item": {"data": "myitem"}}'),
+    ("dependency_duplicates", "tests/test_dependency_duplicates.py::test_no_duplicates", "POST", "/no-duplicates", J, '{"item": {"data": "myitem"}, "item2": {"data": "myitem2"}}'),
+    ("dependency_duplicates", "tests/test_dependency_duplicates.py::test_duplicates", "POST", "/with-duplicates", J, '{"data": "myitem"}'),
+    ("dependency_duplicates", "tests/test_dependency_duplicates.py::test_sub_duplicates", "POST", "/with-duplicates-sub", J, '{"data": "myitem"}'),
+    ("dependency_duplicates", "tests/test_dependency_duplicates.py (errors of both uses)", "POST", "/with-duplicates", J, '{}'),
+    ("dependency_duplicates", "tests/test_dependency_duplicates.py (errors of both uses)", "POST", "/no-duplicates", J, '{}'),
+    ("dependency_yield", "tests/test_dependency_yield_scope.py (exit order)", "GET", "/run", {}, None),
+    ("dependency_yield", "tests/test_dependency_yield_scope.py (exit order)", "GET", "/events", {}, None),
+    ("dependency_yield", "tests/test_dependency_contextmanager.py (an exception reaches every exit)", "GET", "/fail", {}, None),
+    ("dependency_yield", "tests/test_dependency_contextmanager.py (an exception reaches every exit)", "GET", "/events", {}, None),
+    ("dependency_yield", "tests/test_dependency_contextmanager.py (a validation error reaches every exit)", "GET", "/invalid?n=x", {}, None),
+    ("dependency_yield", "tests/test_dependency_contextmanager.py (a validation error reaches every exit)", "GET", "/events", {}, None),
+    ("dependency_overrides", "tests/test_dependency_overrides.py::test_main_depends", "GET", "/main-depends/", {}, None),
+    ("dependency_overrides", "tests/test_dependency_overrides.py::test_main_depends_q_foo", "GET", "/main-depends/?q=foo", {}, None),
+    ("dependency_overrides", "tests/test_dependency_overrides.py::test_main_depends_q_foo_skip_100_limit_200", "GET", "/main-depends/?q=foo&skip=100&limit=200", {}, None),
+    ("dependency_overrides", "tests/test_dependency_overrides.py::test_decorator_depends", "GET", "/decorator-depends/", {}, None),
+    ("dependency_overrides", "tests/test_dependency_overrides.py::test_decorator_depends_q_foo", "GET", "/decorator-depends/?q=foo", {}, None),
+    ("dependency_overrides_simple", "tests/test_dependency_overrides.py::test_override_simple", "GET", "/main-depends/", {}, None),
+    ("dependency_overrides_simple", "tests/test_dependency_overrides.py::test_override_simple", "GET", "/main-depends/?q=foo", {}, None),
+    ("dependency_overrides_simple", "tests/test_dependency_overrides.py::test_override_simple", "GET", "/decorator-depends/", {}, None),
+    ("dependency_overrides_with_sub", "tests/test_dependency_overrides.py::test_override_with_sub_main_depends", "GET", "/main-depends/", {}, None),
+    ("dependency_overrides_with_sub", "tests/test_dependency_overrides.py::test_override_with_sub_main_depends_k_bar", "GET", "/main-depends/?k=bar", {}, None),
+    ("dependency_overrides_with_sub", "tests/test_dependency_overrides.py::test_override_with_sub_decorator_depends", "GET", "/decorator-depends/?k=bar", {}, None),
+    # milestone 3: security
+    ("security_001", TS + "test_tutorial001.py::test_no_token", "GET", "/items", {}, None),
+    ("security_001", TS + "test_tutorial001.py::test_token", "GET", "/items/", {"Authorization": "Bearer testtoken"}, None),
+    ("security_001", TS + "test_tutorial001.py::test_incorrect_token", "GET", "/items/", {"Authorization": "Notexistent testtoken"}, None),
+    ("security_002", TS + "test_tutorial002.py::test_no_token", "GET", "/users/me", {}, None),
+    ("security_002", TS + "test_tutorial002.py::test_token", "GET", "/users/me", {"Authorization": "Bearer testtoken"}, None),
+    ("security_003", TS + "test_tutorial003.py::test_login", "POST", "/token", F, "username=johndoe&password=secret"),
+    ("security_003", TS + "test_tutorial003.py::test_login_incorrect_password", "POST", "/token", F, "username=johndoe&password=incorrect"),
+    ("security_003", TS + "test_tutorial003.py::test_login_incorrect_username", "POST", "/token", F, "username=foo&password=secret"),
+    ("security_003", TS + "test_tutorial003.py (missing form fields)", "POST", "/token", F, "grant_type=wrong&scope="),
+    ("security_003", TS + "test_tutorial003.py (form without its content type)", "POST", "/token", {}, "username=johndoe&password=secret"),
+    ("security_003", TS + "test_tutorial003.py (percent-encoded form)", "POST", "/token", F, "username=john%64oe&password=se+cret&&x"),
+    ("security_003", TS + "test_tutorial003.py (percent-encoded form)", "POST", "/token", F, "username=johndoe&password=secret&username=alice"),
+    ("security_003", TS + "test_tutorial003.py::test_no_token", "GET", "/users/me", {}, None),
+    ("security_003", TS + "test_tutorial003.py::test_token", "GET", "/users/me", {"Authorization": "Bearer johndoe"}, None),
+    ("security_003", TS + "test_tutorial003.py::test_incorrect_token", "GET", "/users/me", {"Authorization": "Bearer nonexistent"}, None),
+    ("security_003", TS + "test_tutorial003.py::test_incorrect_token_type", "GET", "/users/me", {"Authorization": "Notexistent testtoken"}, None),
+    ("security_003", TS + "test_tutorial003.py::test_inactive_user", "GET", "/users/me", {"Authorization": "Bearer alice"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_login", "POST", "/token", F, "username=johndoe&password=secret&scope=me items"),
+    ("security_005", TS + "test_tutorial005.py::test_login_incorrect_password", "POST", "/token", F, "username=johndoe&password=incorrect"),
+    ("security_005", TS + "test_tutorial005.py::test_no_token", "GET", "/users/me/", {}, None),
+    ("security_005", TS + "test_tutorial005.py::test_token", "GET", "/users/me/", {"Authorization": "Bearer johndoe|me items"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_incorrect_token", "GET", "/users/me/", {"Authorization": "Bearer nonexistent"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_token_no_scope", "GET", "/users/me/", {"Authorization": "Bearer johndoe|"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_token_inexistent_user", "GET", "/users/me/", {"Authorization": "Bearer bob|me"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_token_inactive_user", "GET", "/users/me/", {"Authorization": "Bearer alice|me"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_read_items", "GET", "/users/me/items/", {"Authorization": "Bearer johndoe|me items"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_read_items", "GET", "/users/me/items/", {"Authorization": "Bearer johndoe|me"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_read_system_status", "GET", "/status/", {"Authorization": "Bearer johndoe|"}, None),
+    ("security_005", TS + "test_tutorial005.py::test_read_system_status_no_token", "GET", "/status/", {}, None),
+    ("security_006", TS + "test_tutorial006.py::test_security_http_basic", "GET", "/users/me", {"Authorization": BASIC}, None),
+    ("security_006", TS + "test_tutorial006.py::test_security_http_basic_no_credentials", "GET", "/users/me", {}, None),
+    ("security_006", TS + "test_tutorial006.py::test_security_http_basic_invalid_credentials", "GET", "/users/me", {"Authorization": "Basic notabase64token"}, None),
+    ("security_006", TS + "test_tutorial006.py::test_security_http_basic_non_basic_credentials", "GET", "/users/me", {"Authorization": "Basic am9obnNlY3JldA=="}, None),
+    ("security_006", TS + "test_tutorial006.py (padding and stray characters)", "GET", "/users/me", {"Authorization": "Basic am9o*bjpz ZWNyZXQ"}, None),
+    ("security_006", TS + "test_tutorial006.py (padding ends the data)", "GET", "/users/me", {"Authorization": "Basic YTpi==Yzpk"}, None),
+    ("security_006", TS + "test_tutorial006.py (non-ASCII credentials)", "GET", "/users/me", {"Authorization": "Basic w6k6dg=="}, None),
+    ("security_006", TS + "test_tutorial006.py (scheme in another case)", "GET", "/users/me", {"Authorization": "bAsIc am9objpzZWNyZXQ="}, None),
+    ("security_007", TS + "test_tutorial007.py::test_security_http_basic", "GET", "/users/me", {"Authorization": "Basic c3RhbmxleWpvYnNvbjpzd29yZGZpc2g="}, None),
+    ("security_007", TS + "test_tutorial007.py::test_security_http_basic_invalid_credentials", "GET", "/users/me", {"Authorization": "Basic notabase64token"}, None),
+    ("security_007", TS + "test_tutorial007.py::test_security_http_basic_non_basic_credentials", "GET", "/users/me", {"Authorization": "Basic am9obnNlY3JldA=="}, None),
+    ("security_007", TS + "test_tutorial007.py::test_security_http_basic_invalid_username", "GET", "/users/me", {"Authorization": "Basic YWxpY2U6c3dvcmRmaXNo"}, None),
+    ("security_api_key_query", "tests/test_security_api_key_query.py::test_security_api_key", "GET", "/users/me?key=secret", {}, None),
+    ("security_api_key_query", "tests/test_security_api_key_query.py::test_security_api_key_no_key", "GET", "/users/me", {}, None),
+    ("security_api_key_query", "tests/test_security_api_key_query.py (empty key)", "GET", "/users/me?key=", {}, None),
+    ("security_api_key_header_optional", "tests/test_security_api_key_header_optional.py::test_security_api_key", "GET", "/users/me", {"key": "secret"}, None),
+    ("security_api_key_header_optional", "tests/test_security_api_key_header_optional.py::test_security_api_key_no_key", "GET", "/users/me", {}, None),
+    ("security_api_key_cookie", "tests/test_security_api_key_cookie.py::test_security_api_key", "GET", "/users/me", {"cookie": "key=secret"}, None),
+    ("security_api_key_cookie", "tests/test_security_api_key_cookie.py::test_security_api_key_no_key", "GET", "/users/me", {}, None),
+    ("security_http_base", "tests/test_security_http_base.py::test_security_http_base", "GET", "/users/me", {"Authorization": "Other foobar"}, None),
+    ("security_http_base", "tests/test_security_http_base.py::test_security_http_base_no_credentials", "GET", "/users/me", {}, None),
+    ("security_http_base", "tests/test_security_http_base.py (another scheme is accepted)", "GET", "/users/me", {"Authorization": "Bearer  foobar "}, None),
+    ("security_http_base", "tests/test_security_http_base.py (no credentials after the scheme)", "GET", "/users/me", {"Authorization": "Other"}, None),
+    ("security_http_bearer_optional", "tests/test_security_http_bearer_optional.py::test_security_http_bearer", "GET", "/users/me", {"Authorization": "Bearer foobar"}, None),
+    ("security_http_bearer_optional", "tests/test_security_http_bearer_optional.py::test_security_http_bearer_no_credentials", "GET", "/users/me", {}, None),
+    ("security_http_bearer_optional", "tests/test_security_http_bearer_optional.py::test_security_http_bearer_incorrect_scheme_credentials", "GET", "/users/me", {"Authorization": "Basic notreally"}, None),
+    ("security_http_digest", "tests/test_security_http_digest.py::test_security_http_digest", "GET", "/users/me", {"Authorization": "Digest foobar"}, None),
+    ("security_http_digest", "tests/test_security_http_digest.py::test_security_http_digest_no_credentials", "GET", "/users/me", {}, None),
+    ("security_http_digest", "tests/test_security_http_digest.py::test_security_http_digest_incorrect_scheme_credentials", "GET", "/users/me", {"Authorization": "Other invalidauthorization"}, None),
+    ("security_http_basic_realm", "tests/test_security_http_basic_realm.py::test_security_http_basic", "GET", "/users/me", {"Authorization": BASIC}, None),
+    ("security_http_basic_realm", "tests/test_security_http_basic_realm.py::test_security_http_basic_no_credentials", "GET", "/users/me", {}, None),
+    ("security_http_basic_realm", "tests/test_security_http_basic_realm.py::test_security_http_basic_invalid_credentials", "GET", "/users/me", {"Authorization": "Basic notabase64token"}, None),
+    ("security_openid_connect_optional", "tests/test_security_openid_connect_optional.py::test_security_oauth2", "GET", "/users/me", {"Authorization": "Bearer footokenbar"}, None),
+    ("security_openid_connect_optional", "tests/test_security_openid_connect_optional.py::test_security_oauth2_password_other_header", "GET", "/users/me", {"Authorization": "Other footokenbar"}, None),
+    ("security_openid_connect_optional", "tests/test_security_openid_connect_optional.py::test_security_oauth2_password_bearer_no_header", "GET", "/users/me", {}, None),
+    ("security_oauth2_authorization_code_bearer", "tests/test_security_oauth2_authorization_code_bearer.py::test_no_token", "GET", "/items", {}, None),
+    ("security_oauth2_authorization_code_bearer", "tests/test_security_oauth2_authorization_code_bearer.py::test_incorrect_token", "GET", "/items/", {"Authorization": "Non-existent testtoken"}, None),
+    ("security_oauth2_authorization_code_bearer", "tests/test_security_oauth2_authorization_code_bearer.py::test_token", "GET", "/items/", {"Authorization": "Bearer testtoken"}, None),
 ]
 
 

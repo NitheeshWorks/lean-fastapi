@@ -25,7 +25,7 @@ namespace LeanFastapi
 open LeanJson (Json)
 open LeanStarlette (Request Response)
 
-export LeanStarlette (Request Response JSONResponse HTMLResponse PlainTextResponse RedirectResponse)
+export LeanStarlette (Request Response JSONResponse HTMLResponse PlainTextResponse RedirectResponse Exception)
 export LeanJson (Json)
 export LeanPydantic (Decimal Model)
 
@@ -34,15 +34,15 @@ namespace FastAPI
 /-- `FastAPI(debug=False, title="FastAPI", summary=None, description="",
 version="0.1.0", openapi_url="/openapi.json", docs_url="/docs",
 redoc_url="/redoc", swagger_ui_oauth2_redirect_url="/docs/oauth2-redirect",
-swagger_ui_parameters=None)`. -/
+swagger_ui_parameters=None, dependencies=None)`. -/
 def new (debug : Bool := false) (title : String := "FastAPI") (summary : Option String := none)
     (description : String := "") (version : String := "0.1.0")
     (openapi_url : Option String := some "/openapi.json") (docs_url : Option String := some "/docs")
     (redoc_url : Option String := some "/redoc")
     (swagger_ui_oauth2_redirect_url : Option String := some "/docs/oauth2-redirect")
-    (swagger_ui_parameters : List (String × Json) := []) : FastAPI :=
+    (swagger_ui_parameters : List (String × Json) := []) (dependencies : List Dependency := []) : FastAPI :=
   { debug, title, summary, description, version, openapi_url, docs_url, redoc_url,
-    swagger_ui_oauth2_redirect_url, swagger_ui_parameters }
+    swagger_ui_oauth2_redirect_url, swagger_ui_parameters, dependencies }
 
 /-- The application with its declared path operations. -/
 def complete (app : FastAPI) (routes : DeclaredRoutes app := by declared_routes) : FastAPI :=

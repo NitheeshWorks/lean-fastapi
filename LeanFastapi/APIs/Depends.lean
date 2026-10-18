@@ -69,6 +69,7 @@ def wrapperOf (ty : Expr) : Wrapper × Array Expr :=
   | some ``LeanFastapi.Header => (.header, args)
   | some ``LeanFastapi.Cookie => (.cookie, args)
   | some ``LeanFastapi.Body => (.body, args)
+  | some ``LeanFastapi.Form => (.form, args)
   | _ => (.none, #[ty])
 
 /-- Whether a type is FastAPI's non-scalar field, read from the body: a
@@ -106,13 +107,19 @@ def paramExpr (source : Source) (name : String) (w : Wrapper) (args : Array Expr
         toExpr false, toExpr "application/json")
     | .body => (arg 3 ns, toExpr true, arg 4 ns, arg 5 ns, toExpr false, toExpr true, arg 1 (toExpr false),
         arg 2 (toExpr "application/json"))
+    | .form => (arg 1 ns, toExpr true, arg 2 ns, arg 3 ns, toExpr false, toExpr true, toExpr true,
+        arg 4 (toExpr "application/x-www-form-urlencoded"))
     | .none => (ns, toExpr true, ns, ns, toExpr false, toExpr true, toExpr false, toExpr "application/json")
+  let extra ← match w with
+    | .form => pure (args.getD 5 (← mkAppOptM ``List.nil #[some (← mkAppM ``Prod #[Lean.mkConst ``String,
+        Lean.mkConst ``LeanJson.Json])]))
+    | _ => mkAppOptM ``List.nil #[some (← mkAppM ``Prod #[Lean.mkConst ``String, Lean.mkConst ``LeanJson.Json])]
   let dflt ← match default with
     | some d => mkAppOptM ``Option.some #[some α, some d]
     | none => mkAppOptM ``Option.none #[some α]
   mkAppOptM ``LeanFastapi.mkParam
     #[some α, some (sourceExpr source), some (toExpr name), some dflt, some alias, some conv, some title,
-      some descr, some depr, some incl, some embed, some media]
+      some descr, some depr, some incl, some embed, some media, some extra]
 
 /-- `(v.2.2. ... .1)`: the `k`-th component of a right-nested product. -/
 def projAt (v : Expr) : Nat → MetaM Expr
@@ -357,6 +364,41 @@ def Node.bodiesList : List Node → Nat
 
 end
 
+/-- The name of a body parameter (`mkParam`'s third argument). -/
+def paramName? (p : Expr) : Option String :=
+  if p.isAppOfArity ``LeanFastapi.mkParam 13 then
+    match p.getAppArgs[2]! with
+    | .lit (.strVal s) => some s
+    | _ => none
+  else none
+
+mutual
+
+/-- The names of the body parameters of a tree, each use counted. -/
+def Node.bodyNames : Node → List String
+  | .param .body _ p => (paramName? p).toList
+  | .sub _ _ _ _ _ _ _ _ args => Node.bodyNamesList args
+  | _ => []
+
+def Node.bodyNamesList : List Node → List String
+  | [] => []
+  | n :: ns => n.bodyNames ++ Node.bodyNamesList ns
+
+/-- The tree with every body parameter read from a member of the body
+(`embed_body_fields`). -/
+def Node.embedBodies : Node → Node
+  | .param .body b p =>
+    .param .body b (if p.isAppOfArity ``LeanFastapi.mkParam 13 then mkAppN p.getAppFn (p.getAppArgs.set! 10 (toExpr true))
+      else p)
+  | .sub key α fn kind uc sc own sch args => .sub key α fn kind uc sc own sch (Node.embedBodiesList args)
+  | n => n
+
+def Node.embedBodiesList : List Node → List Node
+  | [] => []
+  | n :: ns => n.embedBodies :: Node.embedBodiesList ns
+
+end
+
 /-- Read a `Depends x ...` or `Security x [...] ...` term as a mark. -/
 def markOfSyntax (stx : Syntax) : TermElabM Mark := do
   let (x, own, named) ←
@@ -514,7 +556,7 @@ def genSub (fuel : Nat) (σ : Expr) (slots : List (CacheKey × Expr)) : Node →
           let sc := if scope == "function" then Lean.mkConst ``DepScope.function else Lean.mkConst ``DepScope.request
           mkAppOptM ``Dep.Invoke.yield #[some β, some α, some sc, some lam]
         | _ => mkAppOptM ``Dep.Invoke.plain #[some β, some α, some lam]
-      let canOverride := (← synthInstance? (← mkAppM ``LeanPydantic.FromJson #[α])).isSome
+      let canOverride := (← synthInstance? (← mkAppM ``Dep.OverrideValue #[α])).isSome
       let fname := if canOverride then ``Dep.call else ``Dep.callFixed
       let args := #[some σ, some α, some β] ++ (if canOverride then #[none] else #[]) ++
         #[some (keyExpr key), some slot, some (toExpr useCache), some (strList own), some (← schemeExpr scheme),

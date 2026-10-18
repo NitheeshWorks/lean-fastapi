@@ -108,6 +108,7 @@ def bodyVerdict : Except BodyError BodyInput → String
   | .ok _ => "ok"
   | .error (.invalid e) => s!"422 {e.ctx} {e.toJson.compress}"
   | .error .unparsable => "400"
+  | .error (.badForm d) => s!"400 {d}"
 
 /-- The reference order: `json.loads`'s verdict first, then lean-json. -/
 def pythonFirst (b : ByteArray) : String :=

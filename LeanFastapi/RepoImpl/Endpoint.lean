@@ -196,9 +196,13 @@ variable {σ : List Type} {β γ : Type}
 /-- Whether the operation reads the body. -/
 def hasBody (e : Endpoint σ β γ) : Bool := !(flatBodyParams e.dep.info).isEmpty
 
-/-- The body the operation reads: nothing, or what `readBody` gives. -/
+/-- Whether its body is a form (`is_body_form`). -/
+def hasForm (e : Endpoint σ β γ) : Bool := (flatBodyParams e.dep.info).any (isFormMediaType ·.media_type)
+
+/-- The body the operation reads: nothing, a form (`readForm`), or what
+`readBody` gives. -/
 def body (e : Endpoint σ β γ) (req : Request) : Except BodyError BodyInput :=
-  if e.hasBody then readBody req else .ok .none
+  if e.hasForm then readForm req else if e.hasBody then readBody req else .ok .none
 
 /-- The application's dependencies, then the operation's tree: its values,
 or `none` when something failed to validate. -/
@@ -236,6 +240,7 @@ def app [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv) : App := fun re
   match e.body req with
   | .error (.invalid err) => throw (RequestValidationError [err])
   | .error .unparsable => throw (HTTPException 400 "There was an error parsing the body")
+  | .error (.badForm detail) => throw (HTTPException 400 detail)
   | .ok body => ExceptT.mk do
     let (r, st) ← e.solveIO env req body
     let (outcome, st) ← match r with

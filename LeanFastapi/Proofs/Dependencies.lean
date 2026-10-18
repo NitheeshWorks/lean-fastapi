@@ -125,7 +125,7 @@ theorem cached_stores (slot : Slot σ α) (useCache : Bool) (compute : SolveM σ
 
 /-- **An override replaces the dependency**: with an override in force for
 its name, a dependency's own function and arguments play no part. -/
-theorem override_replaces {β' : Type} [LeanPydantic.FromJson α] (key : CacheKey) (slot : Slot σ α)
+theorem override_replaces {β' : Type} [Dep.OverrideValue α] (key : CacheKey) (slot : Slot σ α)
     (useCache : Bool) (own : List String) (scheme : Option (String × SecurityScheme))
     (f : Dep.Invoke β α) (arg : Dep σ β) (f' : Dep.Invoke β' α) (arg' : Dep σ β') (c : Ctx) (o : ErasedRun)
     (s : SolveState σ) (h : c.overrides.lookup key.call = some o) :

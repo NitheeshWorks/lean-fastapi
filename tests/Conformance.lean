@@ -17,6 +17,35 @@ import tests.apps.HeaderParams002
 import tests.apps.CookieParams001
 import tests.apps.ResponseModel
 import tests.apps.Bench
+import tests.apps.Dependencies001
+import tests.apps.Dependencies002
+import tests.apps.Dependencies005
+import tests.apps.Dependencies006
+import tests.apps.Dependencies008b
+import tests.apps.Dependencies008c
+import tests.apps.Dependencies008d
+import tests.apps.Dependencies008e
+import tests.apps.Dependencies011
+import tests.apps.Dependencies012
+import tests.apps.Security001
+import tests.apps.Security002
+import tests.apps.Security003
+import tests.apps.Security005
+import tests.apps.Security006
+import tests.apps.Security007
+import tests.apps.DependencyCache
+import tests.apps.DependencyDuplicates
+import tests.apps.DependencyYield
+import tests.apps.DependencyOverrides
+import tests.apps.SecurityApiKeyQuery
+import tests.apps.SecurityApiKeyHeaderOptional
+import tests.apps.SecurityApiKeyCookie
+import tests.apps.SecurityHttpBase
+import tests.apps.SecurityHttpBearerOptional
+import tests.apps.SecurityHttpDigest
+import tests.apps.SecurityHttpBasicRealm
+import tests.apps.SecurityOpenIdConnectOptional
+import tests.apps.SecurityOAuth2AuthorizationCodeBearer
 import demo.App
 
 /-!
@@ -76,7 +105,39 @@ def fixtures : List (String × FastAPI) :=
    ("cookie_params_001", Tests.CookieParams001.app.complete),
    ("demo", Demo.app.complete),
    ("response_model", Tests.ResponseModel.app.complete),
-   ("bench", Tests.Bench.app.complete)]
+   ("bench", Tests.Bench.app.complete),
+   ("dependencies_001", Tests.Dependencies001.app.complete),
+   ("dependencies_002", Tests.Dependencies002.app.complete),
+   ("dependencies_004", Tests.Dependencies002.app.complete),
+   ("dependencies_005", Tests.Dependencies005.app.complete),
+   ("dependencies_006", Tests.Dependencies006.app.complete),
+   ("dependencies_008b", Tests.Dependencies008b.app.complete),
+   ("dependencies_008c", Tests.Dependencies008c.app.complete),
+   ("dependencies_008d", Tests.Dependencies008d.app.complete),
+   ("dependencies_008e", Tests.Dependencies008e.app.complete),
+   ("dependencies_011", Tests.Dependencies011.app.complete),
+   ("dependencies_012", Tests.Dependencies012.app.complete),
+   ("security_001", Tests.Security001.app.complete),
+   ("security_002", Tests.Security002.app.complete),
+   ("security_003", Tests.Security003.app.complete),
+   ("security_005", Tests.Security005.app.complete),
+   ("security_006", Tests.Security006.app.complete),
+   ("security_007", Tests.Security007.app.complete),
+   ("dependency_cache", Tests.DependencyCache.app.complete),
+   ("dependency_duplicates", Tests.DependencyDuplicates.app.complete),
+   ("dependency_yield", Tests.DependencyYield.app.complete),
+   ("dependency_overrides", Tests.DependencyOverrides.app.complete),
+   ("dependency_overrides_simple", Tests.DependencyOverrides.appSimple.complete),
+   ("dependency_overrides_with_sub", Tests.DependencyOverrides.appWithSub.complete),
+   ("security_api_key_query", Tests.SecurityApiKeyQuery.app.complete),
+   ("security_api_key_header_optional", Tests.SecurityApiKeyHeaderOptional.app.complete),
+   ("security_api_key_cookie", Tests.SecurityApiKeyCookie.app.complete),
+   ("security_http_base", Tests.SecurityHttpBase.app.complete),
+   ("security_http_bearer_optional", Tests.SecurityHttpBearerOptional.app.complete),
+   ("security_http_digest", Tests.SecurityHttpDigest.app.complete),
+   ("security_http_basic_realm", Tests.SecurityHttpBasicRealm.app.complete),
+   ("security_openid_connect_optional", Tests.SecurityOpenIdConnectOptional.app.complete),
+   ("security_oauth2_authorization_code_bearer", Tests.SecurityOAuth2AuthorizationCodeBearer.app.complete)]
 
 /-- Cases where the port differs from upstream on purpose, by fixture,
 method, URL and request body, with the header that differs (`*`: the whole

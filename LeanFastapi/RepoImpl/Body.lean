@@ -47,6 +47,8 @@ inductive BodyError where
   | invalid (e : RequestError)
   /-- Any other failure: `400 There was an error parsing the body`. -/
   | unparsable
+  /-- The form parser's own `400` (`MultiPartException`), with its message. -/
+  | badForm (detail : String)
   deriving Inhabited
 
 /-- The JSON nesting `json.loads` accepts in CPython 3.13 (9998 nested
@@ -89,6 +91,30 @@ def readBody (req : Request) : Except BodyError BodyInput :=
     | .ok j => if hasLongDigitRun req.bodyBytes then python (.ok (.json j.val)) else .ok (.json j.val)
     | .error _ => python (.error .unparsable)
   else .ok (.bytes (String.fromUTF8? req.bodyBytes |>.getD (String.ofList (req.bodyBytes.toList.map fun b => Char.ofNat b.toNat))))
+
+/-- `max_fields` and `max_part_size` of `Request.form()`. -/
+def maxFormFields : Nat := 1000
+def maxFormPartSize : Nat := 1024 * 1024
+
+/-- **`await request.form()`** for a path operation with form parameters:
+an `application/x-www-form-urlencoded` body is split at `&` into
+`name=value` fields (python-multipart's `QuerystringParser`), each decoded
+from Latin-1 and then `unquote_plus`ed (as `parse_qsl` does, so
+`QueryParams.parse`); a field larger than 1 MiB, or more than 1000 fields,
+is Starlette's `400`. Any other content type gives an empty form (a
+`multipart/form-data` body is not read yet: milestone 4). -/
+def readForm (req : Request) : Except BodyError BodyInput :=
+  let (m, s) := contentType ((req.headers.get? "content-type").getD "")
+  if m == "application" && s == "x-www-form-urlencoded" then
+    let text := String.ofList (req.bodyBytes.toList.map fun b => Char.ofNat b.toNat)
+    let chunks := (text.splitOn "&").filter (!·.isEmpty)
+    -- a field's size is its name and value, without the `=`
+    if chunks.any (fun c => c.length - (if c.contains '=' then 1 else 0) > maxFormPartSize) then
+      .error (.badForm s!"Field exceeded maximum size of {maxFormPartSize / 1024}KB.")
+    else if chunks.length > maxFormFields then
+      .error (.badForm s!"Too many fields. Maximum number of fields is {maxFormFields}.")
+    else .ok (.form (LeanStarlette.QueryParams.parse text).items)
+  else .ok (.form [])
 
 /-- The inputs of a request, with an already read body. -/
 def Inputs.ofRequest (req : Request) (body : BodyInput) : Inputs where

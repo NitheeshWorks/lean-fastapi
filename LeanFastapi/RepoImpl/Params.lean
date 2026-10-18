@@ -98,6 +98,7 @@ def lookup (inp : Inputs) : Source → String → Option Json
   | .body, k =>
     match inp.body with
     | .json j => (jfields? j).bind (LeanJson.Json.lookupLast k)
+    | .form fs => (fs.reverse.lookup k).map .str
     | _ => none
 
 /-- The body as one value, `none` when there is none. -/
@@ -106,10 +107,15 @@ def wholeBody (inp : Inputs) : Option Json :=
   | .none => none
   | .json j => some j
   | .bytes t => some (.str t)
+  | .form fs => some (jobj (fs.map fun (k, v) => (k, .str v)))
 
 end Inputs
 
 /-! ## Parameters -/
+
+/-- The form media types (`Form(...)`, `File(...)`). -/
+def isFormMediaType (m : String) : Bool :=
+  m == "application/x-www-form-urlencoded" || m == "multipart/form-data"
 
 /-- A declared parameter of type `α`: its source, Python name and wire name,
 its default (`none`: required), and its OpenAPI metadata. -/
@@ -126,6 +132,8 @@ structure Param (α : Type) where
   deprecated : Bool := false
   include_in_schema : Bool := true
   media_type : String := "application/json"
+  /-- `json_schema_extra`. -/
+  extra : List (String × Json) := []
 
 namespace Param
 
@@ -138,12 +146,16 @@ def isWholeBody (p : Param α) : Bool := p.source == .body && !p.embed
 def loc (p : Param α) : Keel.Loc :=
   if p.isWholeBody then [.key "body"] else [.key p.source.value, .key p.alias]
 
+/-- Whether it is a form field (`Form(...)`). -/
+def isForm (p : Param α) : Bool := isFormMediaType p.media_type
+
 /-- Its raw value in the inputs. A JSON `null` is absent, as Python's `None`
-is. -/
+is, and so is an empty form field (`_get_multidict_value`). -/
 def raw (p : Param α) (inp : Inputs) : Option Json :=
   let v := if p.isWholeBody then inp.wholeBody else inp.lookup p.source p.alias
   match v with
   | some .null => none
+  | some (.str "") => if p.isForm then none else some (.str "")
   | v => v
 
 /-- Validate the raw value, or take the default, before locating errors. -/
@@ -172,6 +184,8 @@ def info [ToJson α] [JsonSchema α] (p : Param α) : ParamInfo where
   deprecated := p.deprecated
   include_in_schema := p.include_in_schema
   media_type := p.media_type
+  embed := p.embed
+  extra := p.extra
   loc := p.loc
 
 /-- Every error of a parameter's validator is located under its `loc`. -/

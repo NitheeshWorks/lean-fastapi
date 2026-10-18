@@ -1,5 +1,4 @@
-import LeanFastapi.RepoImpl.Dependencies
-import LeanFastapi.RepoImpl.Body
+import LeanFastapi.RepoImpl.Infer
 
 /-!
 # RepoImpl: security schemes
@@ -220,20 +219,20 @@ instance {location : APIKeyIn} {autoError : Bool} : SecurityBase (APIKey locatio
   scheme_name s := s.scheme_name
   model s := .apiKey location s.name s.description
 
-/-- `HTTPBasic(scheme_name=None, realm=None, description=None,
-auto_error=True)`. -/
-structure HTTPBasic (autoError : Bool := true) where
-  scheme_name : String := "HTTPBasic"
+/-- The `HTTPBasic` scheme. -/
+structure HTTPBasicScheme (autoError : Bool) where
+  scheme_name : String
   realm : Option String := none
   description : Option String := none
 
-/-- `HTTPBasic(...)`. -/
-def HTTPBasic.new (scheme_name : String := "HTTPBasic") (realm : Option String := none)
-    (description : Option String := none) (auto_error : Bool := true) : HTTPBasic auto_error :=
+/-- `HTTPBasic(scheme_name=None, realm=None, description=None,
+auto_error=True)`. -/
+def HTTPBasic (scheme_name : String := "HTTPBasic") (realm : Option String := none)
+    (description : Option String := none) (auto_error : Bool := true) : HTTPBasicScheme auto_error :=
   { scheme_name, realm, description }
 
 /-- `HTTPBasic.__call__`. -/
-def HTTPBasic.call {autoError : Bool} (self : HTTPBasic autoError) (request : Request) :
+def HTTPBasicScheme.call {autoError : Bool} (self : HTTPBasicScheme autoError) (request : Request) :
     Handler (AutoError autoError HTTPBasicCredentials) :=
   let challenge := match self.realm with
     | some r => if r.isEmpty then "Basic" else s!"Basic realm=\"{r}\""
@@ -245,41 +244,62 @@ def HTTPBasic.call {autoError : Bool} (self : HTTPBasic autoError) (request : Re
     | some c => pure (AutoError.ok autoError c)
     | none => throw (notAuthenticated challenge)
 
-instance {autoError : Bool} : SecurityBase (HTTPBasic autoError) where
+instance {autoError : Bool} : SecurityBase (HTTPBasicScheme autoError) where
   scheme_name s := s.scheme_name
   model s := .http "basic" none s.description
 
-/-- `HTTPBearer` and `HTTPDigest`: an `Authorization` header of one scheme. -/
-structure HTTPScheme (scheme : String) (autoError : Bool) where
+/-- Python's `str.title()`: a letter after a non-letter upper-cased, the
+others lower-cased. -/
+def pyTitle (s : String) : String :=
+  String.ofList (go true s.toList)
+where
+  go : Bool → List Char → List Char
+    | _, [] => []
+    | start, c :: cs =>
+      if c.isAlpha then (if start then c.toUpper else c.toLower) :: go false cs else c :: go true cs
+
+/-- `HTTPBase`, `HTTPBearer` and `HTTPDigest`: an `Authorization` header with
+a scheme and credentials; `HTTPBearer` and `HTTPDigest` require their own
+scheme (in any case). -/
+structure HTTPScheme (autoError : Bool) where
+  scheme : String
+  /-- Whether the header's scheme must be `scheme`. -/
+  checked : Bool
   scheme_name : String
   bearerFormat : Option String := none
   description : Option String := none
 
+/-- `HTTPBase(scheme=..., scheme_name=None, description=None, auto_error=True)`. -/
+def HTTPBase (scheme : String) (scheme_name : String := "HTTPBase") (description : Option String := none)
+    (auto_error : Bool := true) : HTTPScheme auto_error :=
+  { scheme, checked := false, scheme_name, description }
+
 /-- `HTTPBearer(bearerFormat=None, scheme_name=None, description=None,
 auto_error=True)`. -/
 def HTTPBearer (bearerFormat : Option String := none) (scheme_name : String := "HTTPBearer")
-    (description : Option String := none) (auto_error : Bool := true) : HTTPScheme "bearer" auto_error :=
-  { scheme_name, bearerFormat, description }
+    (description : Option String := none) (auto_error : Bool := true) : HTTPScheme auto_error :=
+  { scheme := "bearer", checked := true, scheme_name, bearerFormat, description }
 
 /-- `HTTPDigest(scheme_name=None, description=None, auto_error=True)`. -/
 def HTTPDigest (scheme_name : String := "HTTPDigest") (description : Option String := none)
-    (auto_error : Bool := true) : HTTPScheme "digest" auto_error :=
-  { scheme_name, description }
+    (auto_error : Bool := true) : HTTPScheme auto_error :=
+  { scheme := "digest", checked := true, scheme_name, description }
 
-/-- `HTTPBearer.__call__` / `HTTPDigest.__call__`: the header's scheme (which
-must be this one, in any case) and credentials. -/
-def HTTPScheme.call {scheme : String} {autoError : Bool} (_self : HTTPScheme scheme autoError) (request : Request) :
+/-- `HTTPBase.__call__` (and `HTTPBearer`'s, `HTTPDigest`'s): the header's
+scheme and credentials, or 401 with the scheme, title-cased, as the
+challenge. -/
+def HTTPScheme.call {autoError : Bool} (self : HTTPScheme autoError) (request : Request) :
     Handler (AutoError autoError HTTPAuthorizationCredentials) :=
-  let challenge := String.ofList (match scheme.toList with | c :: cs => c.toUpper :: cs | [] => [])
+  let fail := AutoError.fail autoError (notAuthenticated (pyTitle self.scheme))
   let authorization := authorizationOf request
   let (s, credentials) := authorizationSchemeParam authorization
-  if (authorization.getD "").isEmpty || s.isEmpty || credentials.isEmpty || s.toLower != scheme then
-    AutoError.fail autoError (notAuthenticated challenge)
+  if (authorization.getD "").isEmpty || s.isEmpty || credentials.isEmpty then fail
+  else if self.checked && s.toLower != self.scheme then fail
   else pure (AutoError.ok autoError { scheme := s, credentials })
 
-instance {scheme : String} {autoError : Bool} : SecurityBase (HTTPScheme scheme autoError) where
+instance {autoError : Bool} : SecurityBase (HTTPScheme autoError) where
   scheme_name s := s.scheme_name
-  model s := .http scheme (if scheme = "bearer" then s.bearerFormat else none) s.description
+  model s := .http s.scheme s.bearerFormat s.description
 
 /-- `OAuth2PasswordBearer`, `OAuth2AuthorizationCodeBearer`: a bearer token,
 with the flow OpenAPI shows. -/
@@ -344,5 +364,40 @@ def AuthorizationHeader.call {autoError : Bool} (_self : AuthorizationHeader aut
 instance {autoError : Bool} : SecurityBase (AuthorizationHeader autoError) where
   scheme_name s := s.scheme_name
   model s := s.model
+
+/-! ## The OAuth2 password form -/
+
+/-- `OAuth2PasswordRequestForm`, a class dependency (`form_data :
+Depends OAuth2PasswordRequestForm`): the form fields of the OAuth2 password
+flow. `grant_type` is optional here, `"password"` when given. -/
+structure OAuth2PasswordRequestForm where
+  grant_type : Form (Option (Keel.Refined String (refinement% pattern "^password$"))) := none
+  username : Form String
+  password : Form String (json_schema_extra := [("format", .str "password")])
+  scope : Form String := ""
+  client_id : Form (Option String) := none
+  client_secret : Form (Option String) (json_schema_extra := [("format", .str "password")]) := none
+
+/-- The runs of a text between whitespace (`str.split()`'s pieces, and
+empty ones). -/
+def splitWhitespace : List Char → List (List Char)
+  | [] => [[]]
+  | c :: cs =>
+    match splitWhitespace cs with
+    | [] => [[c]]
+    | w :: ws => if c.isWhitespace then [] :: w :: ws else (c :: w) :: ws
+
+/-- `form_data.scopes`: the scopes, split at whitespace (`scope.split()`). -/
+def OAuth2PasswordRequestForm.scopes (f : OAuth2PasswordRequestForm) : List String :=
+  ((splitWhitespace f.scope.toList).map String.ofList).filter (!·.isEmpty)
+
+/-- `OAuth2PasswordRequestFormStrict`: `grant_type` is required. -/
+structure OAuth2PasswordRequestFormStrict where
+  grant_type : Form (Keel.Refined String (refinement% pattern "^password$"))
+  username : Form String
+  password : Form String (json_schema_extra := [("format", .str "password")])
+  scope : Form String := ""
+  client_id : Form (Option String) := none
+  client_secret : Form (Option String) (json_schema_extra := [("format", .str "password")]) := none
 
 end LeanFastapi

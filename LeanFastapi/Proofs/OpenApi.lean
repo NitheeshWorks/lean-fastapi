@@ -292,7 +292,37 @@ theorem models_mem_definitions (routes : List APIRoute) (r : APIRoute) (hr : r �
     (hc : c ∈ OSchema.models s) : c ∈ openapiDefinitions routes := by
   unfold openapiDefinitions
   exact List.mem_append_left _ (List.mem_flatMap.2 ⟨r, List.mem_filter.2 ⟨hr, hi⟩,
-    List.mem_flatMap.2 ⟨s, hs, hc⟩⟩)
+    List.mem_append_left _ (List.mem_flatMap.2 ⟨s, hs, hc⟩)⟩)
+
+/-- An included route with an embedded body defines its body model. -/
+theorem body_mem_definitions (routes : List APIRoute) (r : APIRoute) (hr : r ∈ routes)
+    (hi : r.include_in_schema = true) (he : r.embedsBody = true) :
+    (r.bodyModelName, r.bodyModel) ∈ openapiDefinitions routes := by
+  unfold openapiDefinitions
+  exact List.mem_append_left _ (List.mem_flatMap.2 ⟨r, List.mem_filter.2 ⟨hr, hi⟩,
+    List.mem_append_right _ (by simp [APIRoute.bodyDefinitions, he])⟩)
+
+/-- The body parameters are parameters. -/
+theorem mem_bodyParams (r : APIRoute) (p : ParamInfo) (h : p ∈ r.bodyParams) : p ∈ r.params := by
+  unfold APIRoute.bodyParams at h
+  suffices ∀ (l acc : List ParamInfo), p ∈ l.foldl (fun acc p => if acc.any (·.name == p.name) then acc else acc ++ [p]) acc →
+      p ∈ acc ∨ p ∈ l by
+    rcases this _ [] h with h | h
+    · simp at h
+    · exact (List.mem_filter.1 h).1
+  intro l
+  induction l with
+  | nil => intro acc h; exact .inl h
+  | cons x xs ih =>
+    intro acc h
+    rcases ih _ h with h | h
+    · dsimp only at h
+      split at h
+      · exact .inl h
+      · rcases List.mem_append.1 h with h | h
+        · exact .inl h
+        · simp at h; subst h; exact .inr List.mem_cons_self
+    · exact .inr (List.mem_cons_of_mem _ h)
 
 theorem validation_mem_definitions (routes : List APIRoute) (r : APIRoute) (hr : r ∈ routes)
     (hi : r.include_in_schema = true) (hv : r.validates = true) (c : String × OSchema)
@@ -327,13 +357,19 @@ theorem refs_mainContent (r : APIRoute) (m : String) (c : MediaContent)
   · cases h
 
 theorem requestBody_mem (r : APIRoute) (m : String) (b : RequestBody) (h : r.requestBody m = some b) :
-    ∃ bi ∈ r.params, ∃ a t, b.content.schema = fieldSchema bi.schema a t := by
+    (∃ bi ∈ r.params, ∃ a t, b.content.schema = fieldSchema bi.schema a t) ∨
+      (r.embedsBody = true ∧ b.content.schema = .ref r.bodyModelName) := by
   unfold APIRoute.requestBody at h
   split at h
   · split at h
     · rename_i bi _ hbs
-      cases h
-      exact ⟨bi, (List.mem_filter.1 (hbs ▸ List.mem_cons_self)).1, _, _, rfl⟩
+      by_cases he : r.embedsBody = true
+      · simp only [he, ite_true, Option.some.injEq] at h
+        subst h
+        exact .inr ⟨he, rfl⟩
+      · simp only [he, Bool.false_eq_true, ite_false, Option.some.injEq] at h
+        subst h
+        exact .inl ⟨bi, mem_bodyParams r bi (hbs ▸ List.mem_cons_self), _, _, rfl⟩
     · cases h
   · cases h
 
@@ -356,10 +392,13 @@ theorem refs_operation (routes : List APIRoute) (r : APIRoute) (hr : r ∈ route
     | none => simp
     | some b =>
       intro hn
-      obtain ⟨bi, hbi, a, t, hs⟩ := requestBody_mem r m b hb
-      simp only [hs, OSchema.refs_fieldSchema] at hn
-      exact refs_route_schema routes r hr hi bi.schema
-        (List.mem_append_left _ (List.mem_map.2 ⟨bi, hbi, rfl⟩)) n hn
+      rcases requestBody_mem r m b hb with ⟨bi, hbi, a, t, hs⟩ | ⟨he, hs⟩
+      · simp only [hs, OSchema.refs_fieldSchema] at hn
+        exact refs_route_schema routes r hr hi bi.schema
+          (List.mem_append_left _ (List.mem_map.2 ⟨bi, hbi, rfl⟩)) n hn
+      · simp only [hs, OSchema.refs, List.mem_singleton] at hn
+        subst hn
+        exact List.mem_map.2 ⟨_, body_mem_definitions routes r hr hi he, rfl⟩
   · -- a response
     rcases hk with hk | hk
     · simp only [List.mem_singleton, Prod.mk.injEq] at hk
@@ -389,9 +428,39 @@ theorem refs_definition (routes : List APIRoute) (c : String × OSchema) (hc : c
   unfold openapiDefinitions at hc ⊢
   rcases List.mem_append.1 hc with hc | hc
   · obtain ⟨r, hr, hc⟩ := List.mem_flatMap.1 hc
-    obtain ⟨s, hs, hc⟩ := List.mem_flatMap.1 hc
-    obtain ⟨d, hd, rfl⟩ := List.mem_map.1 (OSchema.models_closed s c hc n hn)
-    exact List.mem_map.2 ⟨d, List.mem_append_left _ (List.mem_flatMap.2 ⟨r, hr, List.mem_flatMap.2 ⟨s, hs, hd⟩⟩), rfl⟩
+    rcases List.mem_append.1 hc with hc | hc
+    · obtain ⟨s, hs, hc⟩ := List.mem_flatMap.1 hc
+      obtain ⟨d, hd, rfl⟩ := List.mem_map.1 (OSchema.models_closed s c hc n hn)
+      exact List.mem_map.2 ⟨d, List.mem_append_left _ (List.mem_flatMap.2 ⟨r, hr,
+        List.mem_append_left _ (List.mem_flatMap.2 ⟨s, hs, hd⟩)⟩), rfl⟩
+    · -- the body model: its properties are the body parameters' field schemas
+      obtain ⟨hr, hi⟩ := List.mem_filter.1 hr
+      unfold APIRoute.bodyDefinitions at hc
+      split at hc
+      · simp only [List.mem_singleton] at hc
+        subst hc
+        simp only [APIRoute.bodyModel, OSchema.refs] at hn
+        have key : ∀ (ps : List ParamInfo), (∀ p ∈ ps, p ∈ r.params) →
+            ∀ n ∈ OSchema.refsProps (ps.map fun p => (p.alias, fieldSchema p.schema
+              { title := p.title, description := p.description, default := p.default, extra := p.extra }
+              (LeanPydantic.fieldTitle p.alias))),
+            n ∈ OSchema.names (openapiDefinitions routes) := by
+          intro ps hps
+          induction ps with
+          | nil => simp [OSchema.refsProps]
+          | cons p ps ih =>
+            intro n hn
+            simp only [List.map_cons, OSchema.refsProps, List.mem_append, OSchema.refs_fieldSchema] at hn
+            rcases hn with hn | hn
+            · have := refs_route_schema routes r hr (by simpa using hi) p.schema
+                (List.mem_append_left _ (List.mem_map.2 ⟨p, hps p List.mem_cons_self, rfl⟩)) n hn
+              unfold openapiDefinitions at this
+              exact this
+            · exact ih (fun q hq => hps q (List.mem_cons_of_mem _ hq)) n hn
+        have := key r.bodyParams (mem_bodyParams r) n hn
+        unfold openapiDefinitions at this
+        exact this
+      · simp at hc
   · split at hc
     · rename_i hv
       simp only [validationDefinitions, List.mem_cons, List.not_mem_nil, or_false] at hc
