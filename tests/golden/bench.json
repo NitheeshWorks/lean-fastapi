@@ -50,6 +50,56 @@
   "response": "{\"name\":\"x\",\"description\":null,\"price\":2.0,\"tax\":null}"
  },
  {
+  "name": "10000 keys colliding in Lean's String.hash buckets",
+  "method": "PUT",
+  "prefix": "/items/1",
+  "repeat": "",
+  "count": 0,
+  "wide": "collide",
+  "request_headers": [
+   [
+    "Host",
+    "testserver"
+   ],
+   [
+    "Accept",
+    "*/*"
+   ],
+   [
+    "Accept-Encoding",
+    "gzip, deflate"
+   ],
+   [
+    "Connection",
+    "keep-alive"
+   ],
+   [
+    "user-agent",
+    "testclient"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ],
+   [
+    "Content-Length",
+    "148307"
+   ]
+  ],
+  "status": 200,
+  "headers": [
+   [
+    "content-length",
+    "54"
+   ],
+   [
+    "content-type",
+    "application/json"
+   ]
+  ],
+  "response": "{\"name\":\"x\",\"description\":null,\"price\":2.0,\"tax\":null}"
+ },
+ {
   "name": "65000-char non-matching path",
   "method": "GET",
   "prefix": "/",

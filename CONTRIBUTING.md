@@ -101,13 +101,6 @@ Listed here with the reason, and in `docs/traceability.toml` with
 * Not yet: several (embedded) body parameters are rejected at elaboration;
   `root_path` and the `servers` entry are not implemented.
 
-### Known rough edges
-
-* `json% {...}` is ambiguous with Lean core's `json%` wherever `import Lean`
-  is in scope (lean-pydantic's deriving handler imports it). Give the term
-  its type, `(json% {...} : Json)`, where no expected type is known; a
-  higher-priority syntax is requested from lean-json.
-
 ## Tests
 
 * `tests/Props.lean`: seeded property tests, no dependencies, under a second.

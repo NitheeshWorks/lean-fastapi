@@ -19,6 +19,13 @@
     name = "conformance"
     root = "tests.Conformance"
 
+# lean-json directly: the library builds JSON itself (json%, the OpenAPI
+# document), so its pin is this repo's choice.
+[[require]]
+name = "LeanJson"
+git = "https://github.com/NitheeshWorks/lean-json"
+rev = "main"
+
 [[require]]
 name = "LeanPydantic"
 git = "https://github.com/NitheeshWorks/lean-pydantic"

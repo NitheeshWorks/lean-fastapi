@@ -274,13 +274,22 @@ def exchanges():
 # wide object body of n keys, so the golden stays small.
 BENCH = [
     ("wide object body, 100000 keys", "PUT", "/items/1", "", 0, 100000),
+    ("10000 keys colliding in Lean's String.hash buckets", "PUT", "/items/1", "", 0, "collide"),
     ("65000-char non-matching path", "GET", "/", "a", 65000, None),
     ("65000-digit item_id", "GET", "/items/", "1", 65000, None),
     ("65000-char str item_id", "GET", "/stock/", "s", 65000, None),
 ]
 
 
+# lean-json's fixture of keys that share a bucket under Lean's fixed-seed
+# String.hash (tests/fixtures/collide-keys.txt there, from its collidegen).
+COLLIDE_KEYS = HERE.parents[1] / ".lake" / "packages" / "LeanJson" / "tests" / "fixtures" / "collide-keys.txt"
+
+
 def wide_body(n):
+    if n == "collide":
+        keys = [k for k in COLLIDE_KEYS.read_text().split("\n") if k]
+        return '{"name":"x","price":2,' + ",".join(f'"{k}":0' for k in keys) + '}'
     return '{"name":"x","price":2,' + ",".join(f'"k{i}":{i}' for i in range(n)) + '}'
 
 

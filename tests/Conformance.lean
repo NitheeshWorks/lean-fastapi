@@ -184,6 +184,9 @@ def goldenCases (doc : Json) : List Case :=
 def wideBody (n : Nat) : String :=
   "{\"name\":\"x\",\"price\":2," ++ ",".intercalate ((List.range n).map fun i => s!"\"k{i}\":{i}") ++ "}"
 
+/-- lean-json's keys that share a bucket under Lean's fixed-seed `String.hash`. -/
+def collideKeysPath : System.FilePath := ".lake/packages/LeanJson/tests/fixtures/collide-keys.txt"
+
 /-- The time a large request may take end to end (the inputs are linear; this
 bounds a quadratic regression, not the machine). -/
 def benchBudgetMs : Nat := 2000
@@ -197,9 +200,12 @@ def benchCases (bench : Json) : List Case :=
       let some app := fixtures.lookup "demo" | throw (IO.userError "no demo fixture")
       let count := ((field? e "count").bind fun | .num (.int i) => some i.toNat | _ => none).getD 0
       let url := (str? e "prefix").getD "/" ++ String.ofList (List.replicate count (((str? e "repeat").getD "").toList.headD 'x'))
-      let body := match field? e "wide" with
-        | some (.num (.int n)) => wideBody n.toNat
-        | _ => ""
+      let body ← match field? e "wide" with
+        | some (.num (.int n)) => pure (wideBody n.toNat)
+        | some (.str "collide") => do
+          let keys := ((← IO.FS.readFile collideKeysPath).splitOn "\n").filter (· ≠ "")
+          pure ("{\"name\":\"x\",\"price\":2," ++ ",".intercalate (keys.map fun k => s!"\"{k}\":0") ++ "}")
+        | _ => pure ""
       let (path, query_string) := LeanStarlette.splitTarget url
       let req : LeanStarlette.Request :=
         { method := (str? e "method").getD "GET", path, query_string
