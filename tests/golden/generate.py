@@ -5,7 +5,8 @@ Run locally (never in CI) with the upstream-spec venv:
     upstream-spec/.venv/bin/python -I tests/golden/generate.py
 
 It writes tests/golden/fastapi.json (HTTP exchanges and app.openapi() per
-fixture) and tests/golden/pyjson.json (json.loads errors on a corpus).
+fixture), tests/golden/bench.json (large inputs through the demo) and
+tests/golden/pyjson.json (json.loads errors on a corpus).
 
 Each fixture is an upstream tutorial app (imported from
 upstream-spec/fastapi/docs_src, the real code) or an app defined below; its
@@ -268,6 +269,35 @@ def exchanges():
     return out
 
 
+# Large inputs through the demo, end to end (the lean-starlette bench sizes).
+# Each request is a recipe, url = prefix + repeat * count and an optional
+# wide object body of n keys, so the golden stays small.
+BENCH = [
+    ("wide object body, 100000 keys", "PUT", "/items/1", "", 0, 100000),
+    ("65000-char non-matching path", "GET", "/", "a", 65000, None),
+    ("65000-digit item_id", "GET", "/items/", "1", 65000, None),
+    ("65000-char str item_id", "GET", "/stock/", "s", 65000, None),
+]
+
+
+def wide_body(n):
+    return '{"name":"x","price":2,' + ",".join(f'"k{i}":{i}' for i in range(n)) + '}'
+
+
+def bench():
+    out = []
+    c = TestClient(demo, follow_redirects=False, raise_server_exceptions=False)
+    for name, method, prefix, repeat, count, n in BENCH:
+        body = wide_body(n) if n is not None else None
+        r = c.request(method, prefix + repeat * count, content=body.encode() if body else None,
+                      headers=J if body else {})
+        out.append({"name": name, "method": method, "prefix": prefix, "repeat": repeat, "count": count,
+                    "wide": n, "request_headers": [[k.decode(), v.decode()] for k, v in r.request.headers.raw],
+                    "status": r.status_code, "headers": [[k.decode(), v.decode()] for k, v in r.headers.raw],
+                    "response": r.content.decode("utf-8")})
+    return out
+
+
 def openapis():
     return [{"fixture": fx, "upstream": "tests/test_openapi_examples.py (app.openapi())", "openapi": app.openapi()}
             for fx, app in FIXTURES.items()]
@@ -301,4 +331,5 @@ def pyjson_corpus():
 
 if __name__ == "__main__":
     (HERE / "fastapi.json").write_text(json.dumps({"exchanges": exchanges(), "openapi": openapis()}, indent=1, ensure_ascii=False) + "\n")
+    (HERE / "bench.json").write_text(json.dumps(bench(), indent=1, ensure_ascii=False) + "\n")
     (HERE / "pyjson.json").write_text(json.dumps(pyjson_corpus(), indent=0, ensure_ascii=False) + "\n")

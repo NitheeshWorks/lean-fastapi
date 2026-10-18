@@ -29,7 +29,7 @@ def ExtractSound : Prop :=
     p.validator inp = .ok a ↔
       match p.raw inp with
       | none => p.default = some a
-      | some v => LeanPydantic.fromJson {} v = .ok a
+      | some v => LeanPydantic.fromJson fastapiCfg v = .ok a
 
 /-- Extraction of a product succeeds exactly when each parameter's does. -/
 def ExtractConsOkIff : Prop :=

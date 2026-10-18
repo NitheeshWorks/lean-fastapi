@@ -178,6 +178,45 @@ def goldenCases (doc : Json) : List Case :=
       let ok := if whole then r.status_code < 500 else same
       pure ok⟩
 
+/-! ## Large inputs -/
+
+/-- A wide object body of `n` keys, as `wide_body` in `generate.py`. -/
+def wideBody (n : Nat) : String :=
+  "{\"name\":\"x\",\"price\":2," ++ ",".intercalate ((List.range n).map fun i => s!"\"k{i}\":{i}") ++ "}"
+
+/-- The time a large request may take end to end (the inputs are linear; this
+bounds a quadratic regression, not the machine). -/
+def benchBudgetMs : Nat := 2000
+
+/-- The `tests/golden/bench.json` cases: generated requests through the demo,
+byte for byte, each within `benchBudgetMs`. -/
+def benchCases (bench : Json) : List Case :=
+  (((LeanJson.Json.getArr? bench).map Array.toList).getD []).map fun e =>
+    let name := (str? e "name").getD ""
+    ⟨"lean-starlette bench sizes (tests/golden/bench.json)", s!"bench demo {name}", do
+      let some app := fixtures.lookup "demo" | throw (IO.userError "no demo fixture")
+      let count := ((field? e "count").bind fun | .num (.int i) => some i.toNat | _ => none).getD 0
+      let url := (str? e "prefix").getD "/" ++ String.ofList (List.replicate count (((str? e "repeat").getD "").toList.headD 'x'))
+      let body := match field? e "wide" with
+        | some (.num (.int n)) => wideBody n.toNat
+        | _ => ""
+      let (path, query_string) := LeanStarlette.splitTarget url
+      let req : LeanStarlette.Request :=
+        { method := (str? e "method").getD "GET", path, query_string
+          headers := LeanStarlette.Headers.ofList (pairs e "request_headers")
+          bodyBytes := body.toUTF8, server := some ("testserver", 80) }
+      let t0 ← IO.monoMsNow
+      let r ← app.call req
+      let ms := (← IO.monoMsNow) - t0
+      let wantStatus := (field? e "status").bind (fun | .num (.int i) => some i.toNat | _ => none)
+      let same := some r.status_code == wantStatus && r.headers.raw == pairs e "headers" &&
+        r.text == (str? e "response").getD ""
+      unless same do
+        IO.println s!"      want {wantStatus} {(str? e "response").getD "" |>.take 200}"
+        IO.println s!"      got  {r.status_code} {r.text.take 200}"
+      IO.println s!"      {ms} ms (budget {benchBudgetMs})"
+      pure (same && ms ≤ benchBudgetMs)⟩
+
 def openapiCases (doc : Json) : List Case :=
   (arr? doc "openapi").map fun e =>
     let fx := (str? e "fixture").getD ""
@@ -231,7 +270,9 @@ def main : IO UInt32 := do
   let .ok doc := LeanJson.parseStr golden | throw (IO.userError "tests/golden/fastapi.json does not parse")
   let pyj ← IO.FS.readFile "tests/golden/pyjson.json"
   let .ok corpus := LeanJson.parseStr pyj | throw (IO.userError "tests/golden/pyjson.json does not parse")
-  let cases := unitCases ++ goldenCases doc.val ++ openapiCases doc.val ++
+  let benchText ← IO.FS.readFile "tests/golden/bench.json"
+  let .ok bench := LeanJson.parseStr benchText | throw (IO.userError "tests/golden/bench.json does not parse")
+  let cases := unitCases ++ goldenCases doc.val ++ openapiCases doc.val ++ benchCases bench.val ++
     [pyjsonCase (((LeanJson.Json.getArr? corpus.val).map Array.toList).getD [])]
   let mut failures := 0
   for c in cases do

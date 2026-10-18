@@ -42,13 +42,13 @@ theorem extract_sound {α : Type} [FromJson α] (p : Param α) (inp : Inputs) (a
     p.validator inp = .ok a ↔
       match p.raw inp with
       | none => p.default = some a
-      | some v => LeanPydantic.fromJson {} v = .ok a := by
+      | some v => LeanPydantic.fromJson fastapiCfg v = .ok a := by
   unfold Param.validator
   rw [atPath_ok_iff]
   unfold Param.read
   cases hr : p.raw inp with
   | none => cases p.default <;> simp
-  | some v => cases h : LeanPydantic.fromJson (α := α) {} v <;> simp [Except.mapError, h]
+  | some v => cases h : LeanPydantic.fromJson (α := α) fastapiCfg v <;> simp [Except.mapError, h]
 
 /-- **A product of parameters succeeds exactly when each does.** -/
 theorem extract_cons_ok_iff {α β : Type} [FromJson α] [ToJson α] [JsonSchema α] (p : Param α) (rest : Params β)

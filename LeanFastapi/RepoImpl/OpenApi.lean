@@ -130,12 +130,13 @@ def keywordRank : Keyword → Nat
   | .pattern _ => 7
   | .minItems _ => 8
   | .maxItems _ => 9
+  | .uniqueItems => 10
 
 /-- The position of a key in FastAPI's `Schema` model. -/
 def keyRank (k : String) : Nat :=
   match ["$ref", "anyOf", "prefixItems", "items", "properties", "additionalProperties", "type", "enum",
       "const", "multipleOf", "maximum", "exclusiveMaximum", "minimum", "exclusiveMinimum", "maxLength",
-      "minLength", "pattern", "maxItems", "minItems", "required", "title", "description", "default",
+      "minLength", "pattern", "maxItems", "minItems", "uniqueItems", "required", "title", "description", "default",
       "deprecated"].idxOf? k with
   | some i => i
   | none => 100

@@ -101,13 +101,22 @@ Listed here with the reason, and in `docs/traceability.toml` with
 * Not yet: several (embedded) body parameters are rejected at elaboration;
   `root_path` and the `servers` entry are not implemented.
 
+### Known rough edges
+
+* `json% {...}` is ambiguous with Lean core's `json%` wherever `import Lean`
+  is in scope (lean-pydantic's deriving handler imports it). Give the term
+  its type, `(json% {...} : Json)`, where no expected type is known; a
+  higher-priority syntax is requested from lean-json.
+
 ## Tests
 
 * `tests/Props.lean`: seeded property tests, no dependencies, under a second.
 * `tests/Conformance.lean`: cases re-expressed from the upstream suite; each
   names the upstream test (`tests/test_x.py::test_y`). The golden cases
   replay every exchange recorded in `tests/golden/fastapi.json` against the
-  Lean twin in `tests/apps/` of each upstream tutorial app.
+  Lean twin in `tests/apps/` of each upstream tutorial app. The bench cases
+  (`tests/golden/bench.json`) send large generated requests through the demo
+  and check the bytes and a time budget.
 * `tests/pbt/`: a separate Lake package, the one place an external dependency
   (`plausible`) is taken.
 

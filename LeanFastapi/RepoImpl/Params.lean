@@ -28,6 +28,11 @@ namespace LeanFastapi
 open LeanJson (Json)
 open LeanPydantic (FromJson ToJson JsonSchema ErrorDetails)
 
+/-- How FastAPI validates every parameter, body and response:
+`validate_python(value, from_attributes=True)`, so a model given a
+non-object reports `model_attributes_type`, at any depth. -/
+def fastapiCfg : LeanPydantic.Cfg := { from_attributes := true }
+
 namespace RequestError
 
 /-- The error as FastAPI serialises it. -/
@@ -35,15 +40,9 @@ def toJson (e : RequestError) : Json :=
   jobj <| [("type", .str e.type), ("loc", ErrorDetails.locJson e.loc), ("msg", .str e.msg),
     ("input", e.input)] ++ (if e.ctx = [] then [] else [("ctx", jobj e.ctx)])
 
-/-- A pydantic line error as FastAPI reports it (`errors(include_url=False)`).
-FastAPI validates with `from_attributes=True`, so pydantic reports a model
-given a non-object as `model_attributes_type`, not `model_type`. -/
+/-- A pydantic line error as FastAPI reports it (`errors(include_url=False)`). -/
 def ofDetails (e : ErrorDetails) : RequestError :=
-  match e.kind with
-  | .modelType _ =>
-    { type := "model_attributes_type", loc := e.loc, input := e.input
-      msg := "Input should be a valid dictionary or object to extract fields from" }
-  | _ => { type := e.type, loc := e.loc, msg := e.msg, input := e.input, ctx := e.ctx }
+  { type := e.type, loc := e.loc, msg := e.msg, input := e.input, ctx := e.ctx }
 
 /-- `get_missing_field_error`: a required parameter is absent. -/
 def missing : RequestError := { type := "missing", loc := [], msg := "Field required", input := .null }
@@ -154,7 +153,7 @@ def read [FromJson α] (p : Param α) : Keel.Validator RequestError Inputs α :=
     match p.default with
     | some d => .ok d
     | none => .error [RequestError.missing]
-  | some v => (LeanPydantic.fromJson {} v).mapError (List.map RequestError.ofDetails)
+  | some v => (LeanPydantic.fromJson fastapiCfg v).mapError (List.map RequestError.ofDetails)
 
 /-- The parameter's validator: `read`, with every error under `loc`. -/
 def validator [FromJson α] (p : Param α) : Keel.Validator RequestError Inputs α :=

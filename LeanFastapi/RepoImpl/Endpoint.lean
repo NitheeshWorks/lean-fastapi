@@ -78,7 +78,7 @@ def ResponseModel.of (β : Type) [FromJson β] [ToJson β] [JsonSchema β]
     ResponseModel where
   schema := JsonSchema.schema β
   serialize j :=
-    match LeanPydantic.fromJson (α := β) {} j with
+    match LeanPydantic.fromJson (α := β) fastapiCfg j with
     | .ok b => .ok (LeanPydantic.toJson opts b)
     | .error es => .error (es.map fun e => Keel.Located.within (.key "response") (RequestError.ofDetails e))
 
