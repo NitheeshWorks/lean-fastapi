@@ -1,4 +1,4 @@
-import LeanFastapi.RepoImpl.Exceptions
+import LeanFastapi.RepoImpl.Dependencies
 
 /-!
 # RepoImpl: path operations
@@ -6,14 +6,18 @@ import LeanFastapi.RepoImpl.Exceptions
 A path operation function becomes an `App` (`get_request_handler` in
 `fastapi/routing.py`):
 
-1. read the body, when the operation has a body parameter (`readBody`);
-2. extract and validate every parameter (`Params.extract`); any error is a
+1. read the body, when the operation or one of its dependencies has a body
+   parameter (`readBody`);
+2. solve the application's dependencies, then the operation's dependency
+   tree and parameters (`solve_dependencies`); any error is a
    `RequestValidationError` carrying all of them;
 3. call the function with the values;
 4. turn what it returned into a response: a `Response` is sent as it is;
    any other value is converted to JSON (`jsonable_encoder`) and, when the
    operation has a `response_model`, validated against it and dumped
-   (`serialize_response`), else sent as a `JSONResponse`.
+   (`serialize_response`), else sent as a `JSONResponse`;
+5. unwind the exit stacks of `yield` dependencies around all of it
+   (`finish`).
 
 `Handler α` is the monad path operation functions run in: Starlette's
 `AppM` (`IO` with `Exception`s), so a function `throw`s an `HTTPException`.
@@ -28,9 +32,6 @@ namespace LeanFastapi
 open LeanJson (Json)
 open LeanPydantic (FromJson ToJson JsonSchema)
 open LeanStarlette (Request Response Exception App AppM)
-
-/-- The monad of path operation functions. -/
-abbrev Handler (α : Type) : Type := AppM α
 
 /-- What a path operation function returns: a value FastAPI serialises, or a
 response it sends unchanged. -/
@@ -98,36 +99,149 @@ def renderResult (model : Option ResponseModel) (status : Status) : EndpointResu
         pure (Response.make (LeanStarlette.Responses.jsonBody out) status.val [] (some "application/json") status.property)
       | .error es => throw (ResponseValidationError es)
 
-/-- A path operation: its parameters, its function, its response model and
-status code. -/
-structure Endpoint (β γ : Type) where
-  params : Params β
-  call : β → Request → Handler γ
+/-- What a route's solve reads from its application: the dependency
+overrides in force (`app.dependency_overrides`, by dependency name) and the
+application's own `dependencies`, solved before the route's. -/
+structure RouteEnv where
+  overrides : List (String × ErasedRun) := []
+  dependencies : List Dependency := []
+
+/-- A path operation: its dependency tree, whose root is the operation's own
+arguments (`Dep`, with cache slots `σ`), its function, its response model
+and status code. -/
+structure Endpoint (σ : List Type) (β γ : Type) where
+  dep : Dep σ β
+  call : β → Handler γ
   response_model : Option ResponseModel := none
   status_code : Status := ⟨200, by decide⟩
 
+/-! ## The parameters of a dependency tree -/
+
+/-- What `_get_openapi_dependency_data` collects: the cache keys visited,
+the parameters (outside the body) in the order met, and the security
+requirements (scheme name, scheme, scopes). -/
+structure FlatDeps where
+  visited : List CacheKey := []
+  params : List ParamInfo := []
+  security : List (String × SecurityScheme × List String) := []
+
+/-- The scopes `a`, then those of `b` not already there (`_get_oauth_scopes`). -/
+def mergeScopes (a b : List String) : List String :=
+  b.foldl (fun acc s => if acc.contains s then acc else acc ++ [s]) a
+
+/-- The parameters at one level of a tree. -/
+def ownParams : List DepInfo → List ParamInfo
+  | [] => []
+  | .param p :: ds => p :: ownParams ds
+  | .sub .. :: ds => ownParams ds
+
+mutual
+
+/-- Visit one sub-dependency, under the scopes `scopes` of the way to it:
+skipped when its key was visited; otherwise its parameters, its scheme (with
+the scopes on the way to it) and then its own sub-dependencies. -/
+def FlatDeps.node (scopes : List String) : DepInfo → FlatDeps → FlatDeps
+  | .param _, w => w
+  | .sub key own scheme args, w =>
+    if w.visited.contains key then w
+    else
+      let s := mergeScopes scopes own
+      FlatDeps.list s args
+        { w with visited := w.visited ++ [key], params := w.params ++ ownParams args,
+                 security := w.security ++ (scheme.map fun (n, m) => (n, m, s)).toList }
+
+/-- Visit sub-dependencies in order. -/
+def FlatDeps.list (scopes : List String) : List DepInfo → FlatDeps → FlatDeps
+  | [], w => w
+  | d :: ds, w => FlatDeps.list scopes ds (FlatDeps.node scopes d w)
+
+end
+
+/-- **`_get_openapi_dependency_data`**: a preorder walk of the tree (the
+root's parameters, then each sub-dependency's, depth first), each cache key
+once. -/
+def FlatDeps.of (root : List DepInfo) : FlatDeps :=
+  FlatDeps.list [] root { params := ownParams root }
+
+mutual
+
+/-- `_get_flat_body_params`: every body parameter, depth first (each use of
+a dependency counts). -/
+def bodyParamsOf : DepInfo → List ParamInfo
+  | .param p => if p.source == .body then [p] else []
+  | .sub _ _ _ args => bodyParamsList args
+
+def bodyParamsList : List DepInfo → List ParamInfo
+  | [] => []
+  | d :: ds => bodyParamsOf d ++ bodyParamsList ds
+
+end
+
+/-- The body parameters of a tree, the dependant's own first. -/
+def flatBodyParams (root : List DepInfo) : List ParamInfo :=
+  (ownParams root).filter (·.source == .body) ++
+    bodyParamsList (root.filter fun | .sub .. => true | .param _ => false)
+
+/-- **The operation's parameters** (`get_flat_params` and the body): path,
+query, header and cookie parameters of the whole tree, each kind in the
+order met, then the body parameters. -/
+def flatParams (root : List DepInfo) : List ParamInfo :=
+  let ps := (FlatDeps.of root).params.filter (·.source != .body)
+  ps.mergeSort (fun a b => a.source.rank ≤ b.source.rank) ++ flatBodyParams root
+
 namespace Endpoint
 
-variable {β γ : Type}
+variable {σ : List Type} {β γ : Type}
 
 /-- Whether the operation reads the body. -/
-def hasBody (e : Endpoint β γ) : Bool := e.params.infos.any (·.source == .body)
+def hasBody (e : Endpoint σ β γ) : Bool := !(flatBodyParams e.dep.info).isEmpty
 
 /-- The body the operation reads: nothing, or what `readBody` gives. -/
-def body (e : Endpoint β γ) (req : Request) : Except BodyError BodyInput :=
+def body (e : Endpoint σ β γ) (req : Request) : Except BodyError BodyInput :=
   if e.hasBody then readBody req else .ok .none
 
-/-- **The operation as an application.** -/
-def app [IntoResult γ] (e : Endpoint β γ) : App := fun req =>
+/-- The application's dependencies, then the operation's tree: its values,
+or `none` when something failed to validate. -/
+def solve (e : Endpoint σ β γ) (env : RouteEnv) : SolveM σ (Option β) := do
+  for d in env.dependencies do
+    match ← SolveM.shared d.run with
+    | some callIt => let _ ← SolveM.shared callIt
+    | none => pure ()
+  e.dep.run
+
+/-- After the solve: when nothing failed, call the function and render its
+result; otherwise raise `RequestValidationError` with every error. -/
+def respond [IntoResult γ] (e : Endpoint σ β γ) (v? : Option β) : SolveM σ Response := do
+  let errors := (← get).shared.errors
+  match v?, errors with
+  | some v, [] => do
+    let out ← SolveM.lift (e.call v)
+    SolveM.lift (renderResult e.response_model e.status_code (IntoResult.intoResult out))
+  | _, _ => throw (RequestValidationError errors)
+
+/-- What a route's solve reads: the request, its inputs and the overrides. -/
+def ctx (env : RouteEnv) (req : Request) (body : BodyInput) : Ctx :=
+  { env := { request := req, inputs := Inputs.ofRequest req body }, overrides := env.overrides }
+
+/-- **The solve of a request**, from an empty cache and empty exit stacks:
+the values (or `none`), or an exception a dependency raised, and the state
+it leaves (errors, exits, cache). -/
+def solveIO (e : Endpoint σ β γ) (env : RouteEnv) (req : Request) (body : BodyInput) :
+    IO (Except Exception (Option β) × SolveState σ) :=
+  (((e.solve env).run (ctx env req body)).run).run { shared := {}, cache := Cache.empty σ }
+
+/-- **The operation as an application**: read the body; solve; respond; then
+unwind the exit stacks (`finish`) with the outcome. -/
+def app [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv) : App := fun req =>
   match e.body req with
   | .error (.invalid err) => throw (RequestValidationError [err])
   | .error .unparsable => throw (HTTPException 400 "There was an error parsing the body")
-  | .ok body =>
-    match e.params.extract (Inputs.ofRequest req body) with
-    | .error es => throw (RequestValidationError es)
-    | .ok v => do
-      let out ← e.call v req
-      renderResult e.response_model e.status_code (IntoResult.intoResult out)
+  | .ok body => ExceptT.mk do
+    let (r, st) ← e.solveIO env req body
+    let (outcome, st) ← match r with
+      | .ok v? => (((e.respond v?).run (ctx env req body)).run).run st
+      | .error ex => pure (.error ex, st)
+    (finish outcome st.shared).run
 
 end Endpoint
 
@@ -140,8 +254,12 @@ structure APIRoute where
   methods : List String
   /-- `route.name`: the function's name. -/
   name : String
-  endpoint : App
-  /-- The parameters, in `Source.rank` order. -/
+  /-- The application, given the overrides and application dependencies
+  in force. -/
+  endpoint : RouteEnv → App
+  /-- The dependency tree: the operation's parameters and sub-dependencies. -/
+  deps : List DepInfo := []
+  /-- The parameters of the whole tree (`flatParams deps`). -/
   params : List ParamInfo := []
   /-- The response model's schema. -/
   response_model : Option LeanPydantic.Schema := none
@@ -156,7 +274,7 @@ structure APIRoute where
 
 /-- The route of an endpoint, with the operation's metadata
 (`APIRoute.__init__`). Methods are upper-cased. -/
-def APIRoute.make {β γ : Type} [IntoResult γ] (e : Endpoint β γ) (path : String) (methods : List String)
+def APIRoute.make {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (path : String) (methods : List String)
     (name : String) (explicitStatus : Bool := false) (tags : List String := []) (summary : Option String := none)
     (description : Option String := none) (response_description : String := "Successful Response")
     (deprecated : Bool := false) (operation_id : Option String := none) (include_in_schema : Bool := true) :
@@ -165,7 +283,8 @@ def APIRoute.make {β γ : Type} [IntoResult γ] (e : Endpoint β γ) (path : St
   methods := methods.map String.toUpper
   name
   endpoint := e.app
-  params := e.params.infos
+  deps := e.dep.info
+  params := flatParams e.dep.info
   response_model := e.response_model.map (·.schema)
   status_code := if explicitStatus then some e.status_code.val else none
   tags
@@ -175,5 +294,15 @@ def APIRoute.make {β γ : Type} [IntoResult γ] (e : Endpoint β γ) (path : St
   deprecated
   operation_id
   include_in_schema
+
+/-- The route under an application's `dependencies`: they come first in its
+tree (`FastAPI(dependencies=[...])`). -/
+def APIRoute.withDependencies (ds : List Dependency) (r : APIRoute) : APIRoute :=
+  let deps := ds.flatMap (·.info) ++ r.deps
+  { r with deps, params := flatParams deps }
+
+/-- The security requirements of the route's tree. -/
+def APIRoute.security (r : APIRoute) : List (String × SecurityScheme × List String) :=
+  (FlatDeps.of r.deps).security
 
 end LeanFastapi

@@ -58,7 +58,7 @@ upstream = "fastapi/exception_handlers.py::request_validation_exception_handler"
 title = "Failed extraction answers 422 with {\"detail\": errors}, errors grouped path, query, header, cookie, body"
 status = "implemented"
 realises = ["LeanFastapi.request_validation_exception_handler", "LeanFastapi.RequestValidationError"]
-theorem = ["LeanFastapi.extract_422", "LeanFastapi.endpoint_app_error"]
+theorem = ["LeanFastapi.extract_422", "LeanFastapi.endpoint_app_errors"]
 test = ["tests/Conformance.lean", "tests/apps/Qpsv003.lean", "tests/apps/Ppnv006.lean"]
 
 [[requirement]]

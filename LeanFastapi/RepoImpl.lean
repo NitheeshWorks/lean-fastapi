@@ -9,3 +9,5 @@ import LeanFastapi.RepoImpl.OpenApi
 import LeanFastapi.RepoImpl.Docs
 import LeanFastapi.RepoImpl.Applications
 import LeanFastapi.RepoImpl.Infer
+import LeanFastapi.RepoImpl.Dependencies
+import LeanFastapi.RepoImpl.Security

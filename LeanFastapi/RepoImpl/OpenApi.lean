@@ -341,6 +341,13 @@ def responseSchema (r : APIRoute) (method : String) : OSchema :=
   | some s => fieldSchema s {} (fieldTitle ("Response_" ++ r.operationId method))
   | none => .any
 
+/-- `_get_openapi_security_definitions`: the requirements by scheme name,
+first-seen order, each scheme's scopes merged. -/
+def mergeSecurity (reqs : List (String × SecurityScheme × List String)) : List (String × List String) :=
+  reqs.foldl (fun acc (n, _, scopes) =>
+    if acc.any (·.1 == n) then acc.map fun e => if e.1 == n then (n, mergeScopes e.2 scopes) else e
+    else acc ++ [(n, mergeScopes [] scopes)]) []
+
 /-- The operation for one of the route's methods. -/
 def operation (r : APIRoute) (method : String) : Operation where
   tags := r.tags
@@ -355,6 +362,7 @@ def operation (r : APIRoute) (method : String) : Operation where
                        some ({ schema := r.responseSchema method } : MediaContent) else none })] ++
     (if r.validates then [("422", validationErrorResponseSpec)] else [])
   deprecated := r.deprecated
+  security := mergeSecurity r.security
 
 /-- The pydantic schemas a route mentions. -/
 def schemas (r : APIRoute) : List Schema := r.params.map (·.schema) ++ r.response_model.toList
@@ -384,12 +392,19 @@ def openapiDefinitions (routes : List APIRoute) : List (String × OSchema) :=
   included.flatMap (fun r => r.schemas.flatMap OSchema.models) ++
     (if included.any APIRoute.validates then validationDefinitions else [])
 
+/-- `components.securitySchemes`: every scheme the included routes use, by
+name (a later definition replaces an earlier one in place, as `dict.update`). -/
+def openapiSecuritySchemes (routes : List APIRoute) : List (String × SecurityScheme) :=
+  ((routes.filter (·.include_in_schema)).flatMap APIRoute.security).foldl (fun acc (n, m, _) =>
+    if acc.any (·.1 == n) then acc.map fun e => if e.1 == n then (n, m) else e else acc ++ [(n, m)]) []
+
 /-- `get_openapi(title=, version=, routes=, ...)`. -/
 def getOpenapi (info : Info) (routes : List APIRoute) : OpenAPI where
   info
   paths := openapiPaths routes
   components := { schemas := Sorted.ofListSorted (openapiDefinitions routes)
-                  sorted := Sorted.ofListSorted_sorted _ }
+                  sorted := Sorted.ofListSorted_sorted _
+                  securitySchemes := openapiSecuritySchemes routes }
 
 /-! ## Printing the document -/
 
@@ -404,6 +419,28 @@ def parameterJson (p : Parameter) : Json :=
     (match p.description with | some d => [("description", .str d)] | none => []) ++
     (if p.deprecated then [("deprecated", .bool true)] else [])
 
+/-- A security scheme object (`jsonable_encoder(model, by_alias=True,
+exclude_none=True)`): `type` and `description` first, then the scheme's own
+fields; OAuth2 flows in `OAuthFlows` order, each with `refreshUrl` and
+`scopes` before its URLs. -/
+def securitySchemeJson : SecurityScheme → Json
+  | .apiKey loc name d => jobj ([("type", .str "apiKey")] ++ descr d ++ [("in", .str loc.value), ("name", .str name)])
+  | .http scheme bf d => jobj ([("type", .str "http")] ++ descr d ++ [("scheme", .str scheme)] ++
+      (match bf with | some b => [("bearerFormat", .str b)] | none => []))
+  | .oauth2 flows d => jobj ([("type", .str "oauth2")] ++ descr d ++ [("flows", jobj (
+      ["implicit", "password", "clientCredentials", "authorizationCode"].filterMap fun k =>
+        (flows.find? (·.kind == k)).map fun f => (k, flowJson f)))])
+  | .openIdConnect url d => jobj ([("type", .str "openIdConnect")] ++ descr d ++ [("openIdConnectUrl", .str url)])
+where
+  descr : Option String → List (String × Json)
+    | some d => [("description", .str d)]
+    | none => []
+  flowJson (f : OAuthFlow) : Json :=
+    jobj ((match f.refreshUrl with | some u => [("refreshUrl", .str u)] | none => []) ++
+      [("scopes", jobj (f.scopes.map fun (k, v) => (k, .str v)))] ++
+      (match f.authorizationUrl with | some u => [("authorizationUrl", .str u)] | none => []) ++
+      (match f.tokenUrl with | some u => [("tokenUrl", .str u)] | none => []))
+
 /-- An operation. Under a path item FastAPI's `OpenAPI` model accepts
 (`raw = false`), keys follow the `Operation` and `RequestBody` models; a path
 item with a parameter anywhere is kept as the dict FastAPI built
@@ -417,15 +454,17 @@ def operationJson (raw : Bool) (o : Operation) : Json :=
       [("requestBody", jobj (if raw then req ++ [("content", mediaJson b.content)]
         else [("content", mediaJson b.content)] ++ req))]
     | none => []
+  let security := if o.security.isEmpty then [] else
+    [("security", jarr (o.security.map fun (n, scopes) => jobj [(n, jarr (scopes.map .str))]))]
   jobj <| (if o.tags.isEmpty then [] else [("tags", jarr (o.tags.map .str))]) ++
     [("summary", .str o.summary)] ++
     (match o.description with | some d => if d.isEmpty then [] else [("description", .str d)] | none => []) ++
-    [("operationId", .str o.operationId)] ++ (if raw then deprecated else []) ++
+    [("operationId", .str o.operationId)] ++ (if raw then deprecated ++ security else []) ++
     (if o.parameters.isEmpty then [] else [("parameters", jarr (o.parameters.map parameterJson))]) ++
     body ++
     [("responses", jobj (o.responses.map fun (k, r) => (k, jobj ([("description", .str r.description)] ++
         (match r.content with | some c => [("content", mediaJson c)] | none => [])))))] ++
-    (if raw then [] else deprecated)
+    (if raw then [] else deprecated ++ security)
 
 /-- A path item's operations, as JSON. -/
 def pathItemJson (ms : List (String × Operation)) : Json :=
@@ -448,8 +487,12 @@ def infoJson (i : Info) : Json :=
 def toJson (d : OpenAPI) : Json :=
   jobj <| [("openapi", .str d.openapi), ("info", infoJson d.info),
     ("paths", jobj ((groupPaths d.paths).map fun (p, ms) => (p, pathItemJson ms)))] ++
-    (if d.components.schemas.isEmpty then []
-     else [("components", jobj [("schemas", jobj (d.components.schemas.map fun (k, s) => (k, s.toJson .model)))])])
+    (let comps :=
+      (if d.components.schemas.isEmpty then []
+       else [("schemas", jobj (d.components.schemas.map fun (k, s) => (k, s.toJson .model)))]) ++
+      (if d.components.securitySchemes.isEmpty then []
+       else [("securitySchemes", jobj (d.components.securitySchemes.map fun (k, m) => (k, securitySchemeJson m)))])
+     if comps.isEmpty then [] else [("components", jobj comps)])
 
 /-- The `(path, method)` keys of the document's operations. -/
 def keys (d : OpenAPI) : List (String × String) := d.paths.map fun e => (e.1, e.2.1)

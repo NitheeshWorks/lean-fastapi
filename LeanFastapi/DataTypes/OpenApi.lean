@@ -1,4 +1,4 @@
-import LeanFastapi.DataTypes.Params
+import LeanFastapi.DataTypes.Dependencies
 
 /-!
 # DataTypes: the OpenAPI document
@@ -98,6 +98,8 @@ structure Operation where
   /-- By status code, as strings (`"200"`, `"422"`). -/
   responses : List (String × ResponseSpec) := []
   deprecated : Bool := false
+  /-- The security requirements, `{scheme name: scopes}` each. -/
+  security : List (String × List String) := []
 
 /-- The `info` object. -/
 structure Info where
@@ -110,6 +112,8 @@ structure Info where
 structure Components where
   schemas : List (String × OSchema) := []
   sorted : (schemas.map Prod.fst).Pairwise (· < ·) := by simp
+  /-- The security schemes, by name, in first-seen order. -/
+  securitySchemes : List (String × SecurityScheme) := []
 
 /-- An OpenAPI document. -/
 structure OpenAPI where

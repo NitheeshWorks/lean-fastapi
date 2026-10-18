@@ -58,23 +58,46 @@ theorem extract_cons_ok_iff {α β : Type} [FromJson α] [ToJson α] [JsonSchema
 
 /-! ## The 422 response -/
 
-/-- An operation whose extraction fails raises `RequestValidationError`
-with the extraction's errors. -/
-theorem endpoint_app_error {β γ : Type} [IntoResult γ] (e : Endpoint β γ) (req : LeanStarlette.Request)
-    (b : BodyInput) (es : List RequestError) (hb : e.body req = .ok b)
-    (he : e.params.extract (Inputs.ofRequest req b) = .error es) :
-    e.app req = throw (RequestValidationError es) := by
-  simp only [Endpoint.app, hb, he]
+/-- After a solve that recorded errors, the operation is not called:
+`RequestValidationError` with every error is raised. -/
+theorem respond_errors {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (v? : Option β) (c : Ctx)
+    (st : SolveState σ) (hne : st.shared.errors ≠ []) :
+    (((e.respond v?).run c).run).run st = pure (.error (RequestValidationError st.shared.errors), st) := by
+  obtain ⟨⟨errs, f, r⟩, cache⟩ := st
+  simp only at hne
+  cases errs with
+  | nil => exact absurd rfl hne
+  | cons x xs => cases v? <;> rfl
 
-/-- **Invalid input is a 422 with exactly the extraction's errors**: under
-FastAPI's exception handlers, an operation whose parameters fail to validate
-answers `422 {"detail": [...]}` listing every error. -/
-theorem extract_422 {β γ : Type} [IntoResult γ] (e : Endpoint β γ) (req : LeanStarlette.Request)
-    (b : BodyInput) (es : List RequestError) (hb : e.body req = .ok b)
-    (he : e.params.extract (Inputs.ofRequest req b) = .error es) :
-    LeanStarlette.exceptionMiddleware defaultExceptionHandlers e.app req =
+/-- **Validation errors are raised inside the exit stacks**: when the solve
+records errors, the operation's outcome is `RequestValidationError` with all
+of them, unwound through the exits the solve entered. -/
+theorem endpoint_app_errors {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv)
+    (req : LeanStarlette.Request) (b : BodyInput) (v? : Option β) (st : SolveState σ)
+    (hb : e.body req = .ok b) (hs : e.solveIO env req b = pure (.ok v?, st)) (hne : st.shared.errors ≠ []) :
+    e.app env req = finish (.error (RequestValidationError st.shared.errors)) st.shared := by
+  have h1 : e.app env req = ExceptT.mk ((((e.respond v?).run (Endpoint.ctx env req b)).run).run st >>=
+      fun x => (finish x.1 x.2.shared).run) := by
+    unfold Endpoint.app
+    rw [hb]
+    simp only [hs]
+    rfl
+  rw [h1, respond_errors e v? _ st hne]
+  rfl
+
+/-- **Invalid input is a 422 with exactly the solve's errors**: under
+FastAPI's exception handlers, an operation whose parameters (its own and its
+dependencies') fail to validate answers `422 {"detail": [...]}` listing
+every error, when no `yield` dependency was entered. -/
+theorem extract_422 {σ : List Type} {β γ : Type} [IntoResult γ] (e : Endpoint σ β γ) (env : RouteEnv)
+    (req : LeanStarlette.Request) (b : BodyInput) (v? : Option β) (st : SolveState σ) (es : List RequestError)
+    (hb : e.body req = .ok b) (hs : e.solveIO env req b = pure (.ok v?, st)) (hst : st.shared = { errors := es })
+    (hne : es ≠ []) :
+    LeanStarlette.exceptionMiddleware defaultExceptionHandlers (e.app env) req =
       pure (validationErrorResponse (errorsJson es)) := by
-  simp only [LeanStarlette.exceptionMiddleware, endpoint_app_error e req b es hb he]
+  have h := endpoint_app_errors e env req b v? st hb hs (by rw [hst]; exact hne)
+  rw [hst] at h
+  simp only [LeanStarlette.exceptionMiddleware, h]
   rfl
 
 /-! ## Response models -/

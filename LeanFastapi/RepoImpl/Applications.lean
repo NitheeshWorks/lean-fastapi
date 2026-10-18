@@ -43,11 +43,31 @@ structure FastAPI where
   routes : List APIRoute := []
   exception_handlers : List (ExceptionKey × ExceptionHandler) := []
   middleware : List Middleware := []
+  /-- `FastAPI(dependencies=[...])`: solved before every path operation's
+  own dependencies. -/
+  dependencies : List Dependency := []
+  /-- `app.dependency_overrides`: replacements by dependency name. -/
+  dependency_overrides : List (String × ErasedRun) := []
 
 namespace FastAPI
 
-/-- The application with more path operations, after its own. -/
-def withRoutes (app : FastAPI) (routes : List APIRoute) : FastAPI := { app with routes := app.routes ++ routes }
+/-- The application with more path operations, after its own; the
+application's `dependencies` head each one's tree. -/
+def withRoutes (app : FastAPI) (routes : List APIRoute) : FastAPI :=
+  { app with routes := app.routes ++ routes.map (APIRoute.withDependencies app.dependencies) }
+
+/-- `app.dependency_overrides[original] = override`: requests solve
+`override` wherever `original` was declared. -/
+def overrideDependency (app : FastAPI) (original override : Dependency) : FastAPI :=
+  { app with dependency_overrides :=
+      (original.key.call, override.run) :: app.dependency_overrides.filter (·.1 != original.key.call) }
+
+/-- `app.dependency_overrides = {}`. -/
+def clearOverrides (app : FastAPI) : FastAPI := { app with dependency_overrides := [] }
+
+/-- What the routes read from the application. -/
+def routeEnv (app : FastAPI) : RouteEnv :=
+  { overrides := app.dependency_overrides, dependencies := app.dependencies }
 
 /-- The `info` object. -/
 def info (app : FastAPI) : Info :=
@@ -91,9 +111,10 @@ end FastAPI
 
 namespace APIRoute
 
-/-- The Starlette route of a path operation: exactly its methods. -/
-def toBaseRoute (r : APIRoute) : BaseRoute :=
-  LeanStarlette.RouteExact r.path r.endpoint (methods := r.methods) (name := r.name)
+/-- The Starlette route of a path operation, under the application's
+overrides and dependencies: exactly its methods. -/
+def toBaseRoute (env : RouteEnv) (r : APIRoute) : BaseRoute :=
+  LeanStarlette.RouteExact r.path (r.endpoint env) (methods := r.methods) (name := r.name)
 
 end APIRoute
 
@@ -102,7 +123,7 @@ namespace FastAPI
 /-- **The application as a Starlette application**: what serves requests. -/
 def application (app : FastAPI) : LeanStarlette.Application :=
   LeanStarlette.Starlette (debug := app.debug)
-    (routes := app.docsRoutes ++ app.routes.map APIRoute.toBaseRoute)
+    (routes := app.docsRoutes ++ app.routes.map (APIRoute.toBaseRoute app.routeEnv))
     (middleware := app.middleware)
     (exception_handlers := app.exception_handlers ++ defaultExceptionHandlers)
 

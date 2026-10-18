@@ -1,5 +1,5 @@
 import Lean
-import LeanFastapi.RepoImpl.Infer
+import LeanFastapi.APIs.Depends
 
 /-!
 # APIs: path operation attributes
@@ -65,72 +65,6 @@ end Attr
 
 namespace Macro
 
-/-- The wrapper an argument type is written with, and its arguments. -/
-def wrapperOf (ty : Expr) : Wrapper × Array Expr :=
-  let args := ty.getAppArgs
-  match ty.getAppFn.constName? with
-  | some ``LeanFastapi.Path => (.path, args)
-  | some ``LeanFastapi.Query => (.query, args)
-  | some ``LeanFastapi.Header => (.header, args)
-  | some ``LeanFastapi.Cookie => (.cookie, args)
-  | some ``LeanFastapi.Body => (.body, args)
-  | _ => (.none, #[ty])
-
-/-- Whether a type is FastAPI's non-scalar field, read from the body: a
-model, a `Dict` or a `List` (optionally `Option` of one). -/
-def isModelType (ty : Expr) : MetaM Bool := do
-  let ty ← instantiateMVars ty
-  let base := if ty.isAppOfArity ``Option 1 then ty.appArg! else ty
-  if base.isAppOfArity ``LeanPydantic.Dict 1 || base.isAppOfArity ``List 1 then return true
-  return (← synthInstance? (mkApp (Lean.mkConst ``LeanPydantic.Model) base)).isSome
-
-/-- `none : Option String`. -/
-def noneString : MetaM Expr := mkAppOptM ``Option.none #[some (Lean.mkConst ``String)]
-
-/-- The `Source` constructor. -/
-def sourceExpr : Source → Expr
-  | .path => Lean.mkConst ``Source.path
-  | .query => Lean.mkConst ``Source.query
-  | .header => Lean.mkConst ``Source.header
-  | .cookie => Lean.mkConst ``Source.cookie
-  | .body => Lean.mkConst ``Source.body
-
-/-- The `Param` of an argument. -/
-def paramExpr (source : Source) (name : String) (w : Wrapper) (args : Array Expr) (α : Expr)
-    (default : Option Expr) : MetaM Expr := do
-  let ns ← noneString
-  let arg (i : Nat) (d : Expr) : Expr := args.getD i d
-  -- alias, convert_underscores, title, description, deprecated, include_in_schema, embed, media_type
-  let (alias, conv, title, descr, depr, incl, embed, media) : Expr × Expr × Expr × Expr × Expr × Expr × Expr × Expr :=
-    match w with
-    | .path => (ns, toExpr true, arg 1 ns, arg 2 ns, arg 3 (toExpr false), arg 4 (toExpr true), toExpr false,
-        toExpr "application/json")
-    | .query | .cookie => (arg 1 ns, toExpr true, arg 2 ns, arg 3 ns, arg 4 (toExpr false), arg 5 (toExpr true),
-        toExpr false, toExpr "application/json")
-    | .header => (arg 1 ns, arg 2 (toExpr true), arg 3 ns, arg 4 ns, arg 5 (toExpr false), arg 6 (toExpr true),
-        toExpr false, toExpr "application/json")
-    | .body => (arg 3 ns, toExpr true, arg 4 ns, arg 5 ns, toExpr false, toExpr true, arg 1 (toExpr false),
-        arg 2 (toExpr "application/json"))
-    | .none => (ns, toExpr true, ns, ns, toExpr false, toExpr true, toExpr false, toExpr "application/json")
-  let dflt ← match default with
-    | some d => mkAppOptM ``Option.some #[some α, some d]
-    | none => mkAppOptM ``Option.none #[some α]
-  mkAppOptM ``LeanFastapi.mkParam
-    #[some α, some (sourceExpr source), some (toExpr name), some dflt, some alias, some conv, some title,
-      some descr, some depr, some incl, some embed, some media]
-
-/-- `(v.2.2. ... .1)`: the `k`-th component of a right-nested product. -/
-def projAt (v : Expr) : Nat → MetaM Expr
-  | 0 => mkAppM ``Prod.fst #[v]
-  | k + 1 => do projAt (← mkAppM ``Prod.snd #[v]) k
-
-/-- The value type `γ` of `Handler γ`. -/
-def handlerResult (body : Expr) : MetaM Expr := do
-  let b ← whnfR body
-  let b ← whnfR b
-  if b.isAppOfArity ``ExceptT 3 then return b.appArg!
-  throwError "a path operation function returns `Handler α`, not `{body}`"
-
 /-- The named arguments of the attribute. -/
 def namedArgs (stx : Syntax) : Array (Name × Syntax) :=
   stx[2].getArgs.map fun a => (a[1].getId.eraseMacroScopes, a[3])
@@ -149,15 +83,30 @@ def knownArgs : List Name :=
   [`response_model, `status_code, `tags, `summary, `description, `response_description, `deprecated,
    `operation_id, `include_in_schema, `name, `response_model_exclude_none, `response_model_exclude_defaults,
    `response_model_exclude_unset, `response_model_by_alias,
-   `response_model_include, `response_model_exclude, `methods]
+   `response_model_include, `response_model_exclude, `methods, `dependencies]
 
-/-- An argument as the route macro sees it. -/
-structure Arg where
-  index : Nat
-  name : String
-  kind : ParamKind
-  base : Expr
-  param : Option Expr
+/-- The elements of a list literal, also once expanded to
+`List.cons x (List.cons y List.nil)` (as attribute arguments arrive). -/
+def listElems : Nat → Syntax → Option (List Syntax)
+  | 0, _ => none
+  | fuel + 1, s =>
+    match s with
+    | `([$xs,*]) => some (xs.getElems.toList.map (·.raw))
+    | _ =>
+      if s.isIdent && s.getId.eraseMacroScopes == ``List.nil then some []
+      else if s.getKind == ``Lean.Parser.Term.app && s[0].isIdent && s[0].getId.eraseMacroScopes == ``List.cons &&
+          s[1].getNumArgs == 2 then
+        (listElems fuel s[1][1]).map (s[1][0] :: ·)
+      else none
+
+/-- The route-level `(dependencies := [Depends f, Security g ["s"]])`. -/
+def routeDependencies (args : Array (Name × Syntax)) (pathNames : List String) : TermElabM (List Node) := do
+  match args.find? (·.1 == `dependencies) with
+  | none => return []
+  | some (_, s) =>
+    match listElems 10000 s with
+    | some xs => xs.mapM fun x => do subOf maxDepth pathNames [] (← markOfSyntax x)
+    | none => throwErrorAt s "`dependencies` is a list `[Depends f, ...]`"
 
 /-- Build `decl.route` for a path operation attribute. -/
 def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermElabM Expr := do
@@ -167,52 +116,21 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
     unless knownArgs.contains n do throwErrorAt s "unknown path operation argument `{n}`"
   let info ← getConstInfo decl
   let pathNames := pathParamNames (pathFormat path)
-  forallTelescope info.type fun xs body => do
-    let mut argsInfo : Array Arg := #[]
-    for h : i in [0:xs.size] do
-      let x := xs[i]
-      let ld ← x.fvarId!.getDecl
-      unless ld.binderInfo.isExplicit do
-        throwError "path operation argument `{ld.userName}` must be explicit"
-      let ty := ld.type
-      let (ty, default) := match ty.getOptParamDefault? with
-        | some d => (ty.appFn!.appArg!, some d)
-        | none => (ty, none)
-      if ty.hasFVar then throwError "the type of `{ld.userName}` depends on another argument"
-      let name := ld.userName.eraseMacroScopes.toString
-      let (w, wargs) := wrapperOf ty
-      let base := wargs.getD 0 ty
-      let isRequest := base.isConstOf ``LeanStarlette.Request
-      let isModel ← isModelType base
-      let kind := inferParam { name, inPath := pathNames.contains name, wrapper := w, isModel, isRequest }
-      match kind with
-      | .invalid msg => throwError msg
-      | .request => argsInfo := argsInfo.push { index := i, name, kind, base, param := none }
-      | .param src =>
-        let p ← paramExpr src name w wargs base default
-        argsInfo := argsInfo.push { index := i, name, kind, base, param := some p }
-    -- FastAPI's order: path, query, header, cookie, body (stable)
-    let srcRank : Arg → Nat := fun a => match a.kind with | .param s => s.rank | _ => 99
-    let params := (argsInfo.filter (·.param.isSome)).toList.mergeSort (fun a b => srcRank a ≤ srcRank b)
-    if (params.filter (srcRank · == Source.body.rank)).length > 1 then
-      throwError "more than one body parameter: embedded bodies are not supported yet"
-    -- the parameter product and its type
-    let mut paramsE := Lean.mkConst ``LeanFastapi.Params.nil
-    let mut β := Lean.mkConst ``Unit
-    for a in params.reverse do
-      paramsE ← mkAppOptM ``LeanFastapi.Params.cons #[some a.base, some β, none, none, none, a.param, some paramsE]
-      β ← mkAppM ``Prod #[a.base, β]
+  let fnE ← mkConstWithLevelParams decl
+  let routeDeps ← routeDependencies args pathNames
+  let fnArgs ← argsOf maxDepth pathNames [] decl.toString false { fn := fnE, name := decl.toString }
+  let all := routeDeps ++ fnArgs
+  if Node.bodiesList all > 1 then
+    throwError "more than one body parameter: embedded bodies are not supported yet"
+  let slots := keysOfList all []
+  let σ ← cacheTypes slots
+  let (depE, β, project) ← genArgs maxDepth σ slots all
+  forallTelescope info.type fun _ body => do
     let γ ← handlerResult body
-    let reqTy := Lean.mkConst ``LeanStarlette.Request
-    let callE ← withLocalDeclD `v β fun v => withLocalDeclD `request reqTy fun req => do
-      let mut callArgs : Array Expr := #[]
-      for a in argsInfo do
-        match a.kind with
-        | .request => callArgs := callArgs.push req
-        | _ =>
-          let k := (params.findIdx? (·.index == a.index)).getD 0
-          callArgs := callArgs.push (← projAt v k)
-      mkLambdaFVars #[v, req] (mkAppN (← mkConstWithLevelParams decl) callArgs)
+    if γ.hasFVar then throwError "the result type of `{decl}` depends on its arguments"
+    let callE ← withLocalDeclD `v β fun v => do
+      let vals ← project v
+      mkLambdaFVars #[v] (mkAppN fnE (vals.drop routeDeps.length).toArray)
     -- the response model
     let jsonTy := Lean.mkConst ``LeanJson.Json
     let respTy := Lean.mkConst ``LeanStarlette.Response
@@ -252,7 +170,8 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
         let e ← elabTermEnsuringType (← `((⟨200, by decide⟩ : LeanFastapi.Status))) (Lean.mkConst ``LeanFastapi.Status)
         synthesizeSyntheticMVarsNoPostponing
         instantiateMVars e
-    let endpointE ← mkAppOptM ``LeanFastapi.Endpoint.mk #[some β, some γ, some paramsE, some callE, some rmE, some statusE]
+    let endpointE ← mkAppOptM ``LeanFastapi.Endpoint.mk #[some σ, some β, some γ, some depE, some callE, some rmE,
+      some statusE]
     -- route metadata
     let strTy := Lean.mkConst ``String
     let optStr ← mkAppM ``Option #[strTy]
@@ -271,7 +190,7 @@ def mkRoute (decl : Name) (methodsDefault : List String) (stx : Syntax) : TermEl
     let inclE ← argOr args `include_in_schema boolTy (pure (toExpr true))
     let explicit := toExpr ((args.find? (·.1 == `status_code)).isSome)
     mkAppOptM ``LeanFastapi.APIRoute.make
-      #[some β, some γ, none, some endpointE, some (toExpr path), some methodsE, some nameE, some explicit,
+      #[some σ, some β, some γ, none, some endpointE, some (toExpr path), some methodsE, some nameE, some explicit,
         some tagsE, some summaryE, some descrE, some respDescrE, some deprE, some opIdE, some inclE]
 
 /-- Run the attribute: define and record `decl.route`. -/
@@ -322,14 +241,22 @@ def DeclaredRoutes (_app : FastAPI) : Type := List APIRoute
 instance (app : FastAPI) : EmptyCollection (DeclaredRoutes app) := ⟨([] : List APIRoute)⟩
 
 /-- `declared_routes`: the routes declared in the module that declares the
-application, in declaration order. An application that is not a named
-declaration has none. -/
+application, in declaration order. The application is the first named
+`FastAPI` declaration the expression mentions (`app`, or
+`app.overrideDependency ...`); without one there are none. -/
 elab "declared_routes" : tactic => Tactic.withMainContext do
   let goal ← Tactic.getMainGoal
   let ty ← instantiateMVars (← goal.getType)
   let app := ty.appArg!
   let env ← getEnv
-  let names : Array Name := match app.getAppFn.constName? with
+  -- the application is the first `FastAPI` constant in the expression
+  -- (`app`, or `app.overrideDependency ...`)
+  let fastapi := Lean.mkConst ``LeanFastapi.FastAPI
+  let appConst? := (app.foldConsts #[] fun c acc => acc.push c).find? fun c =>
+    match env.find? c with
+    | some ci => ci.type == fastapi
+    | none => false
+  let names : Array Name := match appConst? with
     | some c =>
       match env.getModuleIdxFor? c with
       | some idx => routeExt.getModuleEntries env idx

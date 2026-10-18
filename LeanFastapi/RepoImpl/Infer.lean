@@ -134,6 +134,30 @@ def mkParam {α : Type} (source : Source) (name : String) (default : Option α) 
   include_in_schema
   media_type
 
+/-! ## Dependencies -/
+
+set_option linter.unusedVariables false in
+/-- The type of an argument declared `(commons : Depends commonParameters)`:
+the dependency's value, marked with the dependency (`Depends(dependency,
+use_cache=True, scope=None)`; `scope` is `""`, `"function"` or
+`"request"`). The `Depends` notation computes `α`. -/
+@[reducible] def DependsT {τ : Sort u} (dependency : τ) (α : Type) (use_cache : Bool) (scope : String) : Type := α
+
+set_option linter.unusedVariables false in
+/-- The type of an argument declared `(user : Security getCurrentUser
+["items"])`: `Security(dependency, scopes=[...], use_cache=True)`. -/
+@[reducible] def SecurityT {τ : Sort u} (dependency : τ) (α : Type) (scopes : List String) (use_cache : Bool) :
+    Type := α
+
+/-- `pure a` in `Handler`: a dependency that computes its value without
+effects (a class dependency's constructor). -/
+def handlerPure {α : Type} (a : α) : Handler α := pure a
+
+/-- A dependency value as JSON, for overrides and application dependencies
+(by alias, non-finite floats as `Infinity`/`NaN`). -/
+def depToJson {α : Type} [LeanPydantic.ToJson α] (a : α) : LeanJson.Json :=
+  LeanPydantic.toJson { LeanPydantic.DumpOpts.roundTrip with ser_json_inf_nan := .constants } a
+
 /-! ## Documentation strings -/
 
 /-- `inspect.cleandoc(doc).split("\f")[0].strip()`: a function's doc string
