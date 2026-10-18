@@ -244,6 +244,8 @@ SCENARIOS = [
     ("response_model", "tests/test_router_events.py (405 on a partial match)", "HEAD", "/public", {}, None),
     ("response_model", "critic review of b6n01b9wts1z (non-finite input in a 422)", "POST", "/counted", J, '{"n": Infinity}'),
     ("response_model", "critic review of b6n01b9wts1z (non-finite input in a 422)", "POST", "/counted", J, '{"n": NaN}'),
+    ("demo", "wide object body (lean-json bca7cc0 parse)", "PUT", "/items/1", J,
+     '{"name":"x","price":2,' + ",".join(f'"k{i}":{i}' for i in range(5000)) + '}'),
     ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":Infinity}'),
     ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":1e400}'),
     ("demo", "critic review of b6n01b9wts1z (float price)", "PUT", "/items/1", J, '{"name":"x","price":12345678901234567890}'),
